@@ -1,0 +1,278 @@
+<title>Ambush v3 Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@400;700&family=Barlow+Semi+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a map-table at night. Header strip, two order cards (Claude / you), then the phase
+   track beside its report, then the review queue. Dark-first; light is a pale field-map sheet. */
+:root {
+  --bg: #121a17; --panel: #19231f; --line: #2c3a34; --fg: #e4dfcc; --dim: #9aa597;
+  --brass: #d6a54a; --brass-ink: #1b1408; --ok: #7fb069; --warn: #e07a4f; --wait: #c9b458;
+  --display: "Stardos Stencil", "Impact", "Arial Narrow", sans-serif;
+  --body: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #e9ece3; --panel: #f6f7f1; --line: #c6cdbd; --fg: #1f2a24; --dim: #5d6b60;
+  --brass: #8a5f12; --brass-ink: #fffaf0; --ok: #3f7a2c; --warn: #b4441c; --wait: #86701a; color-scheme: light } }
+:root[data-theme="light"] {
+  --bg: #e9ece3; --panel: #f6f7f1; --line: #c6cdbd; --fg: #1f2a24; --dim: #5d6b60;
+  --brass: #8a5f12; --brass-ink: #fffaf0; --ok: #3f7a2c; --warn: #b4441c; --wait: #86701a; color-scheme: light }
+body { background: var(--bg); color: var(--fg); font: 16px/1.45 var(--body); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button, select, textarea { font: inherit; color: inherit; }
+button { background: transparent; border: 1px solid var(--line); border-radius: 3px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--brass); }
+button.primary { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); font-weight: 600; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); }
+.empty { color: var(--dim); }
+
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px; border-bottom: 2px solid var(--brass); padding-bottom: 10px; }
+header h1 { font: 700 34px/1 var(--display); letter-spacing: .04em; }
+header h1 span { color: var(--brass); }
+.meter { color: var(--dim); font-variant-numeric: tabular-nums; }
+.meter b { color: var(--fg); }
+.spacer { flex: 1; }
+.save { font: 12px var(--mono); color: var(--dim); }
+
+.orders { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.order { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.order.claude { border-top: 3px solid var(--brass); }
+.order.you { border-top: 3px solid var(--wait); }
+.order h3 { font: 600 22px/1.2 var(--body); }
+.order ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.order li { display: flex; gap: 10px; align-items: baseline; }
+.order li .t { flex: 1; min-width: 0; }
+.prompt { margin: 0; white-space: pre-wrap; font: 13px/1.5 var(--mono); background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 10px; max-height: 220px; overflow: auto; }
+.copyrow { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.copied { font-size: 14px; color: var(--ok); }
+.fixnote { border-left: 3px solid var(--warn); padding-left: 10px; }
+
+.chip { font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 4px 7px; border-radius: 2px; border: 1px solid currentColor; white-space: nowrap; }
+.st-planned { color: var(--dim); }
+.st-next { color: var(--brass); }
+.st-built, .st-waiting { color: var(--wait); }
+.st-fixes { color: var(--warn); }
+.st-done, .st-ok { color: var(--ok); }
+
+.board { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+.track { display: grid; gap: 2px; }
+.row { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center; text-align: left; border: 1px solid transparent; border-radius: 3px; padding: 8px 10px; }
+.row .n { font: 700 20px/1 var(--display); color: var(--brass); }
+.row .t { min-width: 0; }
+.row[aria-current="true"] { background: var(--panel); border-color: var(--line); }
+.report { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.rhead { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.rhead .n { font: 700 40px/1 var(--display); color: var(--brass); }
+.rhead h2 { font: 600 26px/1.15 var(--body); flex: 1; min-width: 200px; }
+.block { display: grid; gap: 6px; }
+.block ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.checks li { font: 13px/1.5 var(--mono); }
+.open li { color: var(--wait); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 14px; }
+.actions label { display: flex; gap: 8px; align-items: center; color: var(--dim); margin-left: auto; }
+select { background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 5px 8px; }
+
+.queue h2 { font: 700 26px/1 var(--display); letter-spacing: .04em; }
+.qhead { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; margin-bottom: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.card .top { display: flex; gap: 8px; align-items: center; }
+.card .ph { font: 700 16px/1 var(--display); color: var(--brass); }
+.card h3 { font: 600 18px/1.25 var(--body); }
+.card .how { color: var(--dim); font-size: 15px; }
+.card .watch { font-size: 14px; border-left: 3px solid var(--wait); padding-left: 8px; }
+.card .note { font-size: 15px; border-left: 3px solid var(--warn); padding-left: 8px; }
+.card .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+textarea { width: 100%; box-sizing: border-box; min-height: 70px; background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 8px; }
+details.decided { margin-top: 14px; }
+details.decided summary { cursor: pointer; color: var(--dim); }
+details.decided ul { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; }
+details.decided li { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+
+@media (max-width: 860px) {
+  .orders, .board { grid-template-columns: 1fr; }
+  .cards { grid-template-columns: 1fr; }
+  .actions label { margin-left: 0; }
+}
+@media (prefers-reduced-motion: no-preference) { button { transition: border-color .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>AMBUSH <span>v3</span> Console</h1>
+    <span class="meter" id="meter"></span>
+    <span class="spacer"></span>
+    <span class="save" id="save" role="status">Connecting…</span>
+  </header>
+
+  <section class="orders" id="orders" aria-label="Next up"></section>
+
+  <div class="board">
+    <nav class="track" id="track" aria-label="Phases"></nav>
+    <section class="report" id="report" aria-live="polite"></section>
+  </div>
+
+  <section class="queue" aria-label="Review queue">
+    <div class="qhead"><h2>Review queue</h2><span class="meter" id="qmeter"></span></div>
+    <div class="cards" id="cards"></div>
+    <details class="decided" id="decided" hidden><summary id="dsum"></summary><ul id="dlist"></ul></details>
+  </section>
+</div>
+
+<script>
+const STAGES = ['planned', 'next', 'built', 'fixes', 'done'];
+const LABEL = { planned: 'Planned', next: 'Up next', built: 'Waiting for you', fixes: 'Needs fixes', done: 'Signed off' };
+const RLABEL = { waiting: 'Waiting', ok: 'Looks right', fixes: 'Needs fixes' };
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e }
+function btn(text, cls, fn) { const b = el('button', cls, text); b.type = 'button'; b.onclick = fn; return b }
+const today = () => new Date().toISOString().slice(0, 10);
+
+let db = null, PH = [], RV = [], NEXT = null, sel = null, editing = null;
+
+function copyBlock(text) {
+  const box = el('div'); const pre = el('pre', 'prompt', text); const row = el('div', 'copyrow'); const ok = el('span', 'copied');
+  row.append(btn('Copy prompt', 'primary', () => {
+    navigator.clipboard?.writeText(text).then(() => { ok.textContent = 'Copied. Run /clear in Claude Code, then paste.' })
+      .catch(() => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); ok.textContent = 'Selected: press ⌘C to copy.' });
+  }), ok);
+  box.append(pre, row); return box;
+}
+
+async function write(path, patch) {
+  if (!db) return;
+  $('save').textContent = 'Saving…';
+  try { await db.doc(path).update({ ...patch, updated: today() }); $('save').textContent = 'Saved' }
+  catch (e) { $('save').textContent = 'Could not save (' + (e.code || 'error') + ')' }
+}
+
+function renderOrders() {
+  const o = $('orders'); o.replaceChildren();
+  const a = el('div', 'order claude'); a.append(el('span', 'eyebrow', 'Next for a fresh Claude session'));
+  const fixes = RV.filter(r => r.status === 'fixes');
+  if (NEXT) {
+    a.append(el('h3', null, NEXT.title || 'Next session'));
+    if (NEXT.why) a.append(el('p', null, NEXT.why));
+    if (fixes.length) a.append(el('p', 'fixnote', `${fixes.length} review note${fixes.length > 1 ? 's' : ''} marked Needs fixes: the session reads ${fixes.length > 1 ? 'them' : 'it'} first and offers to do ${fixes.length > 1 ? 'them' : 'it'} before the phase.`));
+    if (NEXT.prompt) a.append(copyBlock(NEXT.prompt));
+  } else a.append(el('h3', null, db ? 'No next job set' : 'Waiting for the console data…'), el('p', 'empty', 'A Claude session sets this at the end of its work.'));
+
+  const y = el('div', 'order you'); y.append(el('span', 'eyebrow', 'Waiting on you'));
+  const waitR = RV.filter(r => r.status === 'waiting'), waitP = PH.filter(p => p.stage === 'built');
+  if (!waitR.length && !waitP.length) y.append(el('h3', null, 'Nothing waiting on you'));
+  else {
+    y.append(el('h3', null, `${waitR.length} thing${waitR.length === 1 ? '' : 's'} to play and judge`));
+    const ul = el('ul');
+    for (const r of waitR.slice(0, 6)) {
+      const li = el('li'); li.append(el('span', 'chip st-waiting', r.phase || '–'), el('span', 't', r.title)); ul.append(li);
+    }
+    if (waitR.length > 6) ul.append(el('li', 'empty', `and ${waitR.length - 6} more in the review queue below`));
+    y.append(ul);
+    if (waitP.length) y.append(el('p', 'empty', `${waitP.length} built phase${waitP.length > 1 ? 's' : ''} not yet signed off: ${waitP.map(p => p.num).join(', ')}.`));
+  }
+  o.append(a, y);
+}
+
+function renderTrack() {
+  const T = $('track'); T.replaceChildren();
+  for (const p of PH) {
+    const r = el('button', 'row'); r.type = 'button'; r.setAttribute('aria-current', String(p.id === sel));
+    r.append(el('span', 'n', p.num), el('span', 't', p.title), el('span', 'chip st-' + p.stage, LABEL[p.stage] || p.stage));
+    r.onclick = () => { sel = p.id; renderTrack(); renderReport(); if (matchMedia('(max-width: 860px)').matches) $('report').scrollIntoView({ block: 'start' }) };
+    T.append(r);
+  }
+}
+
+function list(title, items, cls) {
+  const b = el('div', 'block'); b.append(el('span', 'eyebrow', title));
+  const arr = [].concat(items || []).filter(Boolean);
+  if (arr.length) { const ul = el('ul', cls); arr.forEach(t => ul.append(el('li', null, t))); b.append(ul) } else b.append(el('p', 'empty', 'Nothing recorded.'));
+  return b;
+}
+
+function renderReport() {
+  const R = $('report'); R.replaceChildren(); const p = PH.find(x => x.id === sel);
+  if (!p) { R.append(el('p', 'empty', PH.length ? 'Pick a phase to see its report.' : 'No phases yet. A Claude session seeds them.')); return }
+  const h = el('div', 'rhead'); h.append(el('span', 'n', p.num), el('h2', null, p.title), el('span', 'chip st-' + p.stage, LABEL[p.stage]));
+  R.append(h);
+  if (p.goal) R.append(el('p', null, p.goal));
+  R.append(list('What was built', p.summary), list('Checks', p.checks, 'checks'));
+  if ([].concat(p.open || []).length) R.append(list('Not checked yet', p.open, 'open'));
+  if (p.note) { const b = el('div', 'block'); b.append(el('span', 'eyebrow', 'Your note'), el('p', 'fixnote', p.note)); R.append(b) }
+  const meta = el('p', 'eyebrow', `Updated ${p.updated || '–'}`); R.append(meta);
+
+  const act = el('div', 'actions');
+  if (editing === 'phase:' + p.id) {
+    const ta = el('textarea'); ta.id = 'pnote-' + p.id; ta.placeholder = 'What needs fixing?'; ta.value = p.note || '';
+    act.append(ta, btn('Save: needs fixes', 'primary', () => { editing = null; write('phases/' + p.id, { stage: 'fixes', note: ta.value.trim() }) }), btn('Cancel', null, () => { editing = null; renderReport() }));
+  } else {
+    if (['built', 'fixes'].includes(p.stage)) {
+      if (p.stage !== 'fixes') act.append(btn('Needs fixes', null, () => { editing = 'phase:' + p.id; renderReport() }));
+      act.append(btn('Signed off', 'primary', () => write('phases/' + p.id, { stage: 'done' })));
+    }
+    const lab = el('label', null, 'Set stage'); const s = el('select'); s.id = 'stage-' + p.id;
+    STAGES.forEach(x => { const o = el('option', null, LABEL[x]); o.value = x; o.selected = x === p.stage; s.append(o) });
+    s.onchange = () => write('phases/' + p.id, { stage: s.value }); lab.append(s); act.append(lab);
+  }
+  R.append(act);
+}
+
+function renderQueue() {
+  const C = $('cards'); C.replaceChildren();
+  const open = RV.filter(r => r.status !== 'ok'), done = RV.filter(r => r.status === 'ok');
+  $('qmeter').innerHTML = RV.length ? `<b>${RV.filter(r => r.status === 'waiting').length}</b> waiting · <b>${RV.filter(r => r.status === 'fixes').length}</b> need fixes · <b>${done.length}</b> look right` : '';
+  if (!open.length) C.append(el('p', 'empty', RV.length ? 'Everything here has been judged.' : 'Nothing to review yet. When a session builds something you should play, it lands here.'));
+  for (const r of open) {
+    const c = el('article', 'card');
+    const top = el('div', 'top'); top.append(el('span', 'ph', r.phase || ''), el('span', 'chip st-' + r.status, RLABEL[r.status] || r.status)); c.append(top);
+    c.append(el('h3', null, r.title));
+    if (r.how) c.append(el('p', 'how', r.how));
+    if (r.watch) c.append(el('p', 'watch', r.watch));
+    if (r.note && editing !== 'rv:' + r.id) c.append(el('p', 'note', r.note));
+    const b = el('div', 'btns');
+    if (editing === 'rv:' + r.id) {
+      const ta = el('textarea'); ta.id = 'rnote-' + r.id; ta.placeholder = 'What is wrong, and where?'; ta.value = r.note || '';
+      c.append(ta);
+      b.append(btn('Save note', 'primary', () => { editing = null; write('reviews/' + r.id, { status: 'fixes', note: ta.value.trim(), decided: today() }) }), btn('Cancel', null, () => { editing = null; renderQueue() }));
+    } else {
+      b.append(btn('Looks right', 'primary', () => write('reviews/' + r.id, { status: 'ok', decided: today() })),
+        btn(r.status === 'fixes' ? 'Edit note' : 'Needs fixes', null, () => { editing = 'rv:' + r.id; renderQueue() }));
+    }
+    c.append(b); C.append(c);
+  }
+  $('decided').hidden = !done.length; $('dsum').textContent = `Looks right (${done.length})`;
+  const L = $('dlist'); L.replaceChildren();
+  for (const r of done) { const li = el('li'); li.append(el('span', 'chip st-ok', r.phase || '–'), el('span', null, r.title), el('span', 'empty', r.decided || ''), btn('Reopen', null, () => write('reviews/' + r.id, { status: 'waiting' }))); L.append(li) }
+}
+
+function renderMeter() {
+  const n = s => PH.filter(p => p.stage === s).length;
+  $('meter').innerHTML = PH.length ? `<b>${n('done')}</b> of ${PH.length} phases signed off · <b>${n('built')}</b> waiting for you · Mission 1` : '';
+}
+function renderAll() { renderMeter(); renderOrders(); renderTrack(); renderReport(); renderQueue() }
+
+renderAll();
+(async () => {
+  db = await (window.claude?.use?.('db')?.catch?.(() => null) ?? Promise.resolve(null));
+  if (!db) { $('save').textContent = 'Not connected: open this console signed in to claude.ai'; renderOrders(); return }
+  $('save').textContent = 'Live';
+  const fail = what => e => { $('save').textContent = `Could not load ${what} (${e.code || 'error'})` };
+  db.collection('phases').onSnapshot(snap => {
+    PH = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+    if (!sel || !PH.some(p => p.id === sel)) sel = (PH.find(p => p.stage === 'next') || PH.find(p => p.stage !== 'done') || PH[0] || {}).id;
+    renderAll();
+  }, fail('phases'));
+  db.collection('reviews').onSnapshot(snap => {
+    RV = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+    renderAll();
+  }, fail('reviews'));
+  db.doc('meta/next').onSnapshot(d => { NEXT = d.exists ? d.data() : null; renderOrders() }, fail('next job'));
+})();
+</script>

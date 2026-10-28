@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ambush! Digital — Main Screen Mockup (M3, rev. 2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --olive:#4B5320; --field-gray:#6B6E6A; --paper:#EDE6D4; --ink:#22221E;
+    --alert:#8E2A22; --amber:#C9A227; --bg:#1C1D1B; --panel-bg:#26271F; --panel-border:#4a4b3f;
+    --font-head:'Staatliches','Arial Narrow',sans-serif;
+    --font-ui:'Inter',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; height:100%; background:var(--bg); color:var(--paper); font-family:var(--font-ui); overflow:hidden;}
+  #app{display:flex; flex-direction:column; height:100vh;}
+
+  /* ---- top bar ---- */
+  #topbar{display:flex; align-items:center; gap:24px; padding:0 18px; height:48px; flex-shrink:0;
+    background:#1f2019; border-bottom:1px solid var(--panel-border);}
+  #topbar .logo{font-family:var(--font-head); font-size:20px; letter-spacing:1px; color:var(--amber);}
+  #topbar .field{font-family:var(--font-mono); font-size:12.5px; color:#c7c9b8;}
+  #topbar .field b{color:var(--paper); font-weight:600;}
+  #topbar .spacer{flex:1;}
+  #topbar .note{font-family:var(--font-mono); font-size:10.5px; color:#7a7c6e;}
+
+  /* ---- main row ---- */
+  #main{flex:1; display:flex; min-height:0;}
+
+  /* ---- map viewport: STATIC WIDTH, no zoom. Vertical scroll only (map is taller than the viewport at full width). ---- */
+  #map-viewport{flex:1; position:relative; overflow-y:auto; overflow-x:hidden;
+    background:#111209; padding:20px 0 10% 0; min-width:0; cursor:grab;}
+  #map-viewport.dragging{cursor:grabbing;}
+  #map-canvas{position:relative; width:100%; aspect-ratio:1160/1108;}
+  #map-canvas img.map-image{width:100%; height:100%; display:block; object-fit:fill; user-select:none; -webkit-user-drag:none;}
+
+  .counter{position:absolute; width:38px; height:38px; margin:-19px 0 0 -19px; cursor:pointer;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.7));}
+  .counter img{width:100%; height:100%; display:block; image-rendering:pixelated; object-fit:contain; pointer-events:none; -webkit-user-drag:none;}
+  .counter.selected{outline:3px solid var(--amber); outline-offset:2px; border-radius:50%;}
+
+  /* ---- side Status Area ---- */
+  #hud{width:270px; flex-shrink:0; background:var(--panel-bg); border-left:1px solid var(--panel-border);
+    display:flex; flex-direction:column; padding:12px; gap:12px; overflow-y:auto;}
+  #hud h3{font-family:var(--font-ui); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:1.4px;
+    color:#c7c9b8; margin:0 0 6px;}
+  .hud-section{border-top:1px solid #34362b; padding-top:10px;}
+  .hud-section:first-child{border-top:none; padding-top:0;}
+  .mini-card{background:#1f2019; border:1px solid var(--panel-border); border-radius:3px; padding:9px;}
+  .mini-card .row{display:flex; align-items:center; gap:9px;}
+  .mini-card img{width:42px; height:42px; image-rendering:pixelated;}
+  .mini-card .name{font-family:var(--font-head); font-size:18px; color:var(--amber); letter-spacing:.5px;}
+  .mini-card .stats{font-family:var(--font-mono); font-size:11px; color:#d8d9cc; margin-top:5px; line-height:1.6;}
+  .actions-left{font-family:var(--font-mono); font-size:12.5px; color:#d8d9cc;}
+  .actions-left b{color:var(--amber); font-size:15px;}
+
+  .round-strip{display:flex; gap:4px; margin-top:6px;}
+  .round-strip .rnd{flex:1; text-align:center; font-family:var(--font-mono); font-size:12px; padding:5px 0;
+    background:#1f2019; border:1px solid var(--panel-border); border-radius:2px; color:#9a9c8f;}
+  .round-strip .rnd.current{background:var(--amber); color:#22221a; border-color:var(--amber); font-weight:600;}
+
+  .gan-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin-top:6px;}
+  .gan-grid div{text-align:center; font-family:var(--font-mono); font-size:12px; padding:5px 0;
+    background:#1f2019; border:1px solid var(--panel-border); border-radius:2px; color:#9a9c8f;}
+  .gan-grid div.current{background:var(--alert); color:var(--paper); border-color:#a5453a; font-weight:600;}
+  .gan-note{font-family:var(--font-mono); font-size:10px; color:#8c8e80; margin-top:5px;}
+
+  .hud-buttons{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:auto;}
+  .hud-buttons.wide{grid-template-columns:1fr;}
+
+  /* ---- buttons ---- */
+  .btn{font-family:var(--font-ui); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.7px;
+    color:var(--paper); background:linear-gradient(180deg,#5a5d3e,#454724); border:1px solid #6d7048; border-radius:3px;
+    padding:8px 10px; cursor:pointer; box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgba(0,0,0,.5);}
+  .btn:hover{background:linear-gradient(180deg,#666a46,#50522a); border-color:var(--amber);}
+  .btn:active{transform:translateY(1px);}
+  .btn.amber{background:linear-gradient(180deg,var(--amber),#a5811d); color:#22221a; border-color:#e0bb3d;}
+  .btn.small{padding:6px 8px; font-size:10.5px;}
+
+  /* ---- dice popup contents ---- */
+  .dice-tray{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  .die-face{width:56px; height:56px; background:var(--paper); color:var(--ink); border-radius:6px;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:600; font-size:28px;
+    box-shadow:0 2px 4px rgba(0,0,0,.5); transition:transform .15s;}
+  .die-face.rolling{transform:rotate(8deg) scale(1.05);}
+  table.chart{border-collapse:collapse; font-family:var(--font-mono); font-size:11.5px;}
+  table.chart th,table.chart td{border:1px solid #4a4b3f; padding:4px 9px; text-align:center;}
+  table.chart th{background:#2c2e24; color:#c7c9b8;}
+  table.chart tr.hit td{background:var(--amber); color:#22221a; font-weight:600;}
+  #dicelog{font-family:var(--font-mono); font-size:12px; color:#9a9c8f; margin-top:12px;}
+  #dicelog b{color:var(--paper);}
+  .last-roll{font-family:var(--font-mono); font-size:11px; color:#9a9c8f; margin-top:6px;}
+  .last-roll b{color:var(--amber);}
+
+  /* ---- popups ---- */
+  .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:20;}
+  .backdrop.open{display:flex;}
+  .popup{background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:3px; width:640px; max-width:90vw;
+    max-height:86vh; display:flex; flex-direction:column; box-shadow:0 8px 30px rgba(0,0,0,.6);}
+  .popup.narrow{width:420px;}
+  .popup .popup-head{display:flex; align-items:center; justify-content:space-between; padding:10px 16px;
+    background:#1f2019; border-bottom:1px solid var(--panel-border); font-family:var(--font-ui); font-weight:600;
+    font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:var(--amber);}
+  .popup .popup-head button{background:none; border:none; color:#9a9c8f; font-size:16px; cursor:pointer;}
+  .popup .popup-body{padding:16px; overflow-y:auto; font-size:13.5px; color:#d8d9cc;}
+  .popup .popup-body img.full{max-width:100%; border:1px solid var(--panel-border); border-radius:2px;}
+  .tabs{display:flex; gap:6px; margin-bottom:12px;}
+  .tabs button{background:#1f2019; border:1px solid var(--panel-border); color:#c7c9b8; font-family:var(--font-mono);
+    font-size:11px; padding:5px 10px; cursor:pointer; border-radius:2px;}
+  .tabs button.active{background:var(--amber); color:#22221a; border-color:var(--amber);}
+  .log-line{font-family:var(--font-mono); font-size:12px; padding:4px 0; border-bottom:1px dashed #3a3b32; color:#c7c9b8;}
+  .squad-slot{display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px dashed #3a3b32;}
+  .squad-slot .letter{font-family:var(--font-head); font-size:18px; color:var(--amber); width:22px;}
+  .squad-slot .info{font-family:var(--font-mono); font-size:11.5px; color:#c7c9b8;}
+
+  /* ---- counter inspector ---- */
+  .inspector-head{display:flex; gap:16px; align-items:center;}
+  .inspector-head img{width:96px; height:96px; image-rendering:pixelated; background:#1f2019; border:1px solid var(--panel-border); border-radius:4px; padding:8px;}
+  .inspector-head .name{font-family:var(--font-head); font-size:26px; color:var(--amber); letter-spacing:.5px;}
+  .inspector-head .stats{font-family:var(--font-mono); font-size:14px; color:var(--paper); margin-top:6px;}
+  .glossary{margin-top:16px; border-top:1px solid #34362b; padding-top:12px;}
+  .glossary dl{display:grid; grid-template-columns:auto 1fr; gap:4px 12px; margin:0; font-size:12.5px;}
+  .glossary dt{font-family:var(--font-mono); color:var(--amber); font-weight:600;}
+  .glossary dd{margin:0; color:#c7c9b8;}
+  .unidentified-note{font-size:13.5px; color:#c7c9b8; margin-top:10px; line-height:1.6;}
+
+  /* ---- floating, draggable, non-modal dialog (dice) ---- */
+  .float-dialog{position:fixed; width:340px; display:none; background:var(--panel-bg);
+    border:1px solid var(--panel-border); border-radius:4px; box-shadow:0 10px 40px rgba(0,0,0,.6); z-index:30;}
+  .float-titlebar{display:flex; align-items:center; justify-content:space-between; padding:9px 12px;
+    background:#1f2019; border-bottom:1px solid var(--panel-border); border-radius:4px 4px 0 0;
+    cursor:move; user-select:none; font-family:var(--font-ui); font-weight:600; font-size:12px;
+    text-transform:uppercase; letter-spacing:1.5px; color:var(--amber);}
+  .float-titlebar button{background:none; border:none; color:#9a9c8f; font-size:16px; cursor:pointer;}
+  .float-body{padding:16px; font-size:13.5px; color:#d8d9cc;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div class="logo">AMBUSH! <span style="color:var(--paper); font-weight:400;">Digital</span></div>
+    <div class="field">MISSION: <b>Bloody St. Mick</b></div>
+    <div class="field">ROUND: <b id="roundNum">3</b></div>
+    <div class="field">ACTIVE: <b>US Squad</b></div>
+    <div class="spacer"></div>
+    <div class="note">M3 mockup rev.3 · static-width map, vertical scroll only, no zoom · counters placed for layout review only</div>
+  </div>
+
+  <div id="main">
+    <div id="map-viewport">
+      <div id="map-canvas">
+        <img class="map-image" src="../../assets/extracted/maps/map_a_tactical.png" alt="Map A" draggable="false">
+        <!-- illustrative counters only, positioned in % of the tactical crop -->
+        <div class="counter" style="left:9.48%; top:29.78%;" data-name="Soldier A" data-role="US Runner" data-stats="IN:3  PC:5  WS:-1  MPA:4  DS:2" data-port="Sem-Auto Rifle" data-img="us_soldiers/standing_A.png" data-identified="true"><img src="../../assets/extracted/counters/us_soldiers/standing_A.png"></div>
+        <div class="counter selected" style="left:14.22%; top:32.94%;" data-name="Soldier B" data-role="US Jeep Driver" data-stats="IN:2  PC:3  WS:-2  MPA:4  DS:6" data-port="(none carried)" data-img="us_soldiers/crouch_B.png" data-identified="true"><img src="../../assets/extracted/counters/us_soldiers/crouch_B.png"></div>
+        <div class="counter" style="left:10.34%; top:36.10%;" data-name="Soldier C" data-role="US Runner" data-stats="IN:1  PC:2  WS:-2  MPA:3  DS:0" data-port="(none carried)" data-img="us_soldiers/standing_C.png" data-identified="true"><img src="../../assets/extracted/counters/us_soldiers/standing_C.png"></div>
+        <div class="counter" style="left:78.02%; top:41.06%;" data-name="Unidentified German" data-img="german_position_counters/gray_standing_S.png" data-identified="false"><img src="../../assets/extracted/counters/german_position_counters/gray_standing_S.png"></div>
+        <div class="counter" style="left:45.26%; top:60.02%;" data-name="Unidentified German" data-img="german_position_counters/gray_crouch_T.png" data-identified="false"><img src="../../assets/extracted/counters/german_position_counters/gray_crouch_T.png"></div>
+      </div>
+    </div>
+
+    <div id="hud">
+      <div class="hud-section">
+        <h3>Selected Soldier</h3>
+        <div class="mini-card">
+          <div class="row">
+            <img id="mc-img" src="../../assets/extracted/counters/us_soldiers/crouch_B.png">
+            <div class="name" id="mc-name">Soldier B</div>
+          </div>
+          <div class="stats" id="mc-stats">IN:2  PC:3  WS:-2  MPA:4  DS:6</div>
+        </div>
+      </div>
+
+      <div class="hud-section">
+        <h3>Actions Remaining</h3>
+        <div class="actions-left"><b>2</b> of 3 this round</div>
+      </div>
+
+      <div class="hud-section">
+        <h3>Action Round <button class="btn small" style="float:right; margin-top:-4px;" onclick="openPopup('round')">Full Track</button></h3>
+        <div class="round-strip">
+          <div class="rnd">0</div><div class="rnd">1</div><div class="rnd">2</div>
+          <div class="rnd current">3</div><div class="rnd">4</div><div class="rnd">5</div>
+        </div>
+      </div>
+
+      <div class="hud-section">
+        <h3>German Action Number</h3>
+        <div class="gan-grid">
+          <div>0</div><div>1</div><div>2</div><div>3</div><div class="current">4</div>
+          <div>5</div><div>6</div><div>7</div><div>8</div><div>9</div>
+        </div>
+        <div class="gan-note">4 called — matching German soldier(s) act now.</div>
+      </div>
+
+      <div class="hud-section">
+        <button class="btn small" style="width:100%;" onclick="openPopup('mapkey')">Map Key</button>
+      </div>
+
+      <div class="hud-section">
+        <h3>Resolution</h3>
+        <button class="btn amber" style="width:100%;" onclick="openDice()">Roll Dice</button>
+        <div class="last-roll" id="lastRoll">no roll yet</div>
+      </div>
+
+      <div class="hud-section" style="margin-top:auto;">
+        <h3>Reference</h3>
+        <div class="hud-buttons">
+          <button class="btn" onclick="openPopup('squad')">Squad</button>
+          <button class="btn" onclick="openPopup('charts')">Charts</button>
+          <button class="btn" onclick="openPopup('mission')">Mission</button>
+          <button class="btn" onclick="openPopup('log')">Log</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Counter Inspector popup -->
+<div class="backdrop" id="backdrop-inspect">
+  <div class="popup narrow">
+    <div class="popup-head"><span id="insp-title">Soldier</span><button onclick="closePopup('inspect')">✕</button></div>
+    <div class="popup-body">
+      <div class="inspector-head">
+        <img id="insp-img" src="">
+        <div>
+          <div class="name" id="insp-name">Soldier B</div>
+          <div class="stats" id="insp-stats">IN:2 PC:3 WS:-2 MPA:4 DS:6</div>
+        </div>
+      </div>
+      <div id="insp-identified">
+        <div class="glossary">
+          <dl>
+            <dt>IN</dt><dd>Initiative Rating — determines action order.</dd>
+            <dt>PC</dt><dd>Perception Rating — chance to spot hidden enemies.</dd>
+            <dt>WS</dt><dd>Weapon Skill — modifier on fire-combat resolution.</dd>
+            <dt>MPA</dt><dd>Movement Point Allowance — how far this soldier can move per round.</dd>
+            <dt>DS</dt><dd>Driving Skill — used only when operating a vehicle.</dd>
+          </dl>
+        </div>
+      </div>
+      <div id="insp-unidentified" class="unidentified-note" style="display:none;">
+        This German soldier hasn't been spotted yet — stats stay hidden until a US soldier's Perception Check reveals their identity. This is the actual gray "unidentified" counter used during play; it gets swapped for the named soldier card once identified.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dice / Resolution: floating, draggable, closable — NOT a modal backdrop, so it can stay open
+     alongside map/HUD interaction, and be moved out of the way. -->
+<div class="float-dialog" id="dice-window">
+  <div class="float-titlebar" id="dice-titlebar">
+    <span>Roll &amp; Resolve</span>
+    <button onclick="closeDice()">✕</button>
+  </div>
+  <div class="float-body">
+    <div class="dice-tray">
+      <div class="die-face" id="die">–</div>
+      <button class="btn amber" onclick="rollDie()">Roll</button>
+    </div>
+    <table class="chart" id="fireTable" style="margin-top:16px;">
+      <tr><th>DIE</th><th>2-3</th><th>4</th><th>A</th><th>S</th></tr>
+      <tr><td>0-2</td><td>808</td><td>920</td><td>808</td><td>813</td></tr>
+      <tr id="row47"><td>4-7</td><td>802</td><td>809</td><td>802</td><td>802</td></tr>
+      <tr><td>8-9</td><td>800</td><td>813</td><td>800</td><td>839</td></tr>
+    </table>
+    <div id="dicelog">no roll yet</div>
+  </div>
+</div>
+
+<!-- Action Round Track popup -->
+<div class="backdrop" id="backdrop-round">
+  <div class="popup">
+    <div class="popup-head"><span>Action Round Track — Full Reference</span><button onclick="closePopup('round')">✕</button></div>
+    <div class="popup-body">
+      <img class="full" src="../../assets/extracted/reference/action_round_track.png">
+      <p style="font-family:var(--font-mono); font-size:11px; color:#8c8e80; margin-top:10px;">Original printed chart, shown on demand rather than permanently on screen — cross-references Initiative rating against the current Action Round to resolve awareness/activation.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Map Key popup -->
+<div class="backdrop" id="backdrop-mapkey">
+  <div class="popup">
+    <div class="popup-head"><span>Map Key</span><button onclick="closePopup('mapkey')">✕</button></div>
+    <div class="popup-body">
+      <img class="full" src="../../assets/extracted/reference/map_key.png">
+    </div>
+  </div>
+</div>
+
+<!-- Squad popup -->
+<div class="backdrop" id="backdrop-squad">
+  <div class="popup">
+    <div class="popup-head"><span>Squad Record</span><button onclick="closePopup('squad')">✕</button></div>
+    <div class="popup-body">
+      <div class="squad-slot"><div class="letter">A</div><div class="info">Soldier A — IN:3 PC:5 WS:-1 MPA:4 DS:2 — Port: Sem-Auto Rifle</div></div>
+      <div class="squad-slot"><div class="letter">B</div><div class="info">Soldier B — IN:2 PC:3 WS:-2 MPA:4 DS:6</div></div>
+      <div class="squad-slot"><div class="letter">C</div><div class="info">Soldier C — IN:1 PC:2 WS:-2 MPA:3 DS:0</div></div>
+      <p style="font-family:var(--font-mono); font-size:11px; color:#8c8e80; margin-top:14px;">Placeholder roster for layout review — live-updating Squad Record is a M6 build task, not part of this mockup.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Charts popup -->
+<div class="backdrop" id="backdrop-charts">
+  <div class="popup">
+    <div class="popup-head"><span>Charts &amp; Tables</span><button onclick="closePopup('charts')">✕</button></div>
+    <div class="popup-body">
+      <div class="tabs">
+        <button class="active" onclick="showChartTab(event,'facing')">Facing</button>
+        <button onclick="showChartTab(event,'fire')">Fire</button>
+        <button onclick="showChartTab(event,'grenade')">Grenade</button>
+        <button onclick="showChartTab(event,'vehicle')">Vehicle</button>
+      </div>
+      <img class="full" id="chart-img" src="../../assets/extracted/counters/charts_reference/facingchart.png">
+    </div>
+  </div>
+</div>
+
+<!-- Mission popup -->
+<div class="backdrop" id="backdrop-mission">
+  <div class="popup">
+    <div class="popup-head"><span>Mission Card</span><button onclick="closePopup('mission')">✕</button></div>
+    <div class="popup-body">
+      <p style="font-family:var(--font-mono); font-size:12px; color:#c7c9b8;">MISSION 1 — Bloody St. Mick — Map A, top edge is north.</p>
+      <p style="font-size:13px;">View-sleeve rendering of the mission card with current condition visible and hidden rows masked is a M4 dialog-library task. This popup exists here to confirm the HUD button wiring only.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Log popup -->
+<div class="backdrop" id="backdrop-log">
+  <div class="popup">
+    <div class="popup-head"><span>Game Log</span><button onclick="closePopup('log')">✕</button></div>
+    <div class="popup-body">
+      <div class="log-line">Round 3 — Soldier B selected.</div>
+      <div class="log-line">Round 2 — d10=7 → Fire Table row 4-7 → paragraph 802.</div>
+      <div class="log-line">Round 2 — Soldier A moved B4 → C4 (2 MP).</div>
+      <div class="log-line">Round 1 — Mission started.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- counter selection + inspector ----
+  document.querySelectorAll('.counter').forEach(c=>{
+    c.addEventListener('click', e=>{
+      e.stopPropagation();
+      document.querySelectorAll('.counter').forEach(x=>x.classList.remove('selected'));
+      c.classList.add('selected');
+
+      const identified = c.dataset.identified === 'true';
+      const imgSrc = '../../assets/extracted/counters/' + c.dataset.img;
+
+      // update small HUD card (only meaningful for identified soldiers)
+      if(identified){
+        document.getElementById('mc-name').textContent = c.dataset.name;
+        document.getElementById('mc-stats').textContent = c.dataset.stats;
+        document.getElementById('mc-img').src = imgSrc;
+      }
+
+      // open inspector dialog
+      document.getElementById('insp-title').textContent = identified ? 'Soldier' : 'Unidentified Contact';
+      document.getElementById('insp-img').src = imgSrc;
+      document.getElementById('insp-name').textContent = c.dataset.name + (identified ? ' — ' + c.dataset.role : '');
+      document.getElementById('insp-stats').textContent = identified ? c.dataset.stats + (c.dataset.port ? '  ·  Port: ' + c.dataset.port : '') : '';
+      document.getElementById('insp-identified').style.display = identified ? 'block' : 'none';
+      document.getElementById('insp-unidentified').style.display = identified ? 'none' : 'block';
+      openPopup('inspect');
+    });
+  });
+
+  // ---- popups ----
+  function openPopup(id){ document.getElementById('backdrop-'+id).classList.add('open'); }
+  function closePopup(id){ document.getElementById('backdrop-'+id).classList.remove('open'); }
+  document.querySelectorAll('.backdrop').forEach(b=>{
+    b.addEventListener('click', e=>{ if(e.target===b) b.classList.remove('open'); });
+  });
+
+  const chartMap = {
+    facing:'facingchart.png', fire:'firechart.png', grenade:'grenadechart.png', vehicle:'vehiclesummary.png'
+  };
+  function showChartTab(e, key){
+    document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById('chart-img').src = '../../assets/extracted/counters/charts_reference/' + chartMap[key];
+  }
+
+  // ---- dice ----
+  function rollDie(){
+    const die = document.getElementById('die');
+    die.classList.add('rolling');
+    const val = 1 + Math.floor(Math.random()*10);
+    setTimeout(()=>{
+      die.textContent = val;
+      die.classList.remove('rolling');
+      document.querySelectorAll('#fireTable tr').forEach(r=>r.classList.remove('hit'));
+      const row = (val>=4 && val<=7) ? document.getElementById('row47') : null;
+      if(row) row.classList.add('hit');
+      const resultText = `d10=<b>${val}</b> → ${val>=4&&val<=7 ? 'row 4-7 → paragraph 802' : 'row edge — see table'}`;
+      document.getElementById('dicelog').innerHTML = resultText;
+      document.getElementById('lastRoll').innerHTML = 'Last: ' + resultText;
+    }, 220);
+  }
+
+  // ---- dice window: open/close + free dragging by its title bar ----
+  const diceWindow = document.getElementById('dice-window');
+  const diceTitlebar = document.getElementById('dice-titlebar');
+  function openDice(){
+    if(diceWindow.style.display !== 'block'){
+      diceWindow.style.left = 'calc(50% - 170px)';
+      diceWindow.style.top = '110px';
+    }
+    diceWindow.style.display = 'block';
+  }
+  function closeDice(){ diceWindow.style.display = 'none'; }
+  (function(){
+    let dragging = false, offX = 0, offY = 0;
+    diceTitlebar.addEventListener('mousedown', e=>{
+      dragging = true;
+      const rect = diceWindow.getBoundingClientRect();
+      offX = e.clientX - rect.left; offY = e.clientY - rect.top;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e=>{
+      if(!dragging) return;
+      let x = e.clientX - offX, y = e.clientY - offY;
+      x = Math.max(4, Math.min(window.innerWidth - 40, x));
+      y = Math.max(4, Math.min(window.innerHeight - 40, y));
+      diceWindow.style.left = x + 'px';
+      diceWindow.style.top = y + 'px';
+    });
+    window.addEventListener('mouseup', ()=>{ dragging = false; });
+  })();
+
+  // ---- map: vertical-only drag to scroll (map is wider than tall relative to viewport at full width) ----
+  const mapViewport = document.getElementById('map-viewport');
+  let vDragging = false, vLastY = 0;
+  mapViewport.addEventListener('mousedown', e=>{
+    if(e.target.closest('.counter')) return;
+    vDragging = true; vLastY = e.clientY; mapViewport.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', e=>{
+    if(!vDragging) return;
+    mapViewport.scrollTop -= (e.clientY - vLastY);
+    vLastY = e.clientY;
+  });
+  window.addEventListener('mouseup', ()=>{ vDragging = false; mapViewport.classList.remove('dragging'); });
+</script>
+</body>
+</html>

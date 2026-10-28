@@ -1,0 +1,20 @@
+id,side,category,name_in_game,real_world_model,suggested_file,icon_needed,notes
+sar,US,weapon,SAR (M1 rifle),M1 Garand,weapon_sar.png,yes,Standard rifle; most soldiers carry it
+carb,US,weapon,M1 Carbine,M1 Carbine,weapon_carb.png,yes,
+bar,US,weapon,BAR,M1918 Browning Automatic Rifle,weapon_bar.png,yes,Automatic
+smg,US,weapon,SMG,Thompson M1A1,weapon_smg.png,yes,Automatic; paragraph 314's empty Thompson is this weapon
+mmg,US,weapon,MMG (machine gun),Browning M1919 .30 cal,weapon_mmg_us.png,yes,Crew weapon: carried split across two soldiers and must be prepared before it fires (§9/7)
+baz,US,weapon,Bazooka,M1 Bazooka,weapon_baz.png,yes,One-shot rounds
+pistol,US,weapon,Pistol,Colt M1911,weapon_pistol_us.png,yes,Takes up an Ammo Box slot (§2/15)
+bolt,German,weapon,Bolt Rifle,Kar98k,weapon_bolt.png,yes,Most common German weapon (24 cards)
+scope,German,weapon,"Bolt Rifle, Scope",Kar98k with scope,weapon_scope.png,yes,The Sniper; also the hidden rifleman of paragraphs 20 and 23
+mp,German,weapon,Machine Pistol,MP40,weapon_mp.png,yes,Automatic
+mmg,German,weapon,Medium / Light Machinegun,MG34 / MG42,weapon_mmg_de.png,yes,Same id as the US MMG (the game uses the MMG row for both); needs its own German-styled icon
+pistol,German,weapon,Pistol (Luger),P08 Luger,weapon_pistol_de.png,yes,Sidearm only; never used as a German's main weapon when he has another
+gren,US,throwable,Grenade,Mk 2 fragmentation grenade,weapon_gren_us.png,yes,Two chart rows (grout outside / grin inside a building); one icon
+gren,German,throwable,Grenade,Stielhandgranate (stick grenade),weapon_gren_de.png,yes,Same id as the US grenade; German-styled icon
+satch,US,throwable,Satchel Charge,Satchel charge,weapon_satch.png,optional,Two chart rows (satout outside / satin inside a building); one icon
+ammo,US,ammo,Ammo clip,Ammo clip,item_clip.png,optional,One per Ammo Box; each clip fits only its own weapon (§9/5); generic clip icon plus the weapon's label
+bazch,US,ammo,Bazooka Charge,M6 rocket,item_bazch.png,optional,The bazooka's round
+asltk,both,action,Assault to Kill,(action),action_assault_kill.png,optional,"An attack action in the weapon chart, not a carried item"
+asltc,both,action,Assault to Capture,(action),action_assault_capture.png,optional,"An attack action in the weapon chart, not a carried item"

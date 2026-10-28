@@ -1,0 +1,166 @@
+/* Ambush! v3 — the shell's look: PhantomFury's dark HUD retuned to olive drab and amber
+ * (brief decision 15): near-black panels, bright accents, large type. The map fills the window
+ * and everything here floats over it (decision 2). */
+[hidden]{display:none !important;}
+:root{
+  --amber:#C9A227; --amber-hi:#e3bd3e; --alert:#b53a2e; --ok:#7fa34a;
+  /* contrast pass 2026-10-25: every text grey >= 7:1 on the panel over the white map (was ink-3 4.2:1) */
+  --ink:#ece6d2; --ink-2:#cfcab3; --ink-3:#b7b9aa;
+  --panel:rgba(16,17,13,.96); --panel-solid:#14150f; --panel-2:#22231b;
+  --edge:#45473a; --edge-hi:#6b6d55;
+  --r:10px; --r-sm:6px; --shadow:0 10px 32px rgba(0,0,0,.65);
+  --font-head:'Staatliches','Arial Narrow',sans-serif;
+  --font-ui:'Inter',-apple-system,'Segoe UI',sans-serif;
+}
+html,body{margin:0; height:100%; overflow:hidden; background:#0c0d0a; color:var(--ink);
+  font:16px/1.45 var(--font-ui); -webkit-font-smoothing:antialiased;}
+button{font:inherit; color:inherit;}
+
+/* ---- buttons */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 18px;
+  border:1px solid var(--edge-hi); border-radius:var(--r-sm); background:var(--panel-2); color:var(--ink);
+  font-weight:600; cursor:pointer; transition:background .12s, border-color .12s, transform .08s;}
+.btn:hover{border-color:var(--amber); background:#2c2d22;}
+.btn:active{transform:translateY(1px);}
+.btn:focus-visible{outline:2px solid #fff; outline-offset:2px;}
+.btn.primary{background:var(--amber); border-color:var(--amber); color:#17170f;}
+.btn.primary:hover{background:var(--amber-hi);}
+.btn.on{background:var(--amber); border-color:var(--amber); color:#17170f;}
+/* a refused verb stays and explains itself (folder rule: refusals are first-class) */
+.btn.refused{flex-direction:column; gap:2px; opacity:.55; cursor:not-allowed;}
+.btn.refused:hover{border-color:var(--edge-hi); background:var(--panel-2);}
+.why{display:block; font-size:12.5px; font-weight:500; letter-spacing:0; color:var(--ink-2);}
+
+/* ---- screens and their transitions */
+.screen{position:fixed; inset:0; opacity:0; visibility:hidden; transition:opacity .35s ease, visibility 0s linear .35s;}
+.screen.show{opacity:1; visibility:visible; transition:opacity .35s ease;}
+/* Phase 4b: the content slides in over the backdrop; the game's map comes up from black */
+.screen > .stack, .screen > .cast, .screen > header, .screen > .mission-grid, #game > .strip, #game > #board{
+  transition:transform .38s cubic-bezier(.2,.8,.3,1), opacity .5s ease .08s;}
+.screen:not(.show) > .stack, .screen:not(.show) > header, .screen:not(.show) > .mission-grid{transform:translateY(18px);}
+.screen:not(.show) > .cast.left{transform:translateX(-40px);}
+.screen:not(.show) > .cast.right{transform:translateX(40px);}
+#game:not(.show) > .strip{transform:translateY(-18px);}
+#game:not(.show) > #board{opacity:0;}
+body.still .screen > .stack, body.still .screen > .cast, body.still .screen > header, body.still .screen > .mission-grid,
+body.still #game > .strip, body.still #game > #board{transition:none;}
+body.still .screen, body.still .screen.show{transition:none;}
+.screen > .backdrop{position:absolute; inset:-40px; background:#0c0d0a url(../../assets/library/map/map_a_tactical.png) center/cover no-repeat;
+  filter:blur(18px) brightness(.32) saturate(.7) sepia(.35); pointer-events:none;}
+
+/* title */
+#title{display:flex; align-items:center; justify-content:center;}
+#title .stack{position:relative; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;}
+.logo{margin:0; font:400 clamp(84px,13vw,188px)/.86 var(--font-head); letter-spacing:.04em; color:var(--amber);
+  text-shadow:0 6px 0 #4a3c10, 0 14px 40px rgba(0,0,0,.8);}
+.tagline{margin:0 0 22px; font-size:clamp(15px,1.5vw,20px); letter-spacing:.22em; text-transform:uppercase; color:var(--ink-2);}
+.menu{display:flex; flex-direction:column; gap:10px; width:min(340px,80vw);}
+.menu .btn{padding:14px 18px; font-size:19px; letter-spacing:.06em;}
+.cast{position:absolute; bottom:0; height:min(62vh,600px); image-rendering:pixelated; pointer-events:none;
+  filter:drop-shadow(0 10px 24px rgba(0,0,0,.7));}
+.cast.left{left:max(2vw,16px);} .cast.right{right:max(2vw,16px);}
+@media (max-width:900px){ .cast{display:none;} }
+.foot{position:absolute; bottom:14px; left:0; right:0; text-align:center; font-size:12px; color:var(--ink-3);}
+
+/* mission select */
+#missions{display:flex; flex-direction:column; align-items:center; padding:5vh 4vw; box-sizing:border-box;}
+#missions header{position:relative; width:min(1400px,100%); display:flex; align-items:center; gap:16px; margin-bottom:22px;}
+#missions h2{margin:0; font:400 54px/1 var(--font-head); letter-spacing:.06em; color:var(--amber);}
+/* Mission 1 is the full-width card on top; the seven locked missions run in one row beneath */
+.mission-grid{position:relative; width:min(1400px,100%); display:grid; grid-template-columns:repeat(7,1fr);
+  gap:12px; overflow:auto; padding-bottom:12px; min-height:0;}
+.mcard{position:relative; display:flex; flex-direction:column; gap:6px; padding:16px 18px; border-radius:var(--r);
+  background:var(--panel); border:1px solid var(--edge); box-shadow:var(--shadow);}
+.mcard .num{font:400 15px/1 var(--font-head); letter-spacing:.16em; color:var(--ink-3);}
+.mcard h3{margin:0; font:400 28px/1.05 var(--font-head); letter-spacing:.04em;}
+.mcard p{margin:0; color:var(--ink-2); font-size:14px;}
+.mcard.locked{opacity:.55;}
+.mcard.locked .lock{margin-top:auto; font-size:13px; color:var(--ink-3); letter-spacing:.08em; text-transform:uppercase;}
+.mcard.live{grid-column:1/-1; display:grid; grid-template-columns:1.6fr 1fr; grid-template-rows:auto auto 1fr; column-gap:36px;
+  padding:26px 30px; border-color:var(--amber); background:linear-gradient(110deg,rgba(201,162,39,.14),rgba(16,17,13,.95) 55%);}
+.mcard.live .num, .mcard.live h3, .mcard.live p{grid-column:1;}
+.mcard.live h3{font-size:58px; color:var(--amber);}
+.mcard.live p{font-size:16px; color:var(--ink);}
+.mcard.locked h3{font-size:22px;}
+.mcard.locked p{font-size:13px;}
+.mcard .diff{grid-column:2; grid-row:1/4; align-self:center; display:flex; flex-direction:column; gap:10px;}
+.mcard .diff .lbl{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);}
+.mcard .diff .row{display:flex; gap:10px;}
+.mcard .diff .btn{flex:1; flex-direction:column; gap:2px; padding:12px 10px; font-size:18px;}
+.mcard .diff .btn small{font-size:12px; font-weight:500; opacity:.8;}
+@media (max-width:1200px){ .mission-grid{grid-template-columns:repeat(4,1fr);} }
+@media (max-width:760px){ .mission-grid{grid-template-columns:1fr 1fr;} .mcard.live{grid-template-columns:1fr;} .mcard .diff{grid-column:1; grid-row:auto;} }
+
+/* ---- the game screen: map fills the window, HUD floats */
+#board{position:absolute; inset:0; overflow:hidden; background:#1b1c16; cursor:grab; touch-action:none;}
+#board.dragging{cursor:grabbing;}
+#world{position:absolute; left:0; top:0;}
+#world > img.map{display:block; user-select:none; -webkit-user-drag:none;}
+#grid{position:absolute; left:0; top:0; pointer-events:none; display:none;}
+body.show-grid #grid{display:block;}
+#grid polygon{fill:none; stroke:rgba(255,236,150,.55); stroke-width:3;}
+
+.strip{position:absolute; top:14px; left:16px; right:16px; z-index:30; display:flex; align-items:center; gap:10px;
+  padding:8px 10px; border-radius:var(--r); background:var(--panel); border:1px solid var(--edge); box-shadow:var(--shadow);}
+.strip .brand{font:400 28px/1 var(--font-head); letter-spacing:.06em; color:var(--amber); padding:0 8px 0 6px;}
+.strip .mission{display:flex; flex-direction:column; line-height:1.15; padding-right:10px; border-right:1px solid var(--edge); margin-right:4px;}
+.strip .mission b{font:400 20px/1 var(--font-head); letter-spacing:.05em;}
+.strip .mission small{font-size:12px; color:var(--ink-3); letter-spacing:.08em; text-transform:uppercase;}
+.strip .spacer{flex:1;}
+.strip .btn{padding:8px 14px;}
+.seg{display:flex; align-items:center;}
+.seg .lbl{font-size:12px; letter-spacing:.14em; color:var(--ink-3); margin-right:8px; text-transform:uppercase;}
+.seg .btn{border-radius:0; margin-left:-1px; padding:8px 12px; font-size:14px;}
+.seg .btn:first-of-type{border-radius:var(--r-sm) 0 0 var(--r-sm);}
+.seg .btn:last-of-type{border-radius:0 var(--r-sm) var(--r-sm) 0;}
+.seg .btn.on{position:relative; z-index:1;}
+@media (max-width:1000px){ .strip .mission{display:none;} .seg .lbl{display:none;} }
+
+#banner{position:absolute; left:50%; top:24%; z-index:40; transform:translate(-50%,-62%) scale(.96); pointer-events:none;
+  padding:16px 44px; border-radius:var(--r); background:rgba(14,15,11,.9); border:1px solid var(--amber); text-align:center;
+  font:400 46px/1 var(--font-head); letter-spacing:.08em; color:var(--amber); opacity:0; box-shadow:var(--shadow); white-space:nowrap;
+  transition:opacity .26s ease-out, transform .26s ease-out;}
+#banner small{display:block; margin-top:6px; font:600 14px/1.2 var(--font-ui); letter-spacing:.2em; color:var(--ink-2); text-transform:uppercase;}
+#banner.up{opacity:1; transform:translate(-50%,-50%) scale(1);}
+#banner.out{opacity:0; transform:translate(-50%,-44%); transition-duration:.45s;}
+#banner.alert{border-color:var(--alert); color:#f0b2a8; background:linear-gradient(90deg,rgba(60,14,10,.92),rgba(14,15,11,.92) 50%,rgba(60,14,10,.92));}
+#banner.won{border-color:var(--ok); color:#c7e5a2; font-size:64px; padding:22px 60px;}
+#banner.lost{border-color:var(--alert); color:#f0b2a8; font-size:64px; padding:22px 60px;}
+body.still #banner, body.still #banner.out{transition:none; transform:translate(-50%,-50%);}
+
+/* ---- Major Kranz's cameo (Phase 4b): face + bubble, bottom-left, never takes the mouse */
+#kranz{position:absolute; left:16px; bottom:16px; z-index:38; display:flex; align-items:flex-end; gap:0; pointer-events:none;
+  max-width:min(520px,46vw); transform:translateX(-24px); opacity:0;}
+#kranz[hidden]{display:none;}
+#kranz img{width:132px; height:150px; object-fit:contain; object-position:bottom center; flex:none; filter:drop-shadow(0 6px 10px rgba(0,0,0,.6));}
+#kranz .bubble{position:relative; margin:0 0 26px 6px; padding:10px 14px 11px; border-radius:var(--r); background:var(--panel-solid);
+  border:1px solid #8a3a2e; box-shadow:var(--shadow); font-size:14.5px; line-height:1.4; color:var(--ink);}
+#kranz .bubble::before{content:''; position:absolute; left:-8px; bottom:16px; width:14px; height:14px; background:var(--panel-solid);
+  border-left:1px solid #8a3a2e; border-bottom:1px solid #8a3a2e; transform:rotate(45deg);}
+#kranz .who{display:block; font:400 15px/1 var(--font-head); letter-spacing:.12em; color:#e08a78; margin-bottom:4px; text-transform:uppercase;}
+#kranz .say b{color:var(--amber);}
+#kranz .say p{margin:0;} #kranz .say p + p{margin-top:6px; padding-top:6px; border-top:1px solid #34352b;}
+#kranz.in{opacity:1; transform:none; transition:opacity .25s ease-out, transform .32s cubic-bezier(.2,.9,.3,1.2);}
+#kranz.out{opacity:0; transform:translateX(-24px); transition:opacity .25s, transform .3s ease-in;}
+body.still #kranz.in, body.still #kranz.out{transition:none; transform:none;}
+
+/* ---- popups (log, squad, settings, menu) */
+.scrim{position:fixed; inset:0; z-index:60; background:rgba(4,5,3,.55); display:flex; align-items:center; justify-content:center;
+  opacity:0; visibility:hidden; transition:opacity .2s, visibility 0s linear .2s;}
+.scrim.show{opacity:1; visibility:visible; transition:opacity .2s;}
+body.still .scrim{transition:none;}
+.popup{width:min(560px,92vw); max-height:84vh; overflow:auto; padding:22px 24px; border-radius:var(--r);
+  background:var(--panel-solid); border:1px solid var(--edge-hi); box-shadow:var(--shadow);
+  transform:translateY(8px); transition:transform .2s;}
+.scrim.show .popup{transform:none;}
+.popup h3{margin:0 0 14px; font:400 34px/1 var(--font-head); letter-spacing:.06em; color:var(--amber);}
+.popup .close{float:right; margin:-6px -8px 0 0; padding:6px 12px;}
+.popup p{color:var(--ink-2);}
+.set-row{display:grid; grid-template-columns:150px 1fr 48px; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #2b2c23;}
+.set-row:last-of-type{border-bottom:0;}
+.set-row label{font-weight:600;}
+.set-row output{text-align:right; color:var(--ink-2); font-variant-numeric:tabular-nums;}
+.set-row .seg .btn{font-size:14px;}
+.set-row.wide{grid-template-columns:150px 1fr;}
+input[type=range]{width:100%; accent-color:var(--amber);}
+.popup .actions{display:flex; gap:10px; justify-content:flex-end; margin-top:18px;}

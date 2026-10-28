@@ -1,0 +1,3403 @@
+{
+ "generated": "tools/compile_reference_data.py",
+ "source": "reference/character_vehicle_cards_A1/, reference/character_vehicle_cards_A2/, reference/character_vehicle_cards_A3/",
+ "note": "German soldier/vehicle roster, hand-transcribed by the user from the photographed character/vehicle cards into reference/character_vehicle_cards_A1/, _A2/ and _A3/ (one CSV per card). Keyed by the card's own 'Card ID' field (e.g. 'GE 33/V'). Field names are exactly as transcribed (not normalized) since cards vary structurally \u2014 a plain soldier has IN/PC/WS/MPA/Equipment/Notes plus a DIE table; a vehicle has Equipment/Notes plus an 'Act Crew' table instead; a multi-soldier group card (e.g. GE 19, Kubelwagen/Driver/Officer) has no table, just a free-text 'Stats' field covering all its roles. 'table', when present: 'row_key' names the first column (DIE range or crew count), 'columns' lists the remaining (CONDITION.../SPECIAL... or Act IN/PC/WS/DS/ACTION DIE...) column names, 'rows' is a list of {row_key: value, 'values': {column: value}}. | 2026-09-07: GE 33/V IN 2->1 and GE 53/S DIE 0-2 Condition 4 836->838, both confirmed against the ORIGINAL photographed card sheet A1 \u2014 each read off the rendered card image from Ambush_Cards_Alternative_Set_Up_version_1.pdf, correcting three cards docs/48 had listed as verified. See docs/54_CARD_AUDIT.md. | 2026-09-07: added GE 23/S, 24/P, 26/X, 27/M, 28/U, 29/U, 30/R, 31/L \u2014 read directly off reference/character_vehicle_card_Sheet_A2.jpg, which carries them but from which only cards 1-22 had ever been transcribed.",
+ "soldiers": {
+  "GE 32/S": {
+   "sheet": "A1",
+   "source_file": "GE_32_S_Machinegunner.csv",
+   "Card ID": "GE 32/S",
+   "Role": "Machinegunner",
+   "VP": "+2 VP",
+   "IN": "3",
+   "PC": "4",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Medium Machinegun; Pistol (Luger)",
+   "Notes": "Fires machinegun unless wounded or inactive and GE 47 is not. If wounded, assists GE 47.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2",
+     "CONDITION 3-4",
+     "CONDITION 5",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 2": "841",
+       "CONDITION 3-4": "800",
+       "CONDITION 5": "800",
+       "SPECIAL S": "959"
+      }
+     },
+     {
+      "DIE": "1-2",
+      "values": {
+       "CONDITION 2": "959",
+       "CONDITION 3-4": "841",
+       "CONDITION 5": "843",
+       "SPECIAL S": "843"
+      }
+     },
+     {
+      "DIE": "3-5",
+      "values": {
+       "CONDITION 2": "815",
+       "CONDITION 3-4": "959",
+       "CONDITION 5": "815",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "6-9",
+      "values": {
+       "CONDITION 2": "815",
+       "CONDITION 3-4": "815",
+       "CONDITION 5": "815",
+       "SPECIAL S": "833"
+      }
+     }
+    ]
+   }
+  },
+  "GE 33/V": {
+   "sheet": "A1",
+   "source_file": "GE_33_V_Veteran_Infantry.csv",
+   "Card ID": "GE 33/V",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "2",
+   "WS": "0",
+   "MPA": "3",
+   "Equipment": "Machine Pistol; 2 Grenades",
+   "Notes": "On first turn, use 867.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 4": "863",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "2-6",
+      "values": {
+       "CONDITION 4": "866",
+       "SPECIAL S": "819"
+      }
+     },
+     {
+      "DIE": "7",
+      "values": {
+       "CONDITION 4": "819",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 4": "867",
+       "SPECIAL S": "833"
+      }
+     }
+    ]
+   }
+  },
+  "GE 34/X": {
+   "sheet": "A1",
+   "source_file": "GE_34_X_Officer.csv",
+   "Card ID": "GE 34/X",
+   "Role": "Officer",
+   "VP": "+1 VP (+2 VP if captured)",
+   "IN": "4",
+   "PC": "6",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; Pistol (Luger)",
+   "Notes": "If GE 34 is killed, incapacitated, or captured, put Condition 4 into effect.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2",
+     "CONDITION 3",
+     "CONDITION 4",
+     "SPECIAL B",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 2": "965",
+       "CONDITION 3": "808",
+       "CONDITION 4": "804",
+       "SPECIAL B": "831",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "2",
+      "values": {
+       "CONDITION 2": "835",
+       "CONDITION 3": "914",
+       "CONDITION 4": "805",
+       "SPECIAL B": "829",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "3-6",
+      "values": {
+       "CONDITION 2": "802",
+       "CONDITION 3": "913",
+       "CONDITION 4": "836",
+       "SPECIAL B": "808",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 2": "829",
+       "CONDITION 3": "835",
+       "CONDITION 4": "837",
+       "SPECIAL B": "832",
+       "SPECIAL S": "813"
+      }
+     }
+    ]
+   }
+  },
+  "GE 35/L": {
+   "sheet": "A1",
+   "source_file": "GE_35_L_Veteran_Infantry.csv",
+   "Card ID": "GE 35/L",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP*",
+   "IN": "2",
+   "PC": "3",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; Grenade",
+   "Notes": "When Special Reaction R is in effect, ignore self-preservation.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-4",
+     "CONDITION D",
+     "SPECIAL R",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 2-4": "803",
+       "CONDITION D": "801",
+       "SPECIAL R": "812",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 2-4": "803",
+       "CONDITION D": "811",
+       "SPECIAL R": "829",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 2-4": "809",
+       "CONDITION D": "911",
+       "SPECIAL R": "807",
+       "SPECIAL S": "800"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 2-4": "800",
+       "CONDITION D": "800",
+       "SPECIAL R": "808",
+       "SPECIAL S": "817"
+      }
+     }
+    ]
+   }
+  },
+  "GE 36/V": {
+   "sheet": "A1",
+   "source_file": "GE_36_V_Sentry.csv",
+   "Card ID": "GE 36/V",
+   "Role": "Sentry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "3",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle",
+   "Notes": "On first turn, use Condition 1 column.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1",
+     "CONDITION 2",
+     "CONDITION 3-4",
+     "SPECIAL S",
+     "SPECIAL A",
+     "SPECIAL B"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 1": "813",
+       "CONDITION 2": "866",
+       "CONDITION 3-4": "802",
+       "SPECIAL S": "971",
+       "SPECIAL A": "864",
+       "SPECIAL B": "825"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 1": "800",
+       "CONDITION 2": "808",
+       "CONDITION 3-4": "825",
+       "SPECIAL S": "971",
+       "SPECIAL A": "867",
+       "SPECIAL B": "801"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 1": "808",
+       "CONDITION 2": "862",
+       "CONDITION 3-4": "808",
+       "SPECIAL S": "808",
+       "SPECIAL A": "862",
+       "SPECIAL B": "802"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1": "802",
+       "CONDITION 2": "800",
+       "CONDITION 3-4": "800",
+       "SPECIAL S": "811",
+       "SPECIAL A": "862",
+       "SPECIAL B": "800"
+      }
+     }
+    ]
+   }
+  },
+  "GE 37/P": {
+   "sheet": "A1",
+   "source_file": "GE_37_P_Soldier.csv",
+   "Card ID": "GE 37/P",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "2",
+   "WS": "-2",
+   "MPA": "3",
+   "Equipment": "Bolt Rifle",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 4-5",
+     "CONDITION 6",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 4-5": "824",
+       "CONDITION 6": "970",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "4",
+      "values": {
+       "CONDITION 4-5": "809",
+       "CONDITION 6": "824",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "5-8",
+      "values": {
+       "CONDITION 4-5": "801",
+       "CONDITION 6": "801",
+       "SPECIAL S": "825"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 4-5": "800",
+       "CONDITION 6": "809",
+       "SPECIAL S": "813"
+      }
+     }
+    ]
+   }
+  },
+  "GE 38/R": {
+   "sheet": "A1",
+   "source_file": "GE_38_R_Officer.csv",
+   "Card ID": "GE 38/R",
+   "Role": "Officer",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "5",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; Pistol (Luger)",
+   "Notes": "On first turn, use 867.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 4",
+     "SPECIAL V",
+     "SPECIAL R",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-5",
+      "values": {
+       "CONDITION 4": "803",
+       "SPECIAL V": "832",
+       "SPECIAL R": "732",
+       "SPECIAL S": "832"
+      }
+     },
+     {
+      "DIE": "6-7",
+      "values": {
+       "CONDITION 4": "868",
+       "SPECIAL V": "825",
+       "SPECIAL R": "732",
+       "SPECIAL S": "825"
+      }
+     },
+     {
+      "DIE": "8",
+      "values": {
+       "CONDITION 4": "822",
+       "SPECIAL V": "829",
+       "SPECIAL R": "856",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 4": "822",
+       "SPECIAL V": "808",
+       "SPECIAL R": "856",
+       "SPECIAL S": "833"
+      }
+     }
+    ]
+   }
+  },
+  "GE 39/P": {
+   "sheet": "A1",
+   "source_file": "GE_39_P_Soldier.csv",
+   "Card ID": "GE 39/P",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "2",
+   "WS": "-1",
+   "MPA": "3",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 4",
+     "SPECIAL V",
+     "SPECIAL R",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-5",
+      "values": {
+       "CONDITION 4": "803",
+       "SPECIAL V": "869",
+       "SPECIAL R": "732",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "6-7",
+      "values": {
+       "CONDITION 4": "868",
+       "SPECIAL V": "824",
+       "SPECIAL R": "732",
+       "SPECIAL S": "517"
+      }
+     },
+     {
+      "DIE": "8",
+      "values": {
+       "CONDITION 4": "807",
+       "SPECIAL V": "825",
+       "SPECIAL R": "856",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 4": "807",
+       "SPECIAL V": "807",
+       "SPECIAL R": "856",
+       "SPECIAL S": "833"
+      }
+     }
+    ]
+   }
+  },
+  "GE 40/R": {
+   "sheet": "A1",
+   "source_file": "GE_40_R_Soldier.csv",
+   "Card ID": "GE 40/R",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "3",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Machine Pistol",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1",
+     "CONDITION 2-3",
+     "CONDITION 4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-2",
+      "values": {
+       "CONDITION 1": "802",
+       "CONDITION 2-3": "802",
+       "CONDITION 4": "801",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "3-4",
+      "values": {
+       "CONDITION 1": "800",
+       "CONDITION 2-3": "829",
+       "CONDITION 4": "802",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "5-6",
+      "values": {
+       "CONDITION 1": "808",
+       "CONDITION 2-3": "808",
+       "CONDITION 4": "802",
+       "SPECIAL S": "939"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 1": "825",
+       "CONDITION 2-3": "825",
+       "CONDITION 4": "825",
+       "SPECIAL S": "825"
+      }
+     }
+    ]
+   }
+  },
+  "GE 41/M": {
+   "sheet": "A1",
+   "source_file": "GE_41_M_Veteran_Infantry.csv",
+   "Card ID": "GE 41/M",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; Grenade",
+   "Notes": "When Special Reaction R is in effect, ignore self preservation.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1",
+     "CONDITION 2-3",
+     "CONDITION 4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 1": "803",
+       "CONDITION 2-3": "911",
+       "CONDITION 4": "812",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 1": "803",
+       "CONDITION 2-3": "801",
+       "CONDITION 4": "819",
+       "SPECIAL S": "800"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 1": "808",
+       "CONDITION 2-3": "810",
+       "CONDITION 4": "807",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1": "803",
+       "CONDITION 2-3": "801",
+       "CONDITION 4": "809",
+       "SPECIAL S": "800"
+      }
+     }
+    ]
+   }
+  },
+  "GE 42/Q": {
+   "sheet": "A1",
+   "source_file": "GE_42_Q_Scientist.csv",
+   "Card ID": "GE 42/Q",
+   "Role": "Scientist",
+   "VP": "+1 VP (+2 VP if captured)",
+   "IN": "0",
+   "PC": "1",
+   "WS": "-2",
+   "MPA": "3",
+   "DS": "2",
+   "Equipment": "No weapon",
+   "Notes": "If captured, you gain 2 VP for exiting GE 42 from the map with your squad.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "SPECIAL S",
+     "SPECIAL Q"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 1-4": "800",
+       "SPECIAL S": "839",
+       "SPECIAL Q": "800"
+      }
+     },
+     {
+      "DIE": "1-2",
+      "values": {
+       "CONDITION 1-4": "800",
+       "SPECIAL S": "811",
+       "SPECIAL Q": "800"
+      }
+     },
+     {
+      "DIE": "3-4",
+      "values": {
+       "CONDITION 1-4": "800",
+       "SPECIAL S": "811",
+       "SPECIAL Q": "800"
+      }
+     },
+     {
+      "DIE": "5-9",
+      "values": {
+       "CONDITION 1-4": "811",
+       "SPECIAL S": "811",
+       "SPECIAL Q": "630"
+      }
+     }
+    ]
+   }
+  },
+  "GE 43/W": {
+   "sheet": "A1",
+   "source_file": "GE_43_W_Veteran_Infantry.csv",
+   "Card ID": "GE 43/W",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "2",
+   "WS": "-1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 2-4": "863",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "4-5",
+      "values": {
+       "CONDITION 2-4": "867",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "6-8",
+      "values": {
+       "CONDITION 2-4": "864",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 2-4": "800",
+       "SPECIAL S": "816"
+      }
+     }
+    ]
+   }
+  },
+  "GE 44/T": {
+   "sheet": "A1",
+   "source_file": "GE_44_T_Veteran_Infantry.csv",
+   "Card ID": "GE 44/T",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "4",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 2-4": "863",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "4-5",
+      "values": {
+       "CONDITION 2-4": "867",
+       "SPECIAL S": "825"
+      }
+     },
+     {
+      "DIE": "6-8",
+      "values": {
+       "CONDITION 2-4": "866",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 2-4": "865",
+       "SPECIAL S": "816"
+      }
+     }
+    ]
+   }
+  },
+  "GE 45/N": {
+   "sheet": "A1",
+   "source_file": "GE_45_N_NCO.csv",
+   "Card ID": "GE 45/N",
+   "Role": "NCO",
+   "VP": "+1 VP (+1 VP if captured)",
+   "IN": "4",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Machine Pistol",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2",
+     "CONDITION 3-5",
+     "SPECIAL D",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-2",
+      "values": {
+       "CONDITION 2": "802",
+       "CONDITION 3-5": "808",
+       "SPECIAL D": "836",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "3-6",
+      "values": {
+       "CONDITION 2": "808",
+       "CONDITION 3-5": "932",
+       "SPECIAL D": "837",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "7",
+      "values": {
+       "CONDITION 2": "801",
+       "CONDITION 3-5": "800",
+       "SPECIAL D": "837",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 2": "931",
+       "CONDITION 3-5": "802",
+       "SPECIAL D": "804",
+       "SPECIAL S": "813"
+      }
+     }
+    ]
+   }
+  },
+  "GE 46/N": {
+   "sheet": "A1",
+   "source_file": "GE_46_N_Officer.csv",
+   "Card ID": "GE 46/N",
+   "Role": "Officer",
+   "VP": "+1 VP",
+   "IN": "4",
+   "PC": "7",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; Pistol (Luger)",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 2-4": "802",
+       "SPECIAL S": "842"
+      }
+     },
+     {
+      "DIE": "4-5",
+      "values": {
+       "CONDITION 2-4": "867",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "6-8",
+      "values": {
+       "CONDITION 2-4": "802",
+       "SPECIAL S": "832"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 2-4": "865",
+       "SPECIAL S": "816"
+      }
+     }
+    ]
+   }
+  },
+  "GE 47/R": {
+   "sheet": "A1",
+   "source_file": "GE_47_R_Machinegunner.csv",
+   "Card ID": "GE 47/R",
+   "Role": "Machinegunner",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "2",
+   "WS": "-1",
+   "MPA": "3",
+   "Equipment": "Bolt Rifle",
+   "Notes": "Assists GE 32 unless GE 32 is wounded or inactive, in which case GE 47 fires machinegun.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2",
+     "CONDITION 3-4",
+     "CONDITION 5",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 2": "800",
+       "CONDITION 3-4": "842",
+       "CONDITION 5": "842",
+       "SPECIAL S": "842"
+      }
+     },
+     {
+      "DIE": "1-2",
+      "values": {
+       "CONDITION 2": "841",
+       "CONDITION 3-4": "800",
+       "CONDITION 5": "800",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "3-5",
+      "values": {
+       "CONDITION 2": "815",
+       "CONDITION 3-4": "841",
+       "CONDITION 5": "843",
+       "SPECIAL S": "843"
+      }
+     },
+     {
+      "DIE": "6-9",
+      "values": {
+       "CONDITION 2": "815",
+       "CONDITION 3-4": "815",
+       "CONDITION 5": "815",
+       "SPECIAL S": "833"
+      }
+     }
+    ]
+   }
+  },
+  "GE 49/T": {
+   "sheet": "A1",
+   "source_file": "GE_49_T_Machinegunner.csv",
+   "Card ID": "GE 49/T",
+   "Role": "Machinegunner",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "3",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Light Machinegun; Grenade",
+   "Notes": "GE 49 fires LMG unless he or GE 5 is either wounded or inactive. If wounded, GE 49 assists GE 5. On first turn, use 815. *Use for rest of mission if Condition 5 comes into effect (self-preservation still applies).",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "CONDITION 5*",
+     "CONDITION 6",
+     "SPECIAL F",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 1-4": "815",
+       "CONDITION 5*": "815",
+       "CONDITION 6": "962",
+       "SPECIAL F": "819",
+       "SPECIAL S": "818"
+      }
+     },
+     {
+      "DIE": "1-3",
+      "values": {
+       "CONDITION 1-4": "815",
+       "CONDITION 5*": "961",
+       "CONDITION 6": "815",
+       "SPECIAL F": "820",
+       "SPECIAL S": "968"
+      }
+     },
+     {
+      "DIE": "4-7",
+      "values": {
+       "CONDITION 1-4": "815",
+       "CONDITION 5*": "815",
+       "CONDITION 6": "815",
+       "SPECIAL F": "821",
+       "SPECIAL S": "967"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 1-4": "961",
+       "CONDITION 5*": "962",
+       "CONDITION 6": "961",
+       "SPECIAL F": "809",
+       "SPECIAL S": "971"
+      }
+     }
+    ]
+   }
+  },
+  "GE 50/R": {
+   "sheet": "A1",
+   "source_file": "GE_50_R_Soldier.csv",
+   "Card ID": "GE 50/R",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "3",
+   "WS": "-2",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 4-5",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 4-5": "801",
+       "SPECIAL S": "824"
+      }
+     },
+     {
+      "DIE": "4",
+      "values": {
+       "CONDITION 4-5": "800",
+       "SPECIAL S": "970"
+      }
+     },
+     {
+      "DIE": "5-8",
+      "values": {
+       "CONDITION 4-5": "824",
+       "SPECIAL S": "801"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 4-5": "970",
+       "SPECIAL S": "809"
+      }
+     }
+    ]
+   }
+  },
+  "GE 51/W": {
+   "sheet": "A1",
+   "source_file": "GE_51_W_Sentry.csv",
+   "Card ID": "GE 51/W",
+   "Role": "Sentry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "2",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; Pistol (Luger)",
+   "Notes": "On first turn, use 825.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2",
+     "CONDITION 3-4",
+     "CONDITION 5-6",
+     "SPECIAL S",
+     "SPECIAL Y"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 2": "800",
+       "CONDITION 3-4": "800",
+       "CONDITION 5-6": "800",
+       "SPECIAL S": "800",
+       "SPECIAL Y": "800"
+      }
+     },
+     {
+      "DIE": "1-3",
+      "values": {
+       "CONDITION 2": "802",
+       "CONDITION 3-4": "807",
+       "CONDITION 5-6": "821",
+       "SPECIAL S": "857",
+       "SPECIAL Y": "816"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 2": "858",
+       "CONDITION 3-4": "860",
+       "CONDITION 5-6": "807",
+       "SPECIAL S": "860",
+       "SPECIAL Y": "839"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 2": "829",
+       "CONDITION 3-4": "857",
+       "CONDITION 5-6": "867",
+       "SPECIAL S": "856",
+       "SPECIAL Y": "711"
+      }
+     }
+    ]
+   }
+  },
+  "GE 52/N": {
+   "sheet": "A1",
+   "source_file": "GE_52_N_Veteran_NCO.csv",
+   "Card ID": "GE 52/N",
+   "Role": "Veteran NCO",
+   "VP": "+1 VP (+2 VP if captured)",
+   "IN": "4",
+   "PC": "6",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; Grenade",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-4",
+     "CONDITION D",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 2-4": "803",
+       "CONDITION D": "911",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 2-4": "822",
+       "CONDITION D": "832",
+       "SPECIAL S": "832"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 2-4": "831",
+       "CONDITION D": "801",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 2-4": "824",
+       "CONDITION D": "810",
+       "SPECIAL S": "817"
+      }
+     }
+    ]
+   }
+  },
+  "GE 53/S": {
+   "sheet": "A1",
+   "source_file": "GE_53_S_Soldier.csv",
+   "Card ID": "GE 53/S",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "4",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; Grenade",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-3",
+     "CONDITION 4",
+     "SPECIAL B",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-2",
+      "values": {
+       "CONDITION 2-3": "808",
+       "CONDITION 4": "838",
+       "SPECIAL B": "802",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "3-6",
+      "values": {
+       "CONDITION 2-3": "802",
+       "CONDITION 4": "919",
+       "SPECIAL B": "801",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "7",
+      "values": {
+       "CONDITION 2-3": "800",
+       "CONDITION 4": "838",
+       "SPECIAL B": "829",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 2-3": "829",
+       "CONDITION 4": "800",
+       "SPECIAL B": "808",
+       "SPECIAL S": "816"
+      }
+     }
+    ]
+   }
+  },
+  "GE 54/Z": {
+   "sheet": "A1",
+   "source_file": "GE_54_Z_Jagdpanther.csv",
+   "Card ID": "GE 54/Z",
+   "Role": "Jagdpanther",
+   "VP": "+2 VP (+3 VP if knocked out)",
+   "Equipment": "Vehicle",
+   "Notes": "Enters open; cannon not prepared on entry. When open, three crew members visible. On first turn, use 922.",
+   "table": {
+    "row_key": "Act Crew",
+    "columns": [
+     "Act IN",
+     "Act PC",
+     "Act WS",
+     "Act DS",
+     "ACTION DIE 0-1",
+     "ACTION DIE 2-5",
+     "ACTION DIE 6-8",
+     "ACTION DIE 9"
+    ],
+    "rows": [
+     {
+      "Act Crew": "5",
+      "values": {
+       "Act IN": "5",
+       "Act PC": "8",
+       "Act WS": "+2",
+       "Act DS": "8",
+       "ACTION DIE 0-1": "923",
+       "ACTION DIE 2-5": "923",
+       "ACTION DIE 6-8": "925",
+       "ACTION DIE 9": "925"
+      }
+     },
+     {
+      "Act Crew": "4",
+      "values": {
+       "Act IN": "4",
+       "Act PC": "6",
+       "Act WS": "+2",
+       "Act DS": "8",
+       "ACTION DIE 0-1": "923",
+       "ACTION DIE 2-5": "921",
+       "ACTION DIE 6-8": "925",
+       "ACTION DIE 9": "923"
+      }
+     },
+     {
+      "Act Crew": "3",
+      "values": {
+       "Act IN": "3",
+       "Act PC": "5",
+       "Act WS": "+1",
+       "Act DS": "6",
+       "ACTION DIE 0-1": "921",
+       "ACTION DIE 2-5": "923",
+       "ACTION DIE 6-8": "925",
+       "ACTION DIE 9": "925"
+      }
+     },
+     {
+      "Act Crew": "2",
+      "values": {
+       "Act IN": "2",
+       "Act PC": "3",
+       "Act WS": "-1",
+       "Act DS": "4",
+       "ACTION DIE 0-1": "921",
+       "ACTION DIE 2-5": "924",
+       "ACTION DIE 6-8": "921",
+       "ACTION DIE 9": "921"
+      }
+     },
+     {
+      "Act Crew": "1",
+      "values": {
+       "Act IN": "1",
+       "Act PC": "1",
+       "Act WS": "-2",
+       "Act DS": "2",
+       "ACTION DIE 0-1": "840",
+       "ACTION DIE 2-5": "811",
+       "ACTION DIE 6-8": "811",
+       "ACTION DIE 9": "811"
+      }
+     }
+    ]
+   }
+  },
+  "GE 55/Y": {
+   "sheet": "A1",
+   "source_file": "GE_55_Y_Panzer_IV.csv",
+   "Card ID": "GE 55/Y",
+   "Role": "Panzer IV",
+   "VP": "+2 VP (+2 VP if knocked out)",
+   "Equipment": "Vehicle",
+   "Notes": "SPECIAL REACTION B: Do not move at all for the remainder of the mission. Continue to fire as called for. NOTES: Enters open; cannon prepared on entry. When open, three crew members visible.",
+   "table": {
+    "row_key": "Act Crew",
+    "columns": [
+     "Act IN",
+     "Act PC",
+     "Act WS",
+     "Act DS",
+     "ACTION DIE 0",
+     "ACTION DIE 1-3",
+     "ACTION DIE 4-7",
+     "ACTION DIE 8-9"
+    ],
+    "rows": [
+     {
+      "Act Crew": "5",
+      "values": {
+       "Act IN": "5",
+       "Act PC": "8",
+       "Act WS": "+2",
+       "Act DS": "8",
+       "ACTION DIE 0": "905",
+       "ACTION DIE 1-3": "900",
+       "ACTION DIE 4-7": "901",
+       "ACTION DIE 8-9": "900"
+      }
+     },
+     {
+      "Act Crew": "4",
+      "values": {
+       "Act IN": "3",
+       "Act PC": "6",
+       "Act WS": "+1",
+       "Act DS": "8",
+       "ACTION DIE 0": "828",
+       "ACTION DIE 1-3": "901",
+       "ACTION DIE 4-7": "905",
+       "ACTION DIE 8-9": "900"
+      }
+     },
+     {
+      "Act Crew": "3",
+      "values": {
+       "Act IN": "3",
+       "Act PC": "5",
+       "Act WS": "0",
+       "Act DS": "6",
+       "ACTION DIE 0": "900",
+       "ACTION DIE 1-3": "904",
+       "ACTION DIE 4-7": "902",
+       "ACTION DIE 8-9": "903"
+      }
+     },
+     {
+      "Act Crew": "2",
+      "values": {
+       "Act IN": "2",
+       "Act PC": "3",
+       "Act WS": "-1",
+       "Act DS": "4",
+       "ACTION DIE 0": "908",
+       "ACTION DIE 1-3": "814",
+       "ACTION DIE 4-7": "900",
+       "ACTION DIE 8-9": "921"
+      }
+     },
+     {
+      "Act Crew": "1",
+      "values": {
+       "Act IN": "1",
+       "Act PC": "1",
+       "Act WS": "-2",
+       "Act DS": "2",
+       "ACTION DIE 0": "840",
+       "ACTION DIE 1-3": "904",
+       "ACTION DIE 4-7": "904",
+       "ACTION DIE 8-9": "840"
+      }
+     }
+    ]
+   }
+  },
+  "GE 56/T": {
+   "sheet": "A1",
+   "source_file": "GE_56_T_Rifleman.csv",
+   "Card ID": "GE 56/T",
+   "Role": "Rifleman",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "4",
+   "WS": "-1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle (Scope); Grenade",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-4",
+     "CONDITION 5",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 2-4": "802",
+       "CONDITION 5": "800",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "2",
+      "values": {
+       "CONDITION 2-4": "800",
+       "CONDITION 5": "802",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "3-6",
+      "values": {
+       "CONDITION 2-4": "801",
+       "CONDITION 5": "806",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 2-4": "808",
+       "CONDITION 5": "801",
+       "SPECIAL S": "839"
+      }
+     }
+    ]
+   }
+  },
+  "GE 60/W": {
+   "sheet": "A1",
+   "source_file": "GE_60_W_Sentry.csv",
+   "Card ID": "GE 60/W",
+   "Role": "Sentry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "4",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; 2 Grenades",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-3",
+     "CONDITION 4",
+     "SPECIAL S",
+     "SPECIAL Y"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 2-3": "807",
+       "CONDITION 4": "824",
+       "SPECIAL S": "732",
+       "SPECIAL Y": "833"
+      }
+     },
+     {
+      "DIE": "4",
+      "values": {
+       "CONDITION 2-3": "868",
+       "CONDITION 4": "800",
+       "SPECIAL S": "732",
+       "SPECIAL Y": "816"
+      }
+     },
+     {
+      "DIE": "5-6",
+      "values": {
+       "CONDITION 2-3": "819",
+       "CONDITION 4": "808",
+       "SPECIAL S": "732",
+       "SPECIAL Y": "971"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 2-3": "867",
+       "CONDITION 4": "869",
+       "SPECIAL S": "856",
+       "SPECIAL Y": "833"
+      }
+     }
+    ]
+   }
+  },
+  "GE 61/P": {
+   "sheet": "A1",
+   "source_file": "GE_61_P_Volksgrenadier.csv",
+   "Card ID": "GE 61/P",
+   "Role": "Volksgrenadier",
+   "VP": "+1 VP",
+   "IN": "0",
+   "PC": "1",
+   "WS": "-1",
+   "MPA": "3",
+   "Equipment": "Bolt Rifle",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3-4",
+     "SPECIAL S",
+     "SPECIAL X"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 3-4": "800",
+       "SPECIAL S": "802",
+       "SPECIAL X": "808"
+      }
+     },
+     {
+      "DIE": "2",
+      "values": {
+       "CONDITION 3-4": "830",
+       "SPECIAL S": "833",
+       "SPECIAL X": "801"
+      }
+     },
+     {
+      "DIE": "3-6",
+      "values": {
+       "CONDITION 3-4": "803",
+       "SPECIAL S": "800",
+       "SPECIAL X": "801"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 3-4": "808",
+       "SPECIAL S": "816",
+       "SPECIAL X": "800"
+      }
+     }
+    ]
+   }
+  },
+  "GE 10/L": {
+   "sheet": "A2",
+   "source_file": "GE_10_L_Sniper.csv",
+   "Card ID": "GE 10/L",
+   "Role": "Sniper",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle (Scope)",
+   "Notes": "On first turn, use 802.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-2",
+     "CONDITION 3-4",
+     "CONDITION 5-6",
+     "SPECIAL K",
+     "SPECIAL D",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 1-2": "802",
+       "CONDITION 3-4": "950",
+       "CONDITION 5-6": "957",
+       "SPECIAL K": "951",
+       "SPECIAL D": "807",
+       "SPECIAL S": "817"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 1-2": "802",
+       "CONDITION 3-4": "802",
+       "CONDITION 5-6": "802",
+       "SPECIAL K": "804",
+       "SPECIAL D": "836",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 1-2": "801",
+       "CONDITION 3-4": "802",
+       "CONDITION 5-6": "800",
+       "SPECIAL K": "808",
+       "SPECIAL D": "808",
+       "SPECIAL S": "800"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1-2": "800",
+       "CONDITION 3-4": "800",
+       "CONDITION 5-6": "813",
+       "SPECIAL K": "805",
+       "SPECIAL D": "800",
+       "SPECIAL S": "964"
+      }
+     }
+    ]
+   }
+  },
+  "GE 11/M": {
+   "sheet": "A2",
+   "source_file": "GE_11_M_NCO.csv",
+   "Card ID": "GE 11/M",
+   "Role": "NCO",
+   "VP": "+2 VP (+1 VP if captured)",
+   "IN": "4",
+   "PC": "8",
+   "WS": "+2",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; Grenade",
+   "Notes": "If this German is killed or incapacitated in Condition 1, put Condition 2 into effect.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1",
+     "CONDITION 2",
+     "CONDITION 3-5",
+     "SPECIAL A",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 1": "926",
+       "CONDITION 2": "808",
+       "CONDITION 3-5": "808",
+       "SPECIAL A": "836",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 1": "801",
+       "CONDITION 2": "928",
+       "CONDITION 3-5": "824",
+       "SPECIAL A": "837",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 1": "927",
+       "CONDITION 2": "824",
+       "CONDITION 3-5": "829",
+       "SPECIAL A": "804",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1": "840",
+       "CONDITION 2": "928",
+       "CONDITION 3-5": "801",
+       "SPECIAL A": "837",
+       "SPECIAL S": "971"
+      }
+     }
+    ]
+   }
+  },
+  "GE 12/T": {
+   "sheet": "A2",
+   "source_file": "GE_12_T_Sniper.csv",
+   "Card ID": "GE 12/T",
+   "Role": "Sniper",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "+2",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle (Scope)",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-3",
+     "CONDITION 4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 1-3": "802",
+       "CONDITION 4": "802",
+       "SPECIAL S": "813"
+      }
+     },
+     {
+      "DIE": "2-4",
+      "values": {
+       "CONDITION 1-3": "802",
+       "CONDITION 4": "802",
+       "SPECIAL S": "825"
+      }
+     },
+     {
+      "DIE": "5",
+      "values": {
+       "CONDITION 1-3": "800",
+       "CONDITION 4": "800",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "6-9",
+      "values": {
+       "CONDITION 1-3": "807",
+       "CONDITION 4": "808",
+       "SPECIAL S": "839"
+      }
+     }
+    ]
+   }
+  },
+  "GE 13/W": {
+   "sheet": "A2",
+   "source_file": "GE_13_W_Staff_Car_and_Driver.csv",
+   "Card ID": "GE 13/W",
+   "Role": "Staff Car and Driver",
+   "VP": "+1 VP (+2 VP if disabled)",
+   "IN": "2",
+   "PC": "4",
+   "WS": "0",
+   "MPA": "4",
+   "DS": "6",
+   "Equipment": "Machine Pistol",
+   "Notes": "*Germans inside this vehicle do not use their self-preservation columns as long as the vehicle remains active.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3-4",
+     "SPECIAL S*",
+     "SPECIAL X",
+     "SPECIAL C",
+     "SPECIAL Q"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 3-4": "827",
+       "SPECIAL S*": "801",
+       "SPECIAL X": "034",
+       "SPECIAL C": "642",
+       "SPECIAL Q": "459"
+      }
+     },
+     {
+      "DIE": "1-2",
+      "values": {
+       "CONDITION 3-4": "826",
+       "SPECIAL S*": "802",
+       "SPECIAL X": "034",
+       "SPECIAL C": "642",
+       "SPECIAL Q": "459"
+      }
+     },
+     {
+      "DIE": "3-4",
+      "values": {
+       "CONDITION 3-4": "825",
+       "SPECIAL S*": "813",
+       "SPECIAL X": "034",
+       "SPECIAL C": "642",
+       "SPECIAL Q": "459"
+      }
+     },
+     {
+      "DIE": "5-9",
+      "values": {
+       "CONDITION 3-4": "642",
+       "SPECIAL S*": "825",
+       "SPECIAL X": "825",
+       "SPECIAL C": "826",
+       "SPECIAL Q": "825"
+      }
+     }
+    ]
+   }
+  },
+  "GE 14/U": {
+   "sheet": "A2",
+   "source_file": "GE_14_U_Engineer.csv",
+   "Card ID": "GE 14/U",
+   "Role": "Engineer",
+   "VP": "+2 VP",
+   "IN": "2",
+   "PC": "4",
+   "WS": "-2",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle",
+   "Notes": "None.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3",
+     "CONDITION 4-5",
+     "SPECIAL B",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 3": "800",
+       "CONDITION 4-5": "929",
+       "SPECIAL B": "836",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "2-5",
+      "values": {
+       "CONDITION 3": "929",
+       "CONDITION 4-5": "801",
+       "SPECIAL B": "837",
+       "SPECIAL S": "813"
+      }
+     },
+     {
+      "DIE": "6",
+      "values": {
+       "CONDITION 3": "813",
+       "CONDITION 4-5": "800",
+       "SPECIAL B": "804",
+       "SPECIAL S": "811"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 3": "801",
+       "CONDITION 4-5": "813",
+       "SPECIAL B": "837",
+       "SPECIAL S": "839"
+      }
+     }
+    ]
+   }
+  },
+  "GE 15/L": {
+   "sheet": "A2",
+   "source_file": "GE_15_L_Sniper.csv",
+   "Card ID": "GE 15/L",
+   "Role": "Sniper",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle (Scope); Grenade",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3",
+     "CONDITION 4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 3": "802",
+       "CONDITION 4": "916",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 3": "808",
+       "CONDITION 4": "917",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 3": "915",
+       "CONDITION 4": "800",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 3": "800",
+       "CONDITION 4": "809",
+       "SPECIAL S": "816"
+      }
+     }
+    ]
+   }
+  },
+  "GE 16/L": {
+   "sheet": "A2",
+   "source_file": "GE_16_L_Sentry.csv",
+   "Card ID": "GE 16/L",
+   "Role": "Sentry",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; Pistol (Luger)",
+   "Notes": "On first turn, use 865.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-3",
+     "CONDITION 4-6",
+     "SPECIAL S",
+     "SPECIAL Y"
+    ],
+    "rows": [
+     {
+      "DIE": "0-4",
+      "values": {
+       "CONDITION 2-3": "862",
+       "CONDITION 4-6": "862",
+       "SPECIAL S": "839",
+       "SPECIAL Y": "060"
+      }
+     },
+     {
+      "DIE": "5-6",
+      "values": {
+       "CONDITION 2-3": "864",
+       "CONDITION 4-6": "803",
+       "SPECIAL S": "816",
+       "SPECIAL Y": "857"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 2-3": "868",
+       "CONDITION 4-6": "807",
+       "SPECIAL S": "839",
+       "SPECIAL Y": "857"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 2-3": "868",
+       "CONDITION 4-6": "830",
+       "SPECIAL S": "800",
+       "SPECIAL Y": "800"
+      }
+     }
+    ]
+   }
+  },
+  "GE 17/T": {
+   "sheet": "A2",
+   "source_file": "GE_17_T_Sentry.csv",
+   "Card ID": "GE 17/T",
+   "Role": "Sentry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "4",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; Pistol (Luger)",
+   "Notes": "On first turn, use 808.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2",
+     "CONDITION 3",
+     "CONDITION 4-6",
+     "SPECIAL S",
+     "SPECIAL Y",
+     "SPECIAL F"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 2": "825",
+       "CONDITION 3": "862",
+       "CONDITION 4-6": "862",
+       "SPECIAL S": "839",
+       "SPECIAL Y": "060",
+       "SPECIAL F": "708"
+      }
+     },
+     {
+      "DIE": "4-5",
+      "values": {
+       "CONDITION 2": "800",
+       "CONDITION 3": "862",
+       "CONDITION 4-6": "863",
+       "SPECIAL S": "711",
+       "SPECIAL Y": "629",
+       "SPECIAL F": "825"
+      }
+     },
+     {
+      "DIE": "6",
+      "values": {
+       "CONDITION 2": "824",
+       "CONDITION 3": "808",
+       "CONDITION 4-6": "868",
+       "SPECIAL S": "816",
+       "SPECIAL Y": "060",
+       "SPECIAL F": "800"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 2": "808",
+       "CONDITION 3": "868",
+       "CONDITION 4-6": "868",
+       "SPECIAL S": "859",
+       "SPECIAL Y": "808",
+       "SPECIAL F": "857"
+      }
+     }
+    ]
+   }
+  },
+  "GE 18/P": {
+   "sheet": "A2",
+   "source_file": "GE_18_P_Veteran_Infantry.csv",
+   "Card ID": "GE 18/P",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "3",
+   "WS": "0",
+   "MPA": "3",
+   "Equipment": "Bolt Rifle; Pistol (Luger)",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 4": "862",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "2-5",
+      "values": {
+       "CONDITION 4": "865",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "6-8",
+      "values": {
+       "CONDITION 4": "821",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 4": "807",
+       "SPECIAL S": "839"
+      }
+     }
+    ]
+   }
+  },
+  "GE 19": {
+   "sheet": "A2",
+   "source_file": "GE_19_Kubelwagen.csv",
+   "Card ID": "GE 19",
+   "Role": "Kubelwagen, Driver, Officer",
+   "Stats": "Driver/S: IN: 3, PC: 4, WS: -2, MPA: 4, DS: 6. Officer/M: IN: 4, PC: 8, WS: 0, MPA: 4, DS: 4.",
+   "Notes": "If officer captured, +3 VP. If questioned, conduct Event Check, then see 177. Actions for this group depend on which of the following are not active: None Inactive: 826. Officer Inactive: 826. Driver Inactive: 814. Kubelwagen Inactive: 802. Kubelwagen and One Man Inactive: 813. NOTES: Both soldiers have pistols. If Kubelwagen is searched, conduct Event Check, see 006.",
+   "table": null
+  },
+  "GE 1/Q": {
+   "sheet": "A2",
+   "source_file": "GE_1_Q_Soldier.csv",
+   "Card ID": "GE 1/Q",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "2",
+   "WS": "-1",
+   "MPA": "3",
+   "Equipment": "Machine Pistol",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-3",
+     "CONDITION 4",
+     "SPECIAL A",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-2",
+      "values": {
+       "CONDITION 2-3": "808",
+       "CONDITION 4": "920",
+       "SPECIAL A": "808",
+       "SPECIAL S": "813"
+      }
+     },
+     {
+      "DIE": "3",
+      "values": {
+       "CONDITION 2-3": "824",
+       "CONDITION 4": "803",
+       "SPECIAL A": "824",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "4-7",
+      "values": {
+       "CONDITION 2-3": "802",
+       "CONDITION 4": "809",
+       "SPECIAL A": "802",
+       "SPECIAL S": "802"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 2-3": "800",
+       "CONDITION 4": "813",
+       "SPECIAL A": "800",
+       "SPECIAL S": "839"
+      }
+     }
+    ]
+   }
+  },
+  "GE 20/N": {
+   "sheet": "A2",
+   "source_file": "GE_20_N_Machinegunner.csv",
+   "Card ID": "GE 20/N",
+   "Role": "Machinegunner",
+   "VP": "+1 VP",
+   "IN": "4",
+   "PC": "7",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Medium Machinegun; Pistol; 2 Grenades",
+   "Notes": "On first turn, use 815. Fires machinegun unless wounded and GE 21 is not wounded. Assist GE 21 in this case.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 3-4": "959",
+       "SPECIAL S": "770"
+      }
+     },
+     {
+      "DIE": "2-5",
+      "values": {
+       "CONDITION 3-4": "815",
+       "SPECIAL S": "815"
+      }
+     },
+     {
+      "DIE": "6",
+      "values": {
+       "CONDITION 3-4": "800",
+       "SPECIAL S": "815"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 3-4": "815",
+       "SPECIAL S": "965"
+      }
+     }
+    ]
+   }
+  },
+  "GE 21/X": {
+   "sheet": "A2",
+   "source_file": "GE_21_X_Machinegunner.csv",
+   "Card ID": "GE 21/X",
+   "Role": "Machinegunner",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; 2 Grenades",
+   "Notes": "On first turn, use 815. Assists GE 20 in firing machinegun unless GE 20 is wounded or incapacitated. If wounded or incapacitated, GE 21 fires machinegun.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 3-4": "770",
+       "SPECIAL S": "965"
+      }
+     },
+     {
+      "DIE": "2-5",
+      "values": {
+       "CONDITION 3-4": "815",
+       "SPECIAL S": "815"
+      }
+     },
+     {
+      "DIE": "6",
+      "values": {
+       "CONDITION 3-4": "800",
+       "SPECIAL S": "800"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 3-4": "815",
+       "SPECIAL S": "770"
+      }
+     }
+    ]
+   }
+  },
+  "GE 22/M": {
+   "sheet": "A2",
+   "source_file": "GE_22_M_Veteran_Infantry.csv",
+   "Card ID": "GE 22/M",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-2",
+      "values": {
+       "CONDITION 1-4": "867",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "3-4",
+      "values": {
+       "CONDITION 1-4": "863",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "5-6",
+      "values": {
+       "CONDITION 1-4": "865",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 1-4": "862",
+       "SPECIAL S": "869"
+      }
+     }
+    ]
+   }
+  },
+  "GE 2/N": {
+   "sheet": "A2",
+   "source_file": "GE_2_N_Sniper.csv",
+   "Card ID": "GE 2/N",
+   "Role": "Sniper",
+   "VP": "+1 VP",
+   "IN": "5",
+   "PC": "8",
+   "WS": "+2",
+   "MPA": "5",
+   "Equipment": "Bolt Rifle (Scope); Pistol (Luger); Grenade",
+   "Notes": "On first turn, use 802, unless Special Condition A is in effect (in which case, roll).",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-2",
+     "CONDITION 3-4",
+     "CONDITION 5-6",
+     "SPECIAL A",
+     "SPECIAL B",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 1-2": "955",
+       "CONDITION 3-4": "956",
+       "CONDITION 5-6": "958",
+       "SPECIAL A": "806",
+       "SPECIAL B": "808",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "2-4",
+      "values": {
+       "CONDITION 1-2": "954",
+       "CONDITION 3-4": "954",
+       "CONDITION 5-6": "801",
+       "SPECIAL A": "952",
+       "SPECIAL B": "810",
+       "SPECIAL S": "963"
+      }
+     },
+     {
+      "DIE": "5",
+      "values": {
+       "CONDITION 1-2": "802",
+       "CONDITION 3-4": "802",
+       "CONDITION 5-6": "800",
+       "SPECIAL A": "953",
+       "SPECIAL B": "809",
+       "SPECIAL S": "800"
+      }
+     },
+     {
+      "DIE": "6-9",
+      "values": {
+       "CONDITION 1-2": "802",
+       "CONDITION 3-4": "802",
+       "CONDITION 5-6": "802",
+       "SPECIAL A": "952",
+       "SPECIAL B": "807",
+       "SPECIAL S": "817"
+      }
+     }
+    ]
+   }
+  },
+  "GE 3/L": {
+   "sheet": "A2",
+   "source_file": "GE_3_L_Soldier.csv",
+   "Card ID": "GE 3/L",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "4",
+   "WS": "-1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle",
+   "Notes": "If this German is killed or incapacitated in Condition 1, put Condition 2 into effect.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1",
+     "CONDITION 2",
+     "CONDITION 3-5",
+     "SPECIAL A",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 1": "927",
+       "CONDITION 2": "928",
+       "CONDITION 3-5": "802",
+       "SPECIAL A": "837",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 1": "840",
+       "CONDITION 2": "802",
+       "CONDITION 3-5": "801",
+       "SPECIAL A": "804",
+       "SPECIAL S": "802"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 1": "926",
+       "CONDITION 2": "801",
+       "CONDITION 3-5": "808",
+       "SPECIAL A": "836",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1": "801",
+       "CONDITION 2": "800",
+       "CONDITION 3-5": "800",
+       "SPECIAL A": "800",
+       "SPECIAL S": "816"
+      }
+     }
+    ]
+   }
+  },
+  "GE 4/Y": {
+   "sheet": "A2",
+   "source_file": "GE_4_Y_Panzer_IV.csv",
+   "Card ID": "GE 4/Y",
+   "Role": "Panzer IV",
+   "VP": "+2 VP (+3 VP if knocked out)",
+   "Notes": "NOTES: Enters open; cannon prepared on entry. When open, three crew members visible. On first turn, use 900.",
+   "table": {
+    "row_key": "Act Crew",
+    "columns": [
+     "Act IN",
+     "Act PC",
+     "Act WS",
+     "Act DS",
+     "ACTION DIE 0-3",
+     "ACTION DIE 3",
+     "ACTION DIE 4-7",
+     "ACTION DIE 8-9"
+    ],
+    "rows": [
+     {
+      "Act Crew": "5",
+      "values": {
+       "Act IN": "5",
+       "Act PC": "8",
+       "Act WS": "+2",
+       "Act DS": "8",
+       "ACTION DIE 0-3": "902",
+       "ACTION DIE 3": "905",
+       "ACTION DIE 4-7": "905",
+       "ACTION DIE 8-9": "900"
+      }
+     },
+     {
+      "Act Crew": "4",
+      "values": {
+       "Act IN": "3",
+       "Act PC": "6",
+       "Act WS": "+1",
+       "Act DS": "8",
+       "ACTION DIE 0-3": "907",
+       "ACTION DIE 3": "905",
+       "ACTION DIE 4-7": "905",
+       "ACTION DIE 8-9": "902"
+      }
+     },
+     {
+      "Act Crew": "3",
+      "values": {
+       "Act IN": "3",
+       "Act PC": "5",
+       "Act WS": "0",
+       "Act DS": "6",
+       "ACTION DIE 0-3": "905",
+       "ACTION DIE 3": "905",
+       "ACTION DIE 4-7": "902",
+       "ACTION DIE 8-9": "902"
+      }
+     },
+     {
+      "Act Crew": "2",
+      "values": {
+       "Act IN": "2",
+       "Act PC": "3",
+       "Act WS": "-1",
+       "Act DS": "4",
+       "ACTION DIE 0-3": "900",
+       "ACTION DIE 3": "811",
+       "ACTION DIE 4-7": "908",
+       "ACTION DIE 8-9": "900"
+      }
+     },
+     {
+      "Act Crew": "1",
+      "values": {
+       "Act IN": "1",
+       "Act PC": "1",
+       "Act WS": "-2",
+       "Act DS": "2",
+       "ACTION DIE 0-3": "811",
+       "ACTION DIE 3": "904",
+       "ACTION DIE 4-7": "904",
+       "ACTION DIE 8-9": "840"
+      }
+     }
+    ]
+   }
+  },
+  "GE 5/U": {
+   "sheet": "A2",
+   "source_file": "GE_5_U_Machinegunner.csv",
+   "Card ID": "GE 5/U",
+   "Role": "Machinegunner",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "6",
+   "WS": "-1",
+   "MPA": "4",
+   "Equipment": "Pistol (Luger)",
+   "Notes": "Assists GE 49 unless 49 is wounded or inactive, in which case GE 5 fires LMG. On first turn, use 815. *Use for rest of mission once Condition 5 comes into effect (self preservation still applies).",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "CONDITION 5*",
+     "CONDITION 6",
+     "SPECIAL E",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 1-4": "960",
+       "CONDITION 5*": "960",
+       "CONDITION 6": "959",
+       "SPECIAL E": "820",
+       "SPECIAL S": "966"
+      }
+     },
+     {
+      "DIE": "1-3",
+      "values": {
+       "CONDITION 1-4": "815",
+       "CONDITION 5*": "959",
+       "CONDITION 6": "815",
+       "SPECIAL E": "821",
+       "SPECIAL S": "966"
+      }
+     },
+     {
+      "DIE": "4-7",
+      "values": {
+       "CONDITION 1-4": "815",
+       "CONDITION 5*": "815",
+       "CONDITION 6": "815",
+       "SPECIAL E": "965",
+       "SPECIAL S": "965"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 1-4": "959",
+       "CONDITION 5*": "962",
+       "CONDITION 6": "960",
+       "SPECIAL E": "867",
+       "SPECIAL S": "971"
+      }
+     }
+    ]
+   }
+  },
+  "GE 6/S": {
+   "sheet": "A2",
+   "source_file": "GE_6_S_Sentry.csv",
+   "Card ID": "GE 6/S",
+   "Role": "Sentry",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; Pistol (Luger)",
+   "Notes": "On first turn, use 825.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2",
+     "CONDITION 3",
+     "CONDITION 4-5",
+     "CONDITION 6",
+     "SPECIAL Y",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 2": "800",
+       "CONDITION 3": "808",
+       "CONDITION 4-5": "864",
+       "CONDITION 6": "825",
+       "SPECIAL Y": "800",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "1-4",
+      "values": {
+       "CONDITION 2": "802",
+       "CONDITION 3": "864",
+       "CONDITION 4-5": "867",
+       "CONDITION 6": "862",
+       "SPECIAL Y": "060",
+       "SPECIAL S": "802"
+      }
+     },
+     {
+      "DIE": "5-7",
+      "values": {
+       "CONDITION 2": "825",
+       "CONDITION 3": "862",
+       "CONDITION 4-5": "808",
+       "CONDITION 6": "867",
+       "SPECIAL Y": "808",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 2": "808",
+       "CONDITION 3": "862",
+       "CONDITION 4-5": "802",
+       "CONDITION 6": "866",
+       "SPECIAL Y": "060",
+       "SPECIAL S": "711"
+      }
+     }
+    ]
+   }
+  },
+  "GE 7/N": {
+   "sheet": "A2",
+   "source_file": "GE_7_N_Officer.csv",
+   "Card ID": "GE 7/N",
+   "Role": "Officer",
+   "VP": "+1 VP (+1 VP if incapacitated or killed)",
+   "IN": "4",
+   "PC": "7",
+   "WS": "+1",
+   "DS": "4",
+   "Equipment": "Pistol (Luger)",
+   "Notes": "On first turn, use 829.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-2",
+     "CONDITION 3-4",
+     "CONDITION 5",
+     "SPECIAL C",
+     "SPECIAL X",
+     "SPECIAL U"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 1-2": "825",
+       "CONDITION 3-4": "825",
+       "CONDITION 5": "816",
+       "SPECIAL C": "649",
+       "SPECIAL X": "832",
+       "SPECIAL U": "803"
+      }
+     },
+     {
+      "DIE": "1-2",
+      "values": {
+       "CONDITION 1-2": "801",
+       "CONDITION 3-4": "801",
+       "CONDITION 5": "825",
+       "SPECIAL C": "649",
+       "SPECIAL X": "808",
+       "SPECIAL U": "803"
+      }
+     },
+     {
+      "DIE": "3-4",
+      "values": {
+       "CONDITION 1-2": "802",
+       "CONDITION 3-4": "808",
+       "CONDITION 5": "832",
+       "SPECIAL C": "649",
+       "SPECIAL X": "825",
+       "SPECIAL U": "807"
+      }
+     },
+     {
+      "DIE": "5-9",
+      "values": {
+       "CONDITION 1-2": "977",
+       "CONDITION 3-4": "832",
+       "CONDITION 5": "993",
+       "SPECIAL C": "649",
+       "SPECIAL X": "972",
+       "SPECIAL U": "806"
+      }
+     }
+    ]
+   }
+  },
+  "GE 9/R": {
+   "sheet": "A2",
+   "source_file": "GE_9_R_Soldier.csv",
+   "Card ID": "GE 9/R",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "3",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle (Scope)",
+   "Notes": "On first turn, use 801.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3",
+     "CONDITION 4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 3": "801",
+       "CONDITION 4": "916",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "4-6",
+      "values": {
+       "CONDITION 3": "915",
+       "CONDITION 4": "800",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "7-8",
+      "values": {
+       "CONDITION 3": "800",
+       "CONDITION 4": "809",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 3": "825",
+       "CONDITION 4": "916",
+       "SPECIAL S": "813"
+      }
+     }
+    ]
+   }
+  },
+  "GE 25/N": {
+   "sheet": "A3",
+   "source_file": "GE_25_N_Sniper.csv",
+   "Card ID": "GE 25/N",
+   "Role": "Sniper",
+   "VP": "+2 VP",
+   "IN": "4",
+   "PC": "7",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle (Scope); Pistol (Luger)",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-3",
+     "CONDITION 4",
+     "SPECIAL B",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 2-3": "802",
+       "CONDITION 4": "800",
+       "SPECIAL B": "829",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "1-2",
+      "values": {
+       "CONDITION 2-3": "829",
+       "CONDITION 4": "919",
+       "SPECIAL B": "808",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "3-5",
+      "values": {
+       "CONDITION 2-3": "808",
+       "CONDITION 4": "919",
+       "SPECIAL B": "801",
+       "SPECIAL S": "802"
+      }
+     },
+     {
+      "DIE": "6-9",
+      "values": {
+       "CONDITION 2-3": "801",
+       "CONDITION 4": "918",
+       "SPECIAL B": "801",
+       "SPECIAL S": "839"
+      }
+     }
+    ]
+   }
+  },
+  "GE 81/P": {
+   "sheet": "A3",
+   "source_file": "GE_81_P_Soldier.csv",
+   "Card ID": "GE 81/P",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "1",
+   "WS": "-2",
+   "MPA": "3",
+   "Equipment": "Bolt Rifle",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 2-3",
+     "CONDITION 4",
+     "SPECIAL A",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-2",
+      "values": {
+       "CONDITION 2-3": "800",
+       "CONDITION 4": "813",
+       "SPECIAL A": "800",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "3",
+      "values": {
+       "CONDITION 2-3": "801",
+       "CONDITION 4": "920",
+       "SPECIAL A": "801",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "4-7",
+      "values": {
+       "CONDITION 2-3": "808",
+       "CONDITION 4": "809",
+       "SPECIAL A": "808",
+       "SPECIAL S": "813"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 2-3": "801",
+       "CONDITION 4": "825",
+       "SPECIAL A": "802",
+       "SPECIAL S": "800"
+      }
+     }
+    ]
+   }
+  },
+  "GE 23/S": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 23/S",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "4",
+   "WS": "-1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-2",
+      "values": {
+       "CONDITION 1-4": "862",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "3-4",
+      "values": {
+       "CONDITION 1-4": "865",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "5-6",
+      "values": {
+       "CONDITION 1-4": "866",
+       "SPECIAL S": "833"
+      }
+     },
+     {
+      "DIE": "7-9",
+      "values": {
+       "CONDITION 1-4": "867",
+       "SPECIAL S": "833"
+      }
+     }
+    ]
+   }
+  },
+  "GE 24/P": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 24/P",
+   "Role": "Scientist",
+   "VP": "+1 VP (+2 VP if captured)",
+   "IN": "1",
+   "PC": "2",
+   "WS": "-2",
+   "MPA": "3",
+   "DS": "0",
+   "Equipment": "No weapon",
+   "Notes": "If captured, you gain 2 VP for exiting GE 24 from the map with your squad.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "SPECIAL S",
+     "SPECIAL Q"
+    ],
+    "rows": [
+     {
+      "DIE": "0",
+      "values": {
+       "CONDITION 1-4": "800",
+       "SPECIAL S": "811",
+       "SPECIAL Q": "800"
+      }
+     },
+     {
+      "DIE": "1-2",
+      "values": {
+       "CONDITION 1-4": "800",
+       "SPECIAL S": "839",
+       "SPECIAL Q": "800"
+      }
+     },
+     {
+      "DIE": "3-4",
+      "values": {
+       "CONDITION 1-4": "800",
+       "SPECIAL S": "811",
+       "SPECIAL Q": "800"
+      }
+     },
+     {
+      "DIE": "5-9",
+      "values": {
+       "CONDITION 1-4": "811",
+       "SPECIAL S": "811",
+       "SPECIAL Q": "630"
+      }
+     }
+    ]
+   }
+  },
+  "GE 26/X": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 26/X",
+   "Role": "NCO",
+   "VP": "+1 VP (+1 VP if captured)",
+   "IN": "4",
+   "PC": "7",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; Pistol (Luger)",
+   "Notes": "If GE 37 and 50 are not in play, use Special Reaction C instead of Condition 4, 5, or 6.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 4-5",
+     "CONDITION 6",
+     "SPECIAL C",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-3",
+      "values": {
+       "CONDITION 4-5": "822",
+       "CONDITION 6": "822",
+       "SPECIAL C": "810",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "4",
+      "values": {
+       "CONDITION 4-5": "800",
+       "CONDITION 6": "970",
+       "SPECIAL C": "809",
+       "SPECIAL S": "800"
+      }
+     },
+     {
+      "DIE": "5-8",
+      "values": {
+       "CONDITION 4-5": "969",
+       "CONDITION 6": "969",
+       "SPECIAL C": "808",
+       "SPECIAL S": "828"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 4-5": "822",
+       "CONDITION 6": "800",
+       "SPECIAL C": "800",
+       "SPECIAL S": "813"
+      }
+     }
+    ]
+   }
+  },
+  "GE 27/M": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 27/M",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "3",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Machine Pistol; Pistol (Luger)",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3-4",
+     "SPECIAL R",
+     "SPECIAL V",
+     "SPECIAL T",
+     "SPECIAL X",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 3-4": "807",
+       "SPECIAL R": "856",
+       "SPECIAL V": "824",
+       "SPECIAL T": "825",
+       "SPECIAL X": "824",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "2",
+      "values": {
+       "CONDITION 3-4": "915",
+       "SPECIAL R": "856",
+       "SPECIAL V": "829",
+       "SPECIAL T": "808",
+       "SPECIAL X": "829",
+       "SPECIAL S": "808"
+      }
+     },
+     {
+      "DIE": "3-7",
+      "values": {
+       "CONDITION 3-4": "803",
+       "SPECIAL R": "732",
+       "SPECIAL V": "825",
+       "SPECIAL T": "801",
+       "SPECIAL X": "825",
+       "SPECIAL S": "825"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 3-4": "868",
+       "SPECIAL R": "732",
+       "SPECIAL V": "801",
+       "SPECIAL T": "824",
+       "SPECIAL X": "801",
+       "SPECIAL S": "839"
+      }
+     }
+    ]
+   }
+  },
+  "GE 28/U": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 28/U",
+   "Role": "Soldier",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "9",
+   "WS": "-1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 3-4",
+     "SPECIAL R",
+     "SPECIAL V",
+     "SPECIAL T",
+     "SPECIAL X",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-1",
+      "values": {
+       "CONDITION 3-4": "807",
+       "SPECIAL R": "732",
+       "SPECIAL V": "801",
+       "SPECIAL T": "808",
+       "SPECIAL X": "801",
+       "SPECIAL S": "817"
+      }
+     },
+     {
+      "DIE": "2",
+      "values": {
+       "CONDITION 3-4": "915",
+       "SPECIAL R": "856",
+       "SPECIAL V": "829",
+       "SPECIAL T": "824",
+       "SPECIAL X": "829",
+       "SPECIAL S": "800"
+      }
+     },
+     {
+      "DIE": "3-7",
+      "values": {
+       "CONDITION 3-4": "803",
+       "SPECIAL R": "732",
+       "SPECIAL V": "869",
+       "SPECIAL T": "869",
+       "SPECIAL X": "869",
+       "SPECIAL S": "971"
+      }
+     },
+     {
+      "DIE": "8-9",
+      "values": {
+       "CONDITION 3-4": "868",
+       "SPECIAL R": "732",
+       "SPECIAL V": "824",
+       "SPECIAL T": "869",
+       "SPECIAL X": "824",
+       "SPECIAL S": "817"
+      }
+     }
+    ]
+   }
+  },
+  "GE 29/U": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 29/U",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "5",
+   "WS": "0",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 868.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-4",
+      "values": {
+       "CONDITION 1-4": "868",
+       "SPECIAL S": "839"
+      }
+     },
+     {
+      "DIE": "5",
+      "values": {
+       "CONDITION 1-4": "865",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "6-8",
+      "values": {
+       "CONDITION 1-4": "865",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1-4": "867",
+       "SPECIAL S": "812"
+      }
+     }
+    ]
+   }
+  },
+  "GE 30/R": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 30/R",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "1",
+   "PC": "2",
+   "WS": "0",
+   "MPA": "3",
+   "Equipment": "Machine Pistol; Pistol (Luger)",
+   "Notes": "On first turn, use 866.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-4",
+      "values": {
+       "CONDITION 1-4": "866",
+       "SPECIAL S": "825"
+      }
+     },
+     {
+      "DIE": "5",
+      "values": {
+       "CONDITION 1-4": "867",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "6-8",
+      "values": {
+       "CONDITION 1-4": "862",
+       "SPECIAL S": "802"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1-4": "864",
+       "SPECIAL S": "809"
+      }
+     }
+    ]
+   }
+  },
+  "GE 31/L": {
+   "sheet": "A2",
+   "source_file": "character_vehicle_card_Sheet_A2.jpg (read directly)",
+   "Card ID": "GE 31/L",
+   "Role": "Veteran Infantry",
+   "VP": "+1 VP",
+   "IN": "2",
+   "PC": "3",
+   "WS": "+1",
+   "MPA": "4",
+   "Equipment": "Bolt Rifle; 2 Grenades",
+   "Notes": "On first turn, use 864.",
+   "table": {
+    "row_key": "DIE",
+    "columns": [
+     "CONDITION 1-4",
+     "SPECIAL S"
+    ],
+    "rows": [
+     {
+      "DIE": "0-4",
+      "values": {
+       "CONDITION 1-4": "864",
+       "SPECIAL S": "869"
+      }
+     },
+     {
+      "DIE": "5",
+      "values": {
+       "CONDITION 1-4": "864",
+       "SPECIAL S": "816"
+      }
+     },
+     {
+      "DIE": "6-8",
+      "values": {
+       "CONDITION 1-4": "863",
+       "SPECIAL S": "825"
+      }
+     },
+     {
+      "DIE": "9",
+      "values": {
+       "CONDITION 1-4": "867",
+       "SPECIAL S": "819"
+      }
+     }
+    ]
+   }
+  }
+ }
+}

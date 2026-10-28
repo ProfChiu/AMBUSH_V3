@@ -1,0 +1,520 @@
+/* Ambush! v3 — Mission 1's in-play styles. Lifted from v2's apps/game/mission1.html <style>, with
+ * what v3 owns removed (page frame, top bar, side HUD, buttons, counters: theme.css, counters.css)
+ * and v2's dialog styles scoped to #dialogs-root so they leave the shell's popups alone. The v3
+ * layout (floating panels, ring menu, world-space sizes) is at the end. */
+:root{
+  --olive:#4B5320; --paper:#ece6d2; --alert:#b53a2e;
+  --bg:#0c0d0a; --panel-bg:rgba(16,17,13,.94); --panel-border:#45473a;
+  --clear:#8fce6a; --text-body:#d6d3bf; --text-label:#b7b9aa;
+  --font-mono:'IBM Plex Mono','Courier New',monospace;
+}
+.counter.enemy{cursor:default;}
+.counter.hidden-german{display:none;}
+
+.entry-hex{position:absolute; width:3.4%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+  border-radius:50%; background:rgba(201,162,39,.35); border:2px dashed var(--amber); cursor:pointer; z-index:3;}
+.entry-hex:hover{background:rgba(201,162,39,.6);}
+
+.dest-mark{position:absolute; width:2.1%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+  border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;
+  font-family:var(--font-mono); font-weight:700; font-size:11px; color:#22221a; z-index:3;
+  box-shadow:0 0 0 2px rgba(0,0,0,.6); opacity:.92; background:#8fce6a; transition:opacity .3s;}
+/* a stance change closes before the next command is offered (mission1.js stanceBeat) */
+body.stance-beat .dest-mark{opacity:0; pointer-events:none; transition:none;}
+.dest-mark:hover{outline:2px solid #fff; opacity:1;}
+/* cost-* modifiers kept for a future Rounds-movement (§6/7) feature, where MP cost is real */
+.dest-mark.cost-1{background:#8fce6a;}
+.dest-mark.cost-2{background:var(--amber);}
+.dest-mark.cost-3plus{background:#d97a3a;}
+
+.path-mark{position:absolute; width:0.9%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+  border-radius:50%; background:#fff; opacity:.85; z-index:1; pointer-events:none;}
+
+.event-marker{position:absolute; width:2.6%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+  border-radius:2px; background:rgba(142,42,34,.5); border:2px solid var(--alert); z-index:1;
+  pointer-events:none;}
+.event-marker::after{content:"!"; position:absolute; inset:0; display:flex; align-items:center;
+  justify-content:center; font-family:var(--font-head); font-size:12px; color:#f0d9d5;}
+
+
+.mini-card{background:#1f2019; border:1px solid var(--panel-border); border-radius:3px; padding:9px; font-size:12.5px;}
+.mini-card .row{display:flex; align-items:center; gap:9px;}
+.mini-card img{width:38px; height:38px;}
+.mini-card .name{font-family:var(--font-head); font-size:17px; color:var(--amber); letter-spacing:.5px;}
+.mini-card .stats{font-family:var(--font-mono); font-size:11px; color:var(--text-body); margin-top:5px; line-height:1.6;}
+.mp-readout{font-family:var(--font-mono); font-size:12.5px; color:var(--text-body); margin-top:6px;}
+.mp-readout b{color:var(--amber); font-size:15px;}
+
+.vp-readout{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:13px; color:var(--text-body); padding:3px 0;}
+.vp-readout b{color:var(--amber); font-size:16px;}
+
+.roster-slot{display:flex; align-items:center; gap:8px; padding:4px 0; font-family:var(--font-mono); font-size:11px; color:var(--text-body);}
+.roster-slot img{width:26px; height:26px;}
+.roster-slot.dead{opacity:.4;}
+.roster-slot .letter{color:var(--amber); font-weight:700; width:14px;}
+
+
+.ar-track{display:flex; flex-direction:column; gap:5px;}
+.ar-slot{background:#1f2019; border:1px solid var(--panel-border); border-radius:3px; padding:6px 8px;
+  font-family:var(--font-mono); font-size:11px; color:var(--text-body); display:flex; justify-content:space-between; gap:6px;}
+.ar-slot.current{border-color:var(--amber); background:rgba(201,162,39,.1); color:var(--paper);}
+.ar-slot .label{color:var(--text-label); text-transform:uppercase; font-size:9.5px; letter-spacing:.8px;}
+.ar-slot .occ{color:var(--text-body);}
+.ar-slot .occ .g{color:#c98a83;}
+
+.log-line{font-family:var(--font-mono); font-size:10.5px; padding:3px 0; border-bottom:1px dashed #3a3b32; color:var(--text-body); line-height:1.5;}
+.log-line b{color:var(--paper);}
+.log-line .roll{color:var(--amber); font-weight:700;}
+.log-line.hit{color:#e8b9b3;}
+.log-line.event{color:var(--amber); font-weight:600;}
+#combatlog{max-height:100%; overflow-y:auto; flex:1;}
+
+#status-banner{font-family:var(--font-head); font-size:14px; letter-spacing:.5px; text-align:center;
+  padding:7px 0; border-radius:3px; background:#1f2019; border:1px solid var(--panel-border); color:var(--amber);}
+#status-banner.win{color:var(--clear); border-color:#4c7a35; background:rgba(143,206,106,.1);}
+#status-banner.lose{color:#e8b9b3; border-color:#6d1f18; background:rgba(142,42,34,.12);}
+
+/* ---- popups ---- */
+#dialogs-root .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:20;}
+#dialogs-root .backdrop.open{display:flex;}
+#dialogs-root .popup{background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:3px; width:640px; max-width:92vw;
+  max-height:88vh; display:flex; flex-direction:column; box-shadow:0 8px 30px rgba(0,0,0,.6); outline:none;}
+#dialogs-root .popup.narrow{width:460px;}
+#dialogs-root .popup.wide{width:820px;}
+#dialogs-root .popup .popup-head{display:flex; align-items:center; gap:10px; padding:11px 18px;
+  background:#1f2019; border-bottom:1px solid var(--panel-border); font-family:var(--font-ui); font-weight:600;
+  font-size:12.5px; text-transform:uppercase; letter-spacing:1.5px; color:var(--amber);}
+.dialog-badge{font-family:var(--font-mono); font-size:10px; letter-spacing:.5px; text-transform:none; color:#e0bb3d;
+  background:rgba(201,162,39,.15); border:1px solid #6d5f2a; border-radius:10px; padding:2px 8px;}
+#dialogs-root .popup .popup-body{padding:18px; overflow-y:auto; font-size:13.5px; color:#d8d9cc; flex:1;}
+#dialogs-root .popup .popup-foot{display:flex; justify-content:flex-end; gap:10px; padding:14px 18px; border-top:1px solid var(--panel-border);}
+
+.combat-row{display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:6px;}
+.combatant{background:#1f2019; border:1px solid var(--panel-border); border-radius:4px; padding:12px; width:180px; text-align:center;}
+.combatant img{width:56px; height:56px; margin-bottom:6px;}
+.combatant .cname{font-family:var(--font-head); font-size:16px; color:var(--amber);}
+.combatant .cstat{font-family:var(--font-mono); font-size:11px; color:#c7c9b8; margin-top:4px;}
+.vs{font-family:var(--font-head); font-size:22px; color:var(--text-label);}
+.dice-tray{display:flex; align-items:center; gap:16px; justify-content:center; margin:16px 0; flex-wrap:wrap;}
+.die-face{width:56px; height:56px; background:var(--paper); color:#22221E; border-radius:6px;
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:600; font-size:28px;
+  box-shadow:0 2px 4px rgba(0,0,0,.5); transition:transform .15s;}
+.die-face.rolling{transform:rotate(8deg) scale(1.05);}
+.result-line{text-align:center; font-family:var(--font-mono); font-size:13px; color:var(--paper); margin-top:14px; min-height:20px;}
+.result-line b{color:var(--amber);}
+.step-context{text-align:center; font-family:var(--font-mono); font-size:12px; color:#c7c9b8; line-height:1.6;}
+.paragraph-body{font-size:15px; line-height:1.7; font-style:italic; color:var(--paper); text-align:left;}
+.save-list{max-height:360px; overflow-y:auto; display:flex; flex-direction:column;}
+.save-row{display:flex; justify-content:space-between; align-items:center; gap:12px;
+  padding:11px 4px; border-bottom:1px solid var(--panel-border); cursor:pointer; text-align:left;}
+.save-row:last-child{border-bottom:none;}
+.save-row:hover{background:rgba(201,162,39,.1);}
+.save-ts{font-family:var(--font-mono); font-size:12.5px; color:var(--paper);}
+.save-desc{font-family:var(--font-mono); font-size:11px; color:var(--text-label); text-transform:uppercase; letter-spacing:.6px;}
+.gcard{display:grid; grid-template-columns:1fr 1fr; gap:2px 22px; margin-top:4px;}
+.gcard-row{display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+  padding:6px 0; border-bottom:1px solid var(--panel-border); font-family:var(--font-mono); font-size:11.5px;}
+.gcard-row span{color:var(--text-label); text-transform:uppercase; font-size:11px; letter-spacing:.7px;}
+.gcard-row b{color:var(--paper); text-align:right;}
+.gcard-notes{margin-top:14px; padding:10px 12px; background:rgba(201,162,39,.08);
+  border-left:2px solid var(--amber); font-size:12px; line-height:1.6; color:var(--text-body);}
+.gcard-notes > span{display:block; color:var(--text-label); text-transform:uppercase;
+  font-size:9.5px; letter-spacing:.7px; margin-bottom:4px; font-family:var(--font-mono);}
+.target-list{max-height:340px; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; margin-top:14px;}
+.target-row{display:flex; align-items:center; gap:12px; padding:10px 6px; cursor:pointer;
+  border:1px solid transparent; border-bottom:1px solid var(--panel-border); text-align:left;}
+.target-row:last-child{border-bottom:1px solid transparent;}
+.target-row:hover{background:rgba(201,162,39,.12); border-color:var(--amber);}
+.target-row img{width:34px; height:34px; object-fit:contain; flex:none;}
+.target-id{display:flex; flex-direction:column; gap:3px; flex:1; min-width:0;}
+.target-id b{font-family:var(--font-mono); font-size:12.5px; color:var(--paper); font-weight:600;}
+.target-meta{font-family:var(--font-mono); font-size:10.5px; color:var(--text-label);}
+.target-note{font-family:var(--font-mono); font-size:10.5px; color:var(--amber); opacity:.85;}
+.target-note b{color:var(--amber);}
+.target-why{font-family:var(--font-mono); font-size:10.5px; color:var(--text-body); opacity:.8; line-height:1.45;}
+.target-odds{display:flex; flex-direction:column; align-items:center; gap:1px; flex:none;
+  font-family:var(--font-mono); font-size:20px; color:var(--amber); font-weight:700; line-height:1;}
+.target-odds{min-width:84px;}
+.target-odds span{white-space:nowrap; font-size:10.5px; color:var(--text-label); font-weight:400; text-transform:uppercase; letter-spacing:.7px;}
+
+/* ---- Soldier Inspector (stance exposure table) ---- */
+.stance-table{display:flex; gap:8px; margin-top:8px;}
+.stance-cell{flex:1; text-align:center; border:1px solid var(--panel-border); border-radius:3px;
+  padding:6px 4px; font-family:var(--font-mono);}
+.stance-cell b{display:block; font-size:11px; text-transform:uppercase; letter-spacing:.5px;
+  color:var(--text-label); font-weight:600;}
+.stance-cell span{display:block; font-size:16px; color:var(--paper); margin-top:2px;}
+.stance-cell.current{border-color:var(--amber); background:rgba(201,162,39,.12);}
+.stance-cell.current b{color:var(--amber);}
+
+/* ---- Term tooltips (glossary hover, e.g. IN/PC/WS/MPA labels, hit-chance breakdown terms) ---- */
+.tt{border-bottom:1px dotted var(--text-label); cursor:help; position:relative;}
+.tt::after, .tok-tip::after{content:attr(data-tip); position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); z-index:30;
+  width:220px; max-width:60vw; background:#1f2019; border:1px solid var(--amber); border-radius:4px;
+  padding:8px 10px; font-family:var(--font-mono); font-size:11px; line-height:1.5; color:var(--text-body);
+  text-transform:none; letter-spacing:normal; box-shadow:0 4px 12px rgba(0,0,0,.5);
+  opacity:0; pointer-events:none; transition:opacity .1s ease; white-space:normal;}
+.tt:hover::after, .tt:focus::after, .tok-tip:hover::after, .tok-tip:focus::after{opacity:1;}
+/* equipment tokens use the same tooltip, without the dotted underline (2026-10-25) */
+.tok-tip{cursor:help; outline:none;}
+/* anchored at the token's left edge, not centred: the panel's first slot sits near the window edge */
+.tok-tip::after{left:0; transform:none;}
+.tok-tip:focus-visible{box-shadow:0 0 0 2px var(--amber);}
+.target-odds.tt{border-bottom:none;}
+
+/* ---- floating, draggable, non-modal window (Objectives) ---- */
+.float-dialog{position:fixed; width:340px; display:none; background:var(--panel-bg);
+  border:1px solid var(--panel-border); border-radius:4px; box-shadow:0 10px 40px rgba(0,0,0,.6); z-index:30;}
+.float-titlebar{display:flex; align-items:center; justify-content:space-between; padding:9px 12px;
+  background:#1f2019; border-bottom:1px solid var(--panel-border); border-radius:4px 4px 0 0;
+  cursor:move; user-select:none; font-family:var(--font-ui); font-weight:600; font-size:12px;
+  text-transform:uppercase; letter-spacing:1.5px; color:var(--amber);}
+.float-titlebar button{background:none; border:none; color:var(--ink-2); font-size:16px; cursor:pointer;}
+.float-body{padding:16px; font-size:13.5px; color:var(--text-body); line-height:1.6;}
+.float-body h4{margin:0 0 4px; font-family:var(--font-head); font-size:13px; letter-spacing:.5px; color:var(--amber);}
+.float-body p{margin:0 0 12px;}
+.float-body .obj-vp{font-family:var(--font-mono); font-size:15px; color:var(--paper);}
+
+
+.toast-stack{position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:8px; z-index:40; width:320px;}
+.toast{background:#2c1a17; border:1px solid var(--alert); color:#f0d9d5; font-family:var(--font-mono);
+  font-size:12.5px; padding:10px 14px; border-radius:4px; box-shadow:0 4px 16px rgba(0,0,0,.5); cursor:pointer;
+  opacity:1; transition:opacity .2s, transform .2s;}
+.toast.toast-out{opacity:0; transform:translateX(20px);}
+/* v2 task 3 — resolution cards (docs/01_PRESENTATION_SPEC.md §3) */
+.res-card{position:absolute; z-index:6; width:300px; background:rgba(38,39,31,.96); border:1px solid var(--panel-border);
+  border-left:3px solid var(--amber); border-radius:3px; box-shadow:0 6px 22px rgba(0,0,0,.6); pointer-events:none;
+  transition:opacity .35s;}
+.res-card.fading{opacity:0;}
+.res-foot{display:none; padding:2px 10px 8px; text-align:right;}
+.res-card.done{pointer-events:auto; cursor:pointer; border-left-color:var(--clear);}
+.res-card.done .res-foot{display:block;}
+.res-card.done .res-done{padding:4px 18px; font-size:12px;}
+.res-card.held{border-left-color:var(--paper);}
+.res-card.held .res-head::after{content:'paused'; float:right; font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.8px; text-transform:uppercase; color:var(--text-label); padding-top:3px;}
+.res-head{font-family:var(--font-head); font-size:15px; letter-spacing:.6px; color:var(--amber); padding:6px 10px 4px;
+  border-bottom:1px solid var(--panel-border);}
+.res-lines{padding:4px 10px 6px;}
+.res-line{padding:5px 0; border-bottom:1px dashed #3a3b32; animation:resIn .18s ease-out;}
+.res-line:last-child{border-bottom:none;}
+@keyframes resIn{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+.res-title{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-label);}
+.res-text,.res-context,.res-result{font-size:12px; color:var(--text-body); line-height:1.45;}
+.res-context{margin-top:2px;}
+.res-paragraph{font-family:var(--font-mono); font-size:11px; color:var(--paper); background:#1f2019; padding:6px; margin-top:3px;
+  max-height:9.5em; overflow:hidden; -webkit-mask-image:linear-gradient(180deg,#000 75%,transparent);} /* full text: the log */
+.res-roll{display:flex; align-items:center; gap:6px; margin-top:4px;}
+.res-die{flex:0 0 26px; height:26px; background:var(--paper); color:#22221E; border-radius:4px; display:flex;
+  align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:700; font-size:15px;}
+.res-die.rolling{transform:rotate(8deg);}
+/* Phase 4 — the table row the die is read against: tumble flickers across it, the landed face lights */
+.res-strip{display:grid; grid-template-columns:repeat(10,1fr); gap:2px; margin-top:6px;}
+.rs-cell{display:flex; flex-direction:column; align-items:center; padding:2px 0 1px; border-radius:3px;
+  background:#2a2b24; color:var(--text-label); border:1px solid transparent; transition:background .08s, transform .08s;}
+.rs-cell b{font:700 12px/1.1 var(--font-mono);}
+.rs-cell i{font:600 10px/1.2 var(--font-mono); font-style:normal; letter-spacing:.3px; min-height:11px;}
+.rs-cell.rs-hit{background:#23402c; color:#9fd7a8;}
+.rs-cell.rs-bad{background:#4a211c; color:#f0a49a;}
+.rs-cell.rs-amber{background:#45391a; color:#e6c867;}
+.rs-cell.peek{border-color:#e8e2cf;}
+.rs-cell.lit{border-color:#fff; transform:scale(1.18); box-shadow:0 0 0 2px var(--amber), 0 0 12px rgba(201,162,39,.8); z-index:1;
+  animation:rsLand .3s ease-out;}
+.rs-cell.rs-hit.lit{background:#3f8a52; color:#fff;}
+.rs-cell.rs-bad.lit{background:#b23a2c; color:#fff;}
+.rs-cell.rs-amber.lit{background:var(--amber); color:#22221a;}
+.rs-cell.rs-miss.lit{background:#6a6c60; color:#fff;}
+@keyframes rsLand{from{transform:scale(1.6);} to{transform:scale(1.18);}}
+.res-strip-cap{font:10px var(--font-mono); color:var(--text-label); margin-top:3px; letter-spacing:.4px;}
+body.still .rs-cell.lit{animation:none;}
+
+/* v2 task 4 — board effects (cards mode only) */
+#fx-layer{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:4; overflow:visible;}
+.fx-tracer{stroke:var(--amber); stroke-width:2.5; vector-effect:non-scaling-stroke; stroke-dasharray:7 5;
+  stroke-linecap:round; animation:fxMarch .5s linear infinite; transition:opacity .45s, stroke .2s;
+  filter:drop-shadow(0 0 2px rgba(0,0,0,.9));}
+.fx-tracer.fx-grenade{stroke:#e0bb3d; stroke-dasharray:2 6;}
+.fx-tracer.fx-assault{stroke:#e8e2cf; stroke-width:3.5; stroke-dasharray:none;}
+.fx-tracer.fx-hit{stroke:#e05a4a; stroke-width:3.5; stroke-dasharray:none; animation:none;}
+.fx-tracer.fx-miss, .fx-tracer.fx-stale{stroke:#8c8e80; animation:none; opacity:.7;}
+.fx-tracer.fx-jam{stroke:#8c8e80; stroke-dasharray:2 10; animation:none;}
+@keyframes fxMarch{to{stroke-dashoffset:-12;}}
+.fx-trail{stroke:var(--paper); stroke-width:2; vector-effect:non-scaling-stroke; stroke-dasharray:1 5; stroke-linecap:round;
+  opacity:.75; transition:opacity .45s;}
+.fx-gone{opacity:0 !important;}
+.fx-die{position:absolute; z-index:7; transform:translate(-50%,-50%); width:26px; height:26px; border-radius:4px;
+  background:var(--paper); color:#22221E; font-family:var(--font-mono); font-weight:700; font-size:15px;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.7); pointer-events:none;
+  animation:fxRise 1.5s ease-out forwards;}
+.fx-die.fx-hit, .fx-die.fx-bad{background:#e05a4a; color:#fff;}
+.fx-die.fx-miss{background:#8c8e80; color:#22221a;}
+@keyframes fxRise{0%{opacity:0; margin-top:6px;} 15%{opacity:1; margin-top:0;} 75%{opacity:1;} 100%{opacity:0; margin-top:-26px;}}
+.fx-badge{position:absolute; z-index:7; transform:translate(-50%,-100%); padding:2px 7px; border-radius:2px; white-space:nowrap;
+  font-family:var(--font-head); font-size:13px; letter-spacing:.8px; pointer-events:none; box-shadow:0 2px 6px rgba(0,0,0,.7);
+  background:var(--paper); color:#22221E; animation:fxPop .22s ease-out; transition:opacity .45s;}
+.fx-badge.fx-bad{background:#8E2A22; color:#fff;}
+.fx-badge.fx-amber{background:var(--amber); color:#22221a;}
+.fx-badge.fx-neutral{background:#3a3b32; color:var(--paper); border:1px solid #5a5b4f;}
+@keyframes fxPop{from{transform:translate(-50%,-100%) scale(.6); opacity:0;} to{transform:translate(-50%,-100%) scale(1); opacity:1;}}
+.fx-blast{position:absolute; z-index:6; width:6%; aspect-ratio:1/1; transform:translate(-50%,-50%); border-radius:50%;
+  background:radial-gradient(circle,#fff3c4 0%,#e0bb3d 35%,rgba(224,90,74,.6) 60%,transparent 72%); pointer-events:none;
+  animation:fxBlast .8s ease-out forwards;}
+.fx-blast.fx-dud{background:radial-gradient(circle,rgba(200,200,190,.5) 0%,transparent 65%);}
+@keyframes fxBlast{0%{opacity:0; transform:translate(-50%,-50%) scale(.3);} 20%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-50%) scale(1.5);}}
+/* Phase 4 — muzzle flash, map shake on a hit, status stamp on the counter (world px; never smaller than
+ * a readable size on screen, --inv = 1 / the board's scale) */
+.fx-flash{position:absolute; z-index:6; width:150px; height:150px; transform:translate(-50%,-50%); border-radius:50%;
+  background:radial-gradient(circle,#fff 0%,#fff3c4 22%,rgba(224,187,61,.7) 45%,transparent 70%); pointer-events:none;
+  animation:fxFlash .4s ease-out forwards;}
+@keyframes fxFlash{0%{opacity:0; scale:.4;} 15%{opacity:1; scale:1;} 100%{opacity:0; scale:1.3;}}
+#world.fx-shake{animation:fxShake .4s linear;}
+@keyframes fxShake{0%,100%{translate:0 0;} 15%{translate:-7px 3px;} 30%{translate:6px -4px;} 45%{translate:-5px -2px;}
+  60%{translate:4px 3px;} 75%{translate:-2px 1px;} 90%{translate:1px -1px;}}
+.fx-stamp{position:absolute; z-index:8; transform:translate(-50%,-50%) rotate(-9deg); pointer-events:none; white-space:nowrap;
+  font:400 max(46px, calc(18px * var(--inv, 1)))/1 var(--font-head); letter-spacing:3px; text-transform:uppercase;
+  padding:.12em .35em .08em; border:max(6px, calc(3px * var(--inv, 1))) double currentColor; border-radius:.12em;
+  color:#e0503f; background:rgba(20,18,14,.72); text-shadow:0 2px 6px rgba(0,0,0,.6);
+  animation:fxStamp .32s cubic-bezier(.2,1.6,.4,1) both; transition:opacity .45s;}
+.fx-stamp.fx-amber{color:var(--amber);}
+@keyframes fxStamp{0%{opacity:0; scale:2.4;} 60%{opacity:1; scale:.94;} 100%{opacity:1; scale:1;}}
+body.still .fx-stamp, body.still .fx-flash{animation:none;}
+.fx-stamp small{display:block; font-size:.42em; letter-spacing:1px; text-align:center; margin-top:.15em;}
+
+
+/* v2 task 5 — the map as an information surface (cards mode only) */
+#info-layer{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1;}
+#info-layer .reach{stroke:rgba(237,230,212,.35); stroke-width:4;}
+#info-layer .reach.cov-open{fill:rgba(224,90,74,.20);}
+#info-layer .reach.cov-light{fill:rgba(201,162,39,.22);}
+#info-layer .reach.cov-good{fill:rgba(143,206,106,.26);}
+#info-layer .route{fill:none; stroke:var(--amber); stroke-width:10; stroke-linejoin:round; stroke-linecap:round;
+  stroke-dasharray:22 16; opacity:.85;}
+#info-layer .route-end{fill:rgba(201,162,39,.45); stroke:var(--amber); stroke-width:6;}
+#info-layer .edge{stroke-linecap:round;}
+#info-layer .edge-wall{stroke:#1a1a14; stroke-width:16;}
+#info-layer .edge-aperture_window{stroke:#7fb7d9; stroke-width:12; stroke-dasharray:18 12;}
+#info-layer .edge-aperture_door{stroke:#e0bb3d; stroke-width:14;}
+#info-layer .edge-crest, #info-layer .edge-embankment{stroke:#8a6a3a; stroke-width:10; stroke-dasharray:6 10;}
+#info-tip{position:fixed; z-index:50; display:none; max-width:300px; pointer-events:none; padding:8px 10px;
+  background:rgba(31,32,25,.97); border:1px solid var(--panel-border); border-left:3px solid var(--amber); border-radius:3px;
+  box-shadow:0 6px 18px rgba(0,0,0,.6); font-size:11.5px; line-height:1.5; color:var(--text-body);}
+#info-tip b{color:var(--paper);}
+#info-tip hr{border:none; border-top:1px dashed #4a4b3f; margin:6px 0;}
+#info-tip .ih-head{font-family:var(--font-mono); font-size:11px; color:var(--paper); margin-bottom:3px;}
+#info-tip .ih-cov{font-size:9.5px; text-transform:uppercase; letter-spacing:.7px; padding:0 4px; border-radius:2px; margin-left:4px;}
+#info-tip .ih-cov.cov-open{background:rgba(224,90,74,.35);}
+#info-tip .ih-cov.cov-light{background:rgba(201,162,39,.35);}
+#info-tip .ih-cov.cov-good{background:rgba(143,206,106,.35);}
+#info-tip .ih-dim{color:var(--text-label);}
+#info-tip .ih-warn{color:#e8b9b3;}
+#info-tip .ih-close{font-size:10px; margin-top:5px; border-top:1px dashed #4a4b3f; padding-top:4px;}
+#info-tip .ih-reason{color:var(--amber); font-size:10.5px; margin-top:3px;}
+
+/* v2 task 4 — radio log */
+.log-line.radio details summary{cursor:pointer; list-style:none;}
+.log-line.radio details summary::-webkit-details-marker{display:none;}
+.log-line.radio .why{font-size:9.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--amber);
+  border:1px solid #5a5b4f; border-radius:2px; padding:0 4px; margin-left:4px;}
+.log-line.radio details[open] .why{background:var(--amber); color:#22221a;}
+.radio-detail{margin:5px 0 3px; padding:6px 8px; background:#1f2019; border-left:2px solid var(--amber); color:var(--paper); font-size:10.5px;}
+.log-line.radio.para{border-left:2px solid var(--amber); padding-left:6px; margin:2px 0;}
+.log-line.radio.para summary{color:var(--amber); font-weight:600;}
+.radio-clip{display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; color:var(--paper);
+  font-weight:400; margin-top:2px;}
+.log-line.radio.para details[open] .radio-clip{display:none;}
+body.resolving #board{cursor:progress;}
+
+/* ======================================================================================
+ * v3 (Phase 3): Mission 1 on the stage. The map fills the window; everything below floats.
+ * ====================================================================================== */
+
+/* v2's dialogs keep their own frame; the shell's .popup look must not stack on them */
+#dialogs-root .popup{padding:0; transform:none; overflow:hidden; background:var(--panel-solid); border-color:var(--edge-hi);
+  border-radius:var(--r); box-shadow:var(--shadow);}
+#dialogs-root .popup .popup-head{border-radius:var(--r) var(--r) 0 0; font-size:13px; background:#1a1b14;}
+#dialogs-root .popup .popup-body{font-size:15px; color:var(--ink);}
+#dialogs-root .btn{padding:9px 16px; font-size:14px;}
+#dialogs-root .btn.amber{background:var(--amber); border-color:var(--amber); color:#17170f;}
+.btn:disabled{opacity:.4; cursor:not-allowed;}
+.btn.active{background:var(--amber); border-color:var(--amber); color:#17170f;}
+.btn.wide{width:100%;}
+
+/* strip: the phase, and v2's resolution speed kept but driven from Settings */
+.strip .phase{display:flex; flex-direction:column; line-height:1.15; padding:0 10px 0 2px; border-right:1px solid var(--edge); margin-right:4px; min-width:150px;}
+.strip .phase small{font-size:11px; color:var(--ink-3); letter-spacing:.14em; text-transform:uppercase;}
+.strip .phase b{font:400 19px/1.05 var(--font-head); letter-spacing:.05em; color:var(--amber); white-space:nowrap;}
+#speedCtl{display:none !important;}
+@media (max-width:1250px){ #objectivesBtn, #voiceBtn{display:none;} }
+
+/* the floating panels */
+.hud-panel{position:absolute; z-index:20; background:var(--panel); border:1px solid var(--edge); border-radius:var(--r);
+  box-shadow:var(--shadow); padding:12px 14px; color:var(--ink);}
+.hud-panel h3{margin:0 0 6px; font:600 11px/1.2 var(--font-ui); letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);}
+.hud-panel .sec{border-top:1px solid var(--edge); margin-top:10px; padding-top:10px;}
+#hud-status{top:86px; right:16px; width:300px; max-height:calc(100% - 110px); overflow-y:auto;}
+#hud-soldier{left:16px; bottom:16px; width:330px;}
+
+#status-banner{font:400 19px/1.2 var(--font-head); letter-spacing:.04em; text-align:left; color:var(--amber); padding:2px 0 8px;}
+#status-banner.win{color:var(--clear);}
+#status-banner.lose{color:#f0a89e;}
+.vp{display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:6px;}
+.vp-readout{display:flex; flex-direction:column; align-items:flex-start; padding:6px 8px; background:var(--panel-2); border-radius:var(--r-sm);
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);}
+.vp-readout b{font:400 26px/1 var(--font-head); color:var(--ink); letter-spacing:.03em;}
+.vp-readout.total b{color:var(--amber);}
+.vp-readout small{text-transform:none; letter-spacing:0; font-size:11px;}
+
+.ar-track{display:flex; flex-direction:column; gap:4px;}
+.ar-slot{background:var(--panel-2); border:1px solid var(--edge); border-radius:var(--r-sm); padding:5px 8px;
+  font:12px/1.35 var(--font-mono); color:var(--ink-2); display:flex; justify-content:space-between; gap:6px;}
+.ar-slot.current{border-color:var(--amber); background:rgba(201,162,39,.14); color:var(--ink);}
+.ar-slot .label{color:var(--ink-3); text-transform:uppercase; font-size:11px; letter-spacing:.08em;}
+.ar-slot .occ .g{color:#e7a39a;}
+
+.mini-card{display:block;}
+.mini-card .row{display:flex; align-items:center; gap:10px;}
+.mini-card img{width:46px; height:46px; object-fit:contain; background:rgba(255,255,255,.06); border-radius:var(--r-sm);}
+.mini-card .name{font:400 24px/1 var(--font-head); color:var(--amber); letter-spacing:.04em;}
+.mini-card .stats{font:12.5px/1.6 var(--font-mono); color:var(--ink-2); margin-top:6px;}
+.mp-readout{font:12.5px/1.5 var(--font-mono); color:var(--ink-2); margin-top:4px;}
+.mp-readout b{color:var(--amber); font-size:16px;}
+.hud-panel .opt{margin-top:8px; font-size:13px; color:var(--ink-2); line-height:1.4;}
+.hud-panel .opt input{accent-color:var(--amber);}
+
+/* popups that hold v2's log and roster */
+.popup.wide{width:min(820px,94vw);}
+#combatlog{max-height:62vh; overflow-y:auto;}
+.log-line{font:12.5px/1.55 var(--font-mono); padding:4px 0; border-bottom:1px dashed #34362b; color:var(--ink-2);}
+.log-line b{color:var(--ink);}
+.roster-slot{display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid #2a2b22; font:13px/1.4 var(--font-mono); color:var(--ink-2);}
+.roster-slot img{width:38px; height:38px; object-fit:contain;}
+.roster-slot .letter{color:var(--amber); font-weight:700; width:16px;}
+.roster-slot.dead{opacity:.45;}
+.menu .pair{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.menu .pair .btn{width:100%;}
+
+/* ---- the ring menu (ring.js) */
+#ring{position:absolute; inset:0; z-index:25; pointer-events:none;}
+#ring .ring-group{display:none;}
+#ring.on .ring-group.on{display:block;}
+#ring .btn{position:absolute; transform:translate(-50%,-50%); pointer-events:auto; white-space:nowrap;
+  padding:7px 13px; font-size:14px; border-radius:999px; background:rgba(20,21,16,.95); border-color:var(--edge-hi);
+  box-shadow:0 3px 10px rgba(0,0,0,.6); animation:ringIn .16s ease-out both;}
+#ring .btn:hover:not(:disabled){background:var(--amber); color:#17170f; border-color:var(--amber);}
+#ring .btn.pass{border-color:var(--amber); color:var(--amber);}
+#ring .btn.active{background:var(--amber); color:#17170f;}
+#ring .btn:disabled{opacity:1; color:var(--ink-3); background:rgba(20,21,16,.82); border-style:dashed; cursor:help;}
+#ring .btn.ring-off, #ring.away .btn{display:none;}
+#hud-soldier .mini-card{cursor:pointer;}
+#hud-soldier .mini-card:hover .name{text-decoration:underline;}
+#ring .btn[data-why]:disabled:hover::after{content:attr(data-why); position:absolute; left:50%; top:calc(100% + 8px);
+  transform:translateX(-50%); width:max-content; max-width:300px; white-space:normal; text-align:left;
+  padding:8px 11px; border-radius:var(--r-sm); background:#1d1e16; border:1px solid var(--amber);
+  font:500 13px/1.4 var(--font-ui); color:var(--ink); box-shadow:var(--shadow); z-index:2;}
+#ring .btn.why-up[data-why]:disabled:hover::after{top:auto; bottom:calc(100% + 8px);}
+#ring #cancelMoveBtn{width:auto; border-color:var(--alert);}
+@keyframes ringIn{from{opacity:0; transform:translate(-50%,-50%) scale(.7);} to{opacity:1; transform:translate(-50%,-50%) scale(1);}}
+body.still #ring .btn{animation:none;}
+
+/* ---- world space: the board scales as one transform (board.js); marks keep their size on the map,
+ * labels keep their size on screen (--inv = 1 / the board's scale). */
+#world .entry-hex, #world .dest-mark, #world .event-marker{min-width:60px;}
+#world .dest-mark{font-size:calc(13px * var(--inv, 1));}
+#world .event-marker::after{font-size:calc(14px * var(--inv, 1));}
+#world .fx-die{width:calc(28px * var(--inv, 1)); height:calc(28px * var(--inv, 1)); font-size:calc(16px * var(--inv, 1));
+  border-radius:calc(4px * var(--inv, 1));}
+#world .fx-badge{font-size:calc(15px * var(--inv, 1)); padding:calc(3px * var(--inv, 1)) calc(8px * var(--inv, 1));
+  border-radius:calc(3px * var(--inv, 1));}
+#world .fx-badge.fx-gone{opacity:0;}
+#world .res-card{transform:scale(var(--inv, 1)); transform-origin:var(--card-origin, left top); width:320px;}
+#world .res-paragraph{font-size:12px;}
+#world #info-layer .route{stroke-width:calc(4px * var(--inv, 1));}
+
+/* §6/1 choosing who goes next (punch list, 2026-10-21) */
+#pick-list{display:flex; flex-direction:column; gap:6px; margin-top:8px;}
+#pick-list .btn.pick{justify-content:flex-start; gap:10px; padding:6px 10px; text-align:left;}
+#pick-list .btn.pick img{width:36px; height:36px; object-fit:contain;}
+#pick-list .btn.pick small{margin-left:auto; font:12px var(--font-mono); color:var(--ink-3);}
+#pick-list .btn.pick:hover small{color:inherit;}
+/* a fixed width on screen, so the glow reads at every zoom (--inv = 1 / the board's scale) */
+#world .counter.eligible{outline:calc(4px * var(--inv, 1)) solid var(--amber); outline-offset:calc(3px * var(--inv, 1));
+  animation:counter-pick 1s ease-in-out infinite; z-index:3;}
+@keyframes counter-pick{0%,100%{outline-color:var(--amber);} 50%{outline-color:#fff3c4;}}
+body.still .counter.eligible{animation:none;}
+/* the card that holds the next turn: Done is the press */
+#world .res-card.done .res-done{background:var(--amber); border-color:var(--amber); color:#17170f;}
+
+/* ---- stacks (stack.js, punch list 2): the ×N badge and the panel of everything in the hex */
+#world .stack-badge{position:absolute; right:calc(-8px * var(--inv, 1)); top:calc(-8px * var(--inv, 1)); z-index:3;
+  min-width:calc(22px * var(--inv, 1)); padding:0 calc(5px * var(--inv, 1)); border-radius:999px;
+  background:var(--amber); color:#17170f; border:calc(1.5px * var(--inv, 1)) solid #17170f;
+  font:700 calc(13px * var(--inv, 1))/calc(20px * var(--inv, 1)) var(--font-ui); text-align:center; pointer-events:none;}
+#stack-panel{position:absolute; z-index:35; width:380px; max-height:calc(100% - 110px); overflow-y:auto; display:none;
+  background:var(--panel-solid); border:1px solid var(--edge-hi); border-radius:var(--r); box-shadow:var(--shadow); padding:10px 12px 12px;}
+#stack-panel.show{display:block; animation:ringIn .14s ease-out;}
+#stack-panel header{display:flex; align-items:baseline; gap:10px; margin-bottom:6px;}
+#stack-panel header b{font:400 24px/1 var(--font-head); letter-spacing:.05em; color:var(--amber);}
+#stack-panel header span{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3);}
+#stack-panel header .close{margin-left:auto; padding:2px 11px; font-size:18px;}
+#stack-panel .who{margin:0 0 8px; font-size:13px; color:var(--ink-2);}
+#stack-panel .tok{display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-top:1px solid var(--edge);}
+#stack-panel .tok img{width:44px; height:44px; object-fit:contain; flex:none; background:rgba(208,221,60,.85); border-radius:5px;}
+#stack-panel .tok.de img{background:rgba(200,219,208,.85);}
+#stack-panel .tok.down{opacity:.7;}
+#stack-panel .tok.down img{filter:grayscale(1);}
+#stack-panel .tok.current .id b{color:var(--amber);}
+#stack-panel .id{flex:1; min-width:0;}
+#stack-panel .id b{display:block; font-size:15px;}
+#stack-panel .id small{font:12px var(--font-mono); color:var(--ink-3);}
+#stack-panel .gear{display:flex; flex-wrap:wrap; gap:4px; margin-top:5px;}
+#stack-panel .item{font:12px/1.2 var(--font-mono); padding:4px 7px; border-radius:4px; background:var(--panel-2); color:var(--ink-2);}
+#stack-panel .item.none{background:none; padding-left:0;}
+#stack-panel .btn.take{padding:4px 9px; font-size:12.5px; border-color:var(--amber); color:var(--amber);}
+#stack-panel .btn.take:hover{background:var(--amber); color:#17170f;}
+#stack-panel .btn.act{padding:6px 12px; font-size:13px; flex:none; align-self:center;}
+
+/* ---- Kit: what a soldier carries (2026-10-25) ------------------------------------------- */
+.kit{margin-top:6px; font:12px/1.5 var(--font-mono); color:var(--text-body);}
+.kit-weapon, .kit-row{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px;}
+.kit-k{color:var(--text-label); text-transform:uppercase; font-size:11px; letter-spacing:.06em;}
+.kit b{color:var(--paper); font-weight:700;}
+.kit b.kit-zero{color:#f0a49a;}
+.kit-sub{color:var(--ink-2); font-size:11.5px; margin:1px 0 3px;}
+.kit-state{font-style:normal; font-size:11px; font-weight:700; padding:0 6px; border-radius:3px; letter-spacing:.04em;}
+.kit-state.ok{color:#c7e5a2; background:rgba(127,163,74,.22);}
+.kit-state.warn{color:#e6c867; background:rgba(201,162,39,.2);}
+.kit-state.bad{color:#f2c6bd; background:rgba(181,58,46,.45);}
+.kit-boxes{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;}
+.kit-box{font-size:11px; padding:1px 6px; border:1px solid var(--edge-hi); border-radius:3px; color:var(--paper);}
+.kit-box.gren{border-color:var(--amber); color:#e6c867;}
+.kit-box.empty{border-style:dashed; color:var(--text-label);}
+.kit.compact{margin-top:4px;}
+.roster-slot{align-items:flex-start;}
+.roster-main{flex:1; min-width:0;}
+.roster-name{color:var(--paper); font-weight:700;}
+.roster-stats{display:block; color:var(--ink-2); font-weight:400; font-size:12px;}
+
+/* ---- Token strip: the kit as the boxed game's tokens (2026-10-25) --------------------------
+   Khaki slots like the counters, so dark art (MP40, Thompson, Luger) never sinks into the panel. */
+.tok-strip{display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px 12px; margin:4px 0 6px;}
+.tok-weapons, .tok-boxes{display:flex; flex-wrap:wrap; gap:5px;}
+.tok-slot{position:relative; width:76px; height:76px; border-radius:5px; background:#d8cfae;
+  border:2px solid #8f8763; box-sizing:border-box; display:flex; align-items:center; justify-content:center;}
+.tok-slot img{width:100%; height:100%; object-fit:contain;}
+.tok-slot b{font:700 11px/1.2 var(--font-mono); color:#22221a; text-align:center; padding:4px;}
+.tok-slot.in-hand{border-color:var(--amber); box-shadow:0 0 0 2px rgba(201,162,39,.45);}
+.tok-slot.bad{border-color:#e0503f; box-shadow:0 0 0 2px rgba(224,80,63,.5);}
+.tok-slot.empty{background:transparent; border:2px dashed var(--edge-hi);}
+.tok-box{position:relative; width:34px; height:34px; border-radius:4px; background:#d8cfae; border:1px solid #8f8763;
+  box-sizing:border-box;}
+.tok-box img{width:100%; height:100%; object-fit:contain;}
+.tok-box.gren{border-color:var(--amber);}
+.tok-box.other{opacity:.75;}
+.tok-box i{position:absolute; left:0; right:0; bottom:0; font:700 8.5px/1.2 var(--font-mono); font-style:normal;
+  color:#fff; background:rgba(20,20,14,.82); text-align:center; border-radius:0 0 3px 3px;}
+.tok-box.empty{background:transparent; border:1px dashed var(--edge-hi);}
+.tok-strip.compact .tok-slot{width:58px; height:58px;}
+.tok-strip.compact .tok-box{width:26px; height:26px;}
+.tok-strip.compact .tok-box i{display:none;}
+.tok-slot.span2{width:157px;}
+.tok-strip.compact .tok-slot.span2{width:121px;}

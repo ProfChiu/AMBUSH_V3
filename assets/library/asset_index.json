@@ -1,0 +1,2701 @@
+{
+ "generated": "tools/build_assets.py",
+ "counter_source": "source/assets/Ambush_Counters_-_8.5x11_Front_&_Rear_With_Visible_Cut_Line (300 DPI remastered set)",
+ "sheet_geometry": {
+  "f50": {
+   "cell_px": 150,
+   "cols": 12,
+   "rows": 17,
+   "origin": [
+    185,
+    174
+   ],
+   "pitch": [
+    184.45,
+    174.875
+   ],
+   "inset_px": 5
+  },
+  "r50": {
+   "cell_px": 150,
+   "cols": 12,
+   "rows": 17,
+   "origin": [
+    185,
+    174
+   ],
+   "pitch": [
+    184.45,
+    174.875
+   ],
+   "inset_px": 5
+  },
+  "f63": {
+   "cell_px": 189,
+   "cols": 10,
+   "rows": 13,
+   "origin": [
+    178,
+    229
+   ],
+   "pitch": [
+    222.0,
+    223.83
+   ],
+   "inset_px": 5
+  },
+  "r63": {
+   "cell_px": 189,
+   "cols": 10,
+   "rows": 13,
+   "origin": [
+    178,
+    229
+   ],
+   "pitch": [
+    222.0,
+    223.83
+   ],
+   "inset_px": 5
+  }
+ },
+ "rear_sheets_are_mirrored": true,
+ "counters": {
+  "ar_de_L_in2": {
+   "name": "ar_de_L_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c00"
+   ],
+   "file": "ar_markers/ar_de_L_in2.png"
+  },
+  "ar_de_L_in3": {
+   "name": "ar_de_L_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c11"
+   ],
+   "file": "ar_markers/ar_de_L_in3.png"
+  },
+  "ar_de_M_in3": {
+   "name": "ar_de_M_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c01"
+   ],
+   "file": "ar_markers/ar_de_M_in3.png"
+  },
+  "ar_de_M_in4": {
+   "name": "ar_de_M_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c10"
+   ],
+   "file": "ar_markers/ar_de_M_in4.png"
+  },
+  "ar_de_N_in4": {
+   "name": "ar_de_N_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c02"
+   ],
+   "file": "ar_markers/ar_de_N_in4.png"
+  },
+  "ar_de_N_in5": {
+   "name": "ar_de_N_in5",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c09"
+   ],
+   "file": "ar_markers/ar_de_N_in5.png"
+  },
+  "ar_de_P_in0": {
+   "name": "ar_de_P_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c03"
+   ],
+   "file": "ar_markers/ar_de_P_in0.png"
+  },
+  "ar_de_P_in1": {
+   "name": "ar_de_P_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c08"
+   ],
+   "file": "ar_markers/ar_de_P_in1.png"
+  },
+  "ar_de_Q_in0": {
+   "name": "ar_de_Q_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c07"
+   ],
+   "file": "ar_markers/ar_de_Q_in0.png"
+  },
+  "ar_de_Q_in1": {
+   "name": "ar_de_Q_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c04"
+   ],
+   "file": "ar_markers/ar_de_Q_in1.png"
+  },
+  "ar_de_R_in1": {
+   "name": "ar_de_R_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c06"
+   ],
+   "file": "ar_markers/ar_de_R_in1.png"
+  },
+  "ar_de_R_in2": {
+   "name": "ar_de_R_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c05"
+   ],
+   "file": "ar_markers/ar_de_R_in2.png"
+  },
+  "ar_de_S_in2": {
+   "name": "ar_de_S_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c06"
+   ],
+   "file": "ar_markers/ar_de_S_in2.png"
+  },
+  "ar_de_S_in3": {
+   "name": "ar_de_S_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c05"
+   ],
+   "file": "ar_markers/ar_de_S_in3.png"
+  },
+  "ar_de_T_in2": {
+   "name": "ar_de_T_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c07"
+   ],
+   "file": "ar_markers/ar_de_T_in2.png"
+  },
+  "ar_de_T_in3": {
+   "name": "ar_de_T_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c04"
+   ],
+   "file": "ar_markers/ar_de_T_in3.png"
+  },
+  "ar_de_U_in2": {
+   "name": "ar_de_U_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c03"
+   ],
+   "file": "ar_markers/ar_de_U_in2.png"
+  },
+  "ar_de_U_in3": {
+   "name": "ar_de_U_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c08"
+   ],
+   "file": "ar_markers/ar_de_U_in3.png"
+  },
+  "ar_de_V_in0": {
+   "name": "ar_de_V_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c02"
+   ],
+   "file": "ar_markers/ar_de_V_in0.png"
+  },
+  "ar_de_V_in1": {
+   "name": "ar_de_V_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c09"
+   ],
+   "file": "ar_markers/ar_de_V_in1.png"
+  },
+  "ar_de_W_in1": {
+   "name": "ar_de_W_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c01"
+   ],
+   "file": "ar_markers/ar_de_W_in1.png"
+  },
+  "ar_de_W_in2": {
+   "name": "ar_de_W_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c10"
+   ],
+   "file": "ar_markers/ar_de_W_in2.png"
+  },
+  "ar_de_X_in3": {
+   "name": "ar_de_X_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r05c11"
+   ],
+   "file": "ar_markers/ar_de_X_in3.png"
+  },
+  "ar_de_X_in4": {
+   "name": "ar_de_X_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r05c00"
+   ],
+   "file": "ar_markers/ar_de_X_in4.png"
+  },
+  "ar_de_Y_in4": {
+   "name": "ar_de_Y_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c11"
+   ],
+   "file": "ar_markers/ar_de_Y_in4.png"
+  },
+  "ar_de_Y_in5": {
+   "name": "ar_de_Y_in5",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c00"
+   ],
+   "file": "ar_markers/ar_de_Y_in5.png"
+  },
+  "ar_de_Z_in4": {
+   "name": "ar_de_Z_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c10"
+   ],
+   "file": "ar_markers/ar_de_Z_in4.png"
+  },
+  "ar_de_Z_in5": {
+   "name": "ar_de_Z_in5",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c01"
+   ],
+   "file": "ar_markers/ar_de_Z_in5.png"
+  },
+  "ar_us_A_in2": {
+   "name": "ar_us_A_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c11"
+   ],
+   "file": "ar_markers/ar_us_A_in2.png"
+  },
+  "ar_us_A_in3": {
+   "name": "ar_us_A_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c00"
+   ],
+   "file": "ar_markers/ar_us_A_in3.png"
+  },
+  "ar_us_A_in4": {
+   "name": "ar_us_A_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c10"
+   ],
+   "file": "ar_markers/ar_us_A_in4.png"
+  },
+  "ar_us_A_in5": {
+   "name": "ar_us_A_in5",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c01"
+   ],
+   "file": "ar_markers/ar_us_A_in5.png"
+  },
+  "ar_us_B_in2": {
+   "name": "ar_us_B_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c09"
+   ],
+   "file": "ar_markers/ar_us_B_in2.png"
+  },
+  "ar_us_B_in3": {
+   "name": "ar_us_B_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c02"
+   ],
+   "file": "ar_markers/ar_us_B_in3.png"
+  },
+  "ar_us_B_in4": {
+   "name": "ar_us_B_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c08"
+   ],
+   "file": "ar_markers/ar_us_B_in4.png"
+  },
+  "ar_us_B_in5": {
+   "name": "ar_us_B_in5",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c03"
+   ],
+   "file": "ar_markers/ar_us_B_in5.png"
+  },
+  "ar_us_C_in1": {
+   "name": "ar_us_C_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c07"
+   ],
+   "file": "ar_markers/ar_us_C_in1.png"
+  },
+  "ar_us_C_in2": {
+   "name": "ar_us_C_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c04"
+   ],
+   "file": "ar_markers/ar_us_C_in2.png"
+  },
+  "ar_us_C_in3": {
+   "name": "ar_us_C_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c06"
+   ],
+   "file": "ar_markers/ar_us_C_in3.png"
+  },
+  "ar_us_C_in4": {
+   "name": "ar_us_C_in4",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c05"
+   ],
+   "file": "ar_markers/ar_us_C_in4.png"
+  },
+  "ar_us_D_in0": {
+   "name": "ar_us_D_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c05"
+   ],
+   "file": "ar_markers/ar_us_D_in0.png"
+  },
+  "ar_us_D_in1": {
+   "name": "ar_us_D_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c06"
+   ],
+   "file": "ar_markers/ar_us_D_in1.png"
+  },
+  "ar_us_D_in2": {
+   "name": "ar_us_D_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c04"
+   ],
+   "file": "ar_markers/ar_us_D_in2.png"
+  },
+  "ar_us_D_in3": {
+   "name": "ar_us_D_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c07"
+   ],
+   "file": "ar_markers/ar_us_D_in3.png"
+  },
+  "ar_us_E_in0": {
+   "name": "ar_us_E_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c03"
+   ],
+   "file": "ar_markers/ar_us_E_in0.png"
+  },
+  "ar_us_E_in1": {
+   "name": "ar_us_E_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c08"
+   ],
+   "file": "ar_markers/ar_us_E_in1.png"
+  },
+  "ar_us_E_in2": {
+   "name": "ar_us_E_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c02"
+   ],
+   "file": "ar_markers/ar_us_E_in2.png"
+  },
+  "ar_us_E_in3": {
+   "name": "ar_us_E_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c09"
+   ],
+   "file": "ar_markers/ar_us_E_in3.png"
+  },
+  "ar_us_F_in0": {
+   "name": "ar_us_F_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c01"
+   ],
+   "file": "ar_markers/ar_us_F_in0.png"
+  },
+  "ar_us_F_in1": {
+   "name": "ar_us_F_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c10"
+   ],
+   "file": "ar_markers/ar_us_F_in1.png"
+  },
+  "ar_us_F_in2": {
+   "name": "ar_us_F_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r00c00"
+   ],
+   "file": "ar_markers/ar_us_F_in2.png"
+  },
+  "ar_us_F_in3": {
+   "name": "ar_us_F_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r00c11"
+   ],
+   "file": "ar_markers/ar_us_F_in3.png"
+  },
+  "ar_us_G_in0": {
+   "name": "ar_us_G_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c11"
+   ],
+   "file": "ar_markers/ar_us_G_in0.png"
+  },
+  "ar_us_G_in1": {
+   "name": "ar_us_G_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c00"
+   ],
+   "file": "ar_markers/ar_us_G_in1.png"
+  },
+  "ar_us_G_in2": {
+   "name": "ar_us_G_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c10"
+   ],
+   "file": "ar_markers/ar_us_G_in2.png"
+  },
+  "ar_us_G_in3": {
+   "name": "ar_us_G_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c01"
+   ],
+   "file": "ar_markers/ar_us_G_in3.png"
+  },
+  "ar_us_H_in0": {
+   "name": "ar_us_H_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c09"
+   ],
+   "file": "ar_markers/ar_us_H_in0.png"
+  },
+  "ar_us_H_in1": {
+   "name": "ar_us_H_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c02"
+   ],
+   "file": "ar_markers/ar_us_H_in1.png"
+  },
+  "ar_us_H_in2": {
+   "name": "ar_us_H_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c08"
+   ],
+   "file": "ar_markers/ar_us_H_in2.png"
+  },
+  "ar_us_H_in3": {
+   "name": "ar_us_H_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c03"
+   ],
+   "file": "ar_markers/ar_us_H_in3.png"
+  },
+  "ar_us_J_in0": {
+   "name": "ar_us_J_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c07"
+   ],
+   "file": "ar_markers/ar_us_J_in0.png"
+  },
+  "ar_us_J_in1": {
+   "name": "ar_us_J_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c04"
+   ],
+   "file": "ar_markers/ar_us_J_in1.png"
+  },
+  "ar_us_J_in2": {
+   "name": "ar_us_J_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c06"
+   ],
+   "file": "ar_markers/ar_us_J_in2.png"
+  },
+  "ar_us_J_in3": {
+   "name": "ar_us_J_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c05"
+   ],
+   "file": "ar_markers/ar_us_J_in3.png"
+  },
+  "ar_us_K_in0": {
+   "name": "ar_us_K_in0",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c05"
+   ],
+   "file": "ar_markers/ar_us_K_in0.png"
+  },
+  "ar_us_K_in1": {
+   "name": "ar_us_K_in1",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c06"
+   ],
+   "file": "ar_markers/ar_us_K_in1.png"
+  },
+  "ar_us_K_in2": {
+   "name": "ar_us_K_in2",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c04"
+   ],
+   "file": "ar_markers/ar_us_K_in2.png"
+  },
+  "ar_us_K_in3": {
+   "name": "ar_us_K_in3",
+   "group": "ar_markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c07"
+   ],
+   "file": "ar_markers/ar_us_K_in3.png"
+  },
+  "de_soldier_L_crouching": {
+   "name": "de_soldier_L_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c06"
+   ],
+   "file": "soldiers/de_soldier_L_crouching.png"
+  },
+  "de_soldier_L_standing": {
+   "name": "de_soldier_L_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c03"
+   ],
+   "file": "soldiers/de_soldier_L_standing.png"
+  },
+  "de_soldier_M_crouching": {
+   "name": "de_soldier_M_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c05"
+   ],
+   "file": "soldiers/de_soldier_M_crouching.png"
+  },
+  "de_soldier_M_standing": {
+   "name": "de_soldier_M_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c04"
+   ],
+   "file": "soldiers/de_soldier_M_standing.png"
+  },
+  "de_soldier_N_crouching": {
+   "name": "de_soldier_N_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c04"
+   ],
+   "file": "soldiers/de_soldier_N_crouching.png"
+  },
+  "de_soldier_N_standing": {
+   "name": "de_soldier_N_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c05"
+   ],
+   "file": "soldiers/de_soldier_N_standing.png"
+  },
+  "de_soldier_P_crouching": {
+   "name": "de_soldier_P_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c03"
+   ],
+   "file": "soldiers/de_soldier_P_crouching.png"
+  },
+  "de_soldier_P_standing": {
+   "name": "de_soldier_P_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c06"
+   ],
+   "file": "soldiers/de_soldier_P_standing.png"
+  },
+  "de_soldier_Q_crouching": {
+   "name": "de_soldier_Q_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c02"
+   ],
+   "file": "soldiers/de_soldier_Q_crouching.png"
+  },
+  "de_soldier_Q_standing": {
+   "name": "de_soldier_Q_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c07"
+   ],
+   "file": "soldiers/de_soldier_Q_standing.png"
+  },
+  "de_soldier_R_crouching": {
+   "name": "de_soldier_R_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c01"
+   ],
+   "file": "soldiers/de_soldier_R_crouching.png"
+  },
+  "de_soldier_R_standing": {
+   "name": "de_soldier_R_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c08"
+   ],
+   "file": "soldiers/de_soldier_R_standing.png"
+  },
+  "de_soldier_S_crouching": {
+   "name": "de_soldier_S_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c00"
+   ],
+   "file": "soldiers/de_soldier_S_crouching.png"
+  },
+  "de_soldier_S_standing": {
+   "name": "de_soldier_S_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c09"
+   ],
+   "file": "soldiers/de_soldier_S_standing.png"
+  },
+  "de_soldier_T_crouching": {
+   "name": "de_soldier_T_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c09"
+   ],
+   "file": "soldiers/de_soldier_T_crouching.png"
+  },
+  "de_soldier_T_standing": {
+   "name": "de_soldier_T_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c00"
+   ],
+   "file": "soldiers/de_soldier_T_standing.png"
+  },
+  "de_soldier_U_crouching": {
+   "name": "de_soldier_U_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c08"
+   ],
+   "file": "soldiers/de_soldier_U_crouching.png"
+  },
+  "de_soldier_U_standing": {
+   "name": "de_soldier_U_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c01"
+   ],
+   "file": "soldiers/de_soldier_U_standing.png"
+  },
+  "de_soldier_V_crouching": {
+   "name": "de_soldier_V_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c07"
+   ],
+   "file": "soldiers/de_soldier_V_crouching.png"
+  },
+  "de_soldier_V_standing": {
+   "name": "de_soldier_V_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c02"
+   ],
+   "file": "soldiers/de_soldier_V_standing.png"
+  },
+  "de_soldier_W_crouching": {
+   "name": "de_soldier_W_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c06"
+   ],
+   "file": "soldiers/de_soldier_W_crouching.png"
+  },
+  "de_soldier_W_standing": {
+   "name": "de_soldier_W_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c03"
+   ],
+   "file": "soldiers/de_soldier_W_standing.png"
+  },
+  "de_soldier_X_crouching": {
+   "name": "de_soldier_X_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c05"
+   ],
+   "file": "soldiers/de_soldier_X_crouching.png"
+  },
+  "de_soldier_X_standing": {
+   "name": "de_soldier_X_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c04"
+   ],
+   "file": "soldiers/de_soldier_X_standing.png"
+  },
+  "marker_ar_1turn": {
+   "name": "marker_ar_1turn",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 8,
+   "sheet": "r50",
+   "cells": [
+    "r50 r03c01",
+    "r50 r03c02",
+    "r50 r03c03",
+    "r50 r03c04",
+    "r50 r03c05",
+    "r50 r03c06",
+    "r50 r03c07",
+    "r50 r03c08"
+   ],
+   "file": "markers/marker_ar_1turn.png"
+  },
+  "marker_ar_2turn": {
+   "name": "marker_ar_2turn",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 8,
+   "sheet": "f50",
+   "cells": [
+    "f50 r03c03",
+    "f50 r03c04",
+    "f50 r03c05",
+    "f50 r03c06",
+    "f50 r03c07",
+    "f50 r03c08",
+    "f50 r03c09",
+    "f50 r03c10"
+   ],
+   "file": "markers/marker_ar_2turn.png"
+  },
+  "marker_boobytrap": {
+   "name": "marker_boobytrap",
+   "group": "markers",
+   "size_px": 179,
+   "copies": 14,
+   "sheet": "r63",
+   "cells": [
+    "r63 r03c00",
+    "r63 r03c01",
+    "r63 r03c02",
+    "r63 r03c03",
+    "r63 r03c04",
+    "r63 r03c05",
+    "r63 r03c06",
+    "r63 r03c07",
+    "r63 r03c08",
+    "r63 r03c09",
+    "r63 r04c06",
+    "r63 r04c07",
+    "r63 r04c08",
+    "r63 r04c09"
+   ],
+   "file": "markers/marker_boobytrap.png"
+  },
+  "marker_captured": {
+   "name": "marker_captured",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 9,
+   "sheet": "r50",
+   "cells": [
+    "r50 r08c02",
+    "r50 r08c03",
+    "r50 r08c04",
+    "r50 r08c05",
+    "r50 r08c06",
+    "r50 r08c07",
+    "r50 r08c08",
+    "r50 r08c09",
+    "r50 r08c10"
+   ],
+   "file": "markers/marker_captured.png"
+  },
+  "marker_closed": {
+   "name": "marker_closed",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 6,
+   "sheet": "f50",
+   "cells": [
+    "f50 r08c10",
+    "f50 r08c11",
+    "f50 r09c00",
+    "r50 r08c00",
+    "r50 r08c01",
+    "r50 r09c11"
+   ],
+   "file": "markers/marker_closed.png"
+  },
+  "marker_event": {
+   "name": "marker_event",
+   "group": "markers",
+   "size_px": 179,
+   "copies": 48,
+   "sheet": "f63",
+   "cells": [
+    "f63 r00c00",
+    "f63 r00c01",
+    "f63 r00c02",
+    "f63 r00c03",
+    "f63 r00c04",
+    "f63 r00c05",
+    "f63 r00c06",
+    "f63 r00c07",
+    "f63 r00c08",
+    "f63 r00c09",
+    "f63 r01c00",
+    "f63 r01c01",
+    "f63 r01c02",
+    "f63 r01c03",
+    "f63 r01c04",
+    "f63 r01c05",
+    "f63 r01c06",
+    "f63 r01c07",
+    "f63 r01c08",
+    "f63 r01c09",
+    "f63 r02c00",
+    "f63 r02c01",
+    "f63 r02c02",
+    "f63 r02c03",
+    "r63 r00c00",
+    "r63 r00c01",
+    "r63 r00c02",
+    "r63 r00c03",
+    "r63 r00c04",
+    "r63 r00c05",
+    "r63 r00c06",
+    "r63 r00c07",
+    "r63 r00c08",
+    "r63 r00c09",
+    "r63 r01c00",
+    "r63 r01c01",
+    "r63 r01c02",
+    "r63 r01c03",
+    "r63 r01c04",
+    "r63 r01c05",
+    "r63 r01c06",
+    "r63 r01c07",
+    "r63 r01c08",
+    "r63 r01c09",
+    "r63 r02c06",
+    "r63 r02c07",
+    "r63 r02c08",
+    "r63 r02c09"
+   ],
+   "file": "markers/marker_event.png"
+  },
+  "marker_explosion": {
+   "name": "marker_explosion",
+   "group": "markers",
+   "size_px": 179,
+   "copies": 12,
+   "sheet": "f63",
+   "cells": [
+    "f63 r07c05",
+    "f63 r07c06",
+    "f63 r07c07",
+    "f63 r07c08",
+    "f63 r07c09",
+    "f63 r08c00",
+    "r63 r07c00",
+    "r63 r07c01",
+    "r63 r07c02",
+    "r63 r07c03",
+    "r63 r07c04",
+    "r63 r08c09"
+   ],
+   "file": "markers/marker_explosion.png"
+  },
+  "marker_german_action": {
+   "name": "marker_german_action",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c08"
+   ],
+   "file": "markers/marker_german_action.png"
+  },
+  "marker_german_action_back": {
+   "name": "marker_german_action_back",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c03"
+   ],
+   "file": "markers/marker_german_action_back.png"
+  },
+  "marker_incap": {
+   "name": "marker_incap",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 15,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c00",
+    "r50 r06c01",
+    "r50 r07c00",
+    "r50 r07c01",
+    "r50 r07c02",
+    "r50 r07c03",
+    "r50 r07c04",
+    "r50 r07c05",
+    "r50 r07c06",
+    "r50 r07c07",
+    "r50 r07c08",
+    "r50 r07c09",
+    "r50 r07c10",
+    "r50 r07c11",
+    "r50 r08c11"
+   ],
+   "file": "markers/marker_incap.png"
+  },
+  "marker_kia": {
+   "name": "marker_kia",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 9,
+   "sheet": "f50",
+   "cells": [
+    "f50 r08c01",
+    "f50 r08c02",
+    "f50 r08c03",
+    "f50 r08c04",
+    "f50 r08c05",
+    "f50 r08c06",
+    "f50 r08c07",
+    "f50 r08c08",
+    "f50 r08c09"
+   ],
+   "file": "markers/marker_kia.png"
+  },
+  "marker_minefield": {
+   "name": "marker_minefield",
+   "group": "markers",
+   "size_px": 179,
+   "copies": 14,
+   "sheet": "f63",
+   "cells": [
+    "f63 r03c00",
+    "f63 r03c01",
+    "f63 r03c02",
+    "f63 r03c03",
+    "f63 r03c04",
+    "f63 r03c05",
+    "f63 r03c06",
+    "f63 r03c07",
+    "f63 r03c08",
+    "f63 r03c09",
+    "f63 r04c00",
+    "f63 r04c01",
+    "f63 r04c02",
+    "f63 r04c03"
+   ],
+   "file": "markers/marker_minefield.png"
+  },
+  "marker_prone_de": {
+   "name": "marker_prone_de",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 13,
+   "sheet": "r50",
+   "cells": [
+    "r50 r03c00",
+    "r50 r04c00",
+    "r50 r04c01",
+    "r50 r04c02",
+    "r50 r04c03",
+    "r50 r04c04",
+    "r50 r04c05",
+    "r50 r04c06",
+    "r50 r04c07",
+    "r50 r04c08",
+    "r50 r04c09",
+    "r50 r04c10",
+    "r50 r04c11"
+   ],
+   "file": "markers/marker_prone_de.png"
+  },
+  "marker_prone_us": {
+   "name": "marker_prone_us",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 13,
+   "sheet": "f50",
+   "cells": [
+    "f50 r03c11",
+    "f50 r04c00",
+    "f50 r04c01",
+    "f50 r04c02",
+    "f50 r04c03",
+    "f50 r04c04",
+    "f50 r04c05",
+    "f50 r04c06",
+    "f50 r04c07",
+    "f50 r04c08",
+    "f50 r04c09",
+    "f50 r04c10",
+    "f50 r04c11"
+   ],
+   "file": "markers/marker_prone_us.png"
+  },
+  "marker_wound": {
+   "name": "marker_wound",
+   "group": "markers",
+   "size_px": 140,
+   "copies": 15,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c10",
+    "f50 r06c11",
+    "f50 r07c00",
+    "f50 r07c01",
+    "f50 r07c02",
+    "f50 r07c03",
+    "f50 r07c04",
+    "f50 r07c05",
+    "f50 r07c06",
+    "f50 r07c07",
+    "f50 r07c08",
+    "f50 r07c09",
+    "f50 r07c10",
+    "f50 r07c11",
+    "f50 r08c00"
+   ],
+   "file": "markers/marker_wound.png"
+  },
+  "terrain_antenna": {
+   "name": "terrain_antenna",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r04c06",
+    "r63 r04c03"
+   ],
+   "file": "terrain/terrain_antenna.png"
+  },
+  "terrain_boat": {
+   "name": "terrain_boat",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 4,
+   "sheet": "f63",
+   "cells": [
+    "f63 r02c06",
+    "f63 r02c07",
+    "f63 r02c08",
+    "f63 r02c09"
+   ],
+   "file": "terrain/terrain_boat.png"
+  },
+  "terrain_boat_beached": {
+   "name": "terrain_boat_beached",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 4,
+   "sheet": "r63",
+   "cells": [
+    "r63 r02c00",
+    "r63 r02c01",
+    "r63 r02c02",
+    "r63 r02c03"
+   ],
+   "file": "terrain/terrain_boat_beached.png"
+  },
+  "terrain_building_burning": {
+   "name": "terrain_building_burning",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "r63",
+   "cells": [
+    "r63 r06c03",
+    "r63 r06c04"
+   ],
+   "file": "terrain/terrain_building_burning.png"
+  },
+  "terrain_bunker": {
+   "name": "terrain_bunker",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r05c01",
+    "f63 r05c02"
+   ],
+   "file": "terrain/terrain_bunker.png"
+  },
+  "terrain_bunker_destroyed": {
+   "name": "terrain_bunker_destroyed",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "r63",
+   "cells": [
+    "r63 r05c07",
+    "r63 r05c08"
+   ],
+   "file": "terrain/terrain_bunker_destroyed.png"
+  },
+  "terrain_crate": {
+   "name": "terrain_crate",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r04c08",
+    "r63 r04c01"
+   ],
+   "file": "terrain/terrain_crate.png"
+  },
+  "terrain_crater": {
+   "name": "terrain_crater",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 12,
+   "sheet": "f63",
+   "cells": [
+    "f63 r05c05",
+    "f63 r05c06",
+    "f63 r05c07",
+    "f63 r05c08",
+    "f63 r05c09",
+    "f63 r06c00",
+    "f63 r06c01",
+    "f63 r06c02",
+    "f63 r06c03",
+    "f63 r06c04",
+    "f63 r06c05",
+    "f63 r06c06"
+   ],
+   "file": "terrain/terrain_crater.png"
+  },
+  "terrain_ford": {
+   "name": "terrain_ford",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r05c03",
+    "r63 r05c06"
+   ],
+   "file": "terrain/terrain_ford.png"
+  },
+  "terrain_fuel_cans": {
+   "name": "terrain_fuel_cans",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r04c04",
+    "r63 r04c05"
+   ],
+   "file": "terrain/terrain_fuel_cans.png"
+  },
+  "terrain_launch_tower": {
+   "name": "terrain_launch_tower",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r04c09",
+    "r63 r04c00"
+   ],
+   "file": "terrain/terrain_launch_tower.png"
+  },
+  "terrain_radar": {
+   "name": "terrain_radar",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r04c05",
+    "r63 r04c04"
+   ],
+   "file": "terrain/terrain_radar.png"
+  },
+  "terrain_rail_bridge": {
+   "name": "terrain_rail_bridge",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r05c04",
+    "r63 r05c05"
+   ],
+   "file": "terrain/terrain_rail_bridge.png"
+  },
+  "terrain_roadblock": {
+   "name": "terrain_roadblock",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 4,
+   "sheet": "f63",
+   "cells": [
+    "f63 r06c07",
+    "f63 r06c08",
+    "r63 r06c01",
+    "r63 r06c02"
+   ],
+   "file": "terrain/terrain_roadblock.png"
+  },
+  "terrain_rocket": {
+   "name": "terrain_rocket",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r04c07",
+    "r63 r04c02"
+   ],
+   "file": "terrain/terrain_rocket.png"
+  },
+  "terrain_rubble": {
+   "name": "terrain_rubble",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r02c04",
+    "r63 r02c05"
+   ],
+   "file": "terrain/terrain_rubble.png"
+  },
+  "terrain_ruined_building": {
+   "name": "terrain_ruined_building",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 10,
+   "sheet": "r63",
+   "cells": [
+    "r63 r05c00",
+    "r63 r05c01",
+    "r63 r05c02",
+    "r63 r05c03",
+    "r63 r05c04",
+    "r63 r06c05",
+    "r63 r06c06",
+    "r63 r06c07",
+    "r63 r06c08",
+    "r63 r06c09"
+   ],
+   "file": "terrain/terrain_ruined_building.png"
+  },
+  "terrain_second_level": {
+   "name": "terrain_second_level",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 2,
+   "sheet": "f63",
+   "cells": [
+    "f63 r02c05",
+    "r63 r02c04"
+   ],
+   "file": "terrain/terrain_second_level.png"
+  },
+  "terrain_stream": {
+   "name": "terrain_stream",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 12,
+   "sheet": "f63",
+   "cells": [
+    "f63 r06c09",
+    "f63 r07c00",
+    "f63 r07c01",
+    "f63 r07c02",
+    "f63 r07c03",
+    "f63 r07c04",
+    "r63 r06c00",
+    "r63 r07c05",
+    "r63 r07c06",
+    "r63 r07c07",
+    "r63 r07c08",
+    "r63 r07c09"
+   ],
+   "file": "terrain/terrain_stream.png"
+  },
+  "terrain_wreck_plane_allied": {
+   "name": "terrain_wreck_plane_allied",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r05c00"
+   ],
+   "file": "terrain/terrain_wreck_plane_allied.png"
+  },
+  "terrain_wreck_plane_axis": {
+   "name": "terrain_wreck_plane_axis",
+   "group": "terrain",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r05c09"
+   ],
+   "file": "terrain/terrain_wreck_plane_axis.png"
+  },
+  "us_soldier_A_crouching": {
+   "name": "us_soldier_A_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c08"
+   ],
+   "file": "soldiers/us_soldier_A_crouching.png"
+  },
+  "us_soldier_A_standing": {
+   "name": "us_soldier_A_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c01"
+   ],
+   "file": "soldiers/us_soldier_A_standing.png"
+  },
+  "us_soldier_B_crouching": {
+   "name": "us_soldier_B_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c07"
+   ],
+   "file": "soldiers/us_soldier_B_crouching.png"
+  },
+  "us_soldier_B_standing": {
+   "name": "us_soldier_B_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c02"
+   ],
+   "file": "soldiers/us_soldier_B_standing.png"
+  },
+  "us_soldier_C_crouching": {
+   "name": "us_soldier_C_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c06"
+   ],
+   "file": "soldiers/us_soldier_C_crouching.png"
+  },
+  "us_soldier_C_standing": {
+   "name": "us_soldier_C_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c03"
+   ],
+   "file": "soldiers/us_soldier_C_standing.png"
+  },
+  "us_soldier_D_crouching": {
+   "name": "us_soldier_D_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c05"
+   ],
+   "file": "soldiers/us_soldier_D_crouching.png"
+  },
+  "us_soldier_D_standing": {
+   "name": "us_soldier_D_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c04"
+   ],
+   "file": "soldiers/us_soldier_D_standing.png"
+  },
+  "us_soldier_E_crouching": {
+   "name": "us_soldier_E_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c04"
+   ],
+   "file": "soldiers/us_soldier_E_crouching.png"
+  },
+  "us_soldier_E_standing": {
+   "name": "us_soldier_E_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c05"
+   ],
+   "file": "soldiers/us_soldier_E_standing.png"
+  },
+  "us_soldier_F_crouching": {
+   "name": "us_soldier_F_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c03"
+   ],
+   "file": "soldiers/us_soldier_F_crouching.png"
+  },
+  "us_soldier_F_standing": {
+   "name": "us_soldier_F_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c06"
+   ],
+   "file": "soldiers/us_soldier_F_standing.png"
+  },
+  "us_soldier_G_crouching": {
+   "name": "us_soldier_G_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c02"
+   ],
+   "file": "soldiers/us_soldier_G_crouching.png"
+  },
+  "us_soldier_G_standing": {
+   "name": "us_soldier_G_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c07"
+   ],
+   "file": "soldiers/us_soldier_G_standing.png"
+  },
+  "us_soldier_H_crouching": {
+   "name": "us_soldier_H_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c01"
+   ],
+   "file": "soldiers/us_soldier_H_crouching.png"
+  },
+  "us_soldier_H_standing": {
+   "name": "us_soldier_H_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c08"
+   ],
+   "file": "soldiers/us_soldier_H_standing.png"
+  },
+  "us_soldier_J_crouching": {
+   "name": "us_soldier_J_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r08c00"
+   ],
+   "file": "soldiers/us_soldier_J_crouching.png"
+  },
+  "us_soldier_J_standing": {
+   "name": "us_soldier_J_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r08c09"
+   ],
+   "file": "soldiers/us_soldier_J_standing.png"
+  },
+  "us_soldier_K_crouching": {
+   "name": "us_soldier_K_crouching",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c09"
+   ],
+   "file": "soldiers/us_soldier_K_crouching.png"
+  },
+  "us_soldier_K_standing": {
+   "name": "us_soldier_K_standing",
+   "group": "soldiers",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c00"
+   ],
+   "file": "soldiers/us_soldier_K_standing.png"
+  },
+  "vehicle_bmw_r75": {
+   "name": "vehicle_bmw_r75",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r11c02"
+   ],
+   "file": "vehicles/vehicle_bmw_r75.png"
+  },
+  "vehicle_bmw_r75_ko": {
+   "name": "vehicle_bmw_r75_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r11c07"
+   ],
+   "file": "vehicles/vehicle_bmw_r75_ko.png"
+  },
+  "vehicle_jagdpanther": {
+   "name": "vehicle_jagdpanther",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c05"
+   ],
+   "file": "vehicles/vehicle_jagdpanther.png"
+  },
+  "vehicle_jagdpanther_ko": {
+   "name": "vehicle_jagdpanther_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c04"
+   ],
+   "file": "vehicles/vehicle_jagdpanther_ko.png"
+  },
+  "vehicle_jeep": {
+   "name": "vehicle_jeep",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c02"
+   ],
+   "file": "vehicles/vehicle_jeep.png"
+  },
+  "vehicle_jeep_ko": {
+   "name": "vehicle_jeep_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c07"
+   ],
+   "file": "vehicles/vehicle_jeep_ko.png"
+  },
+  "vehicle_kubelwagen": {
+   "name": "vehicle_kubelwagen",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c07"
+   ],
+   "file": "vehicles/vehicle_kubelwagen.png"
+  },
+  "vehicle_kubelwagen_ko": {
+   "name": "vehicle_kubelwagen_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c02"
+   ],
+   "file": "vehicles/vehicle_kubelwagen_ko.png"
+  },
+  "vehicle_opel_blitz": {
+   "name": "vehicle_opel_blitz",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r11c01"
+   ],
+   "file": "vehicles/vehicle_opel_blitz.png"
+  },
+  "vehicle_opel_blitz_ko": {
+   "name": "vehicle_opel_blitz_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r11c08"
+   ],
+   "file": "vehicles/vehicle_opel_blitz_ko.png"
+  },
+  "vehicle_psw222": {
+   "name": "vehicle_psw222",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c09"
+   ],
+   "file": "vehicles/vehicle_psw222.png"
+  },
+  "vehicle_psw222_ko": {
+   "name": "vehicle_psw222_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c00"
+   ],
+   "file": "vehicles/vehicle_psw222_ko.png"
+  },
+  "vehicle_pziv": {
+   "name": "vehicle_pziv",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c06"
+   ],
+   "file": "vehicles/vehicle_pziv.png"
+  },
+  "vehicle_pziv_ko": {
+   "name": "vehicle_pziv_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c03"
+   ],
+   "file": "vehicles/vehicle_pziv_ko.png"
+  },
+  "vehicle_sherman": {
+   "name": "vehicle_sherman",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r09c01"
+   ],
+   "file": "vehicles/vehicle_sherman.png"
+  },
+  "vehicle_sherman_ko": {
+   "name": "vehicle_sherman_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r09c08"
+   ],
+   "file": "vehicles/vehicle_sherman_ko.png"
+  },
+  "vehicle_spw251": {
+   "name": "vehicle_spw251",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r11c00"
+   ],
+   "file": "vehicles/vehicle_spw251.png"
+  },
+  "vehicle_spw251_ko": {
+   "name": "vehicle_spw251_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r11c09"
+   ],
+   "file": "vehicles/vehicle_spw251_ko.png"
+  },
+  "vehicle_staff_car": {
+   "name": "vehicle_staff_car",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "f63",
+   "cells": [
+    "f63 r10c08"
+   ],
+   "file": "vehicles/vehicle_staff_car.png"
+  },
+  "vehicle_staff_car_ko": {
+   "name": "vehicle_staff_car_ko",
+   "group": "vehicles",
+   "size_px": 179,
+   "copies": 1,
+   "sheet": "r63",
+   "cells": [
+    "r63 r10c01"
+   ],
+   "file": "vehicles/vehicle_staff_car_ko.png"
+  },
+  "weapon_de_bolt": {
+   "name": "weapon_de_bolt",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c02"
+   ],
+   "file": "weapons/weapon_de_bolt.png"
+  },
+  "weapon_de_bolt_jam": {
+   "name": "weapon_de_bolt_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c09"
+   ],
+   "file": "weapons/weapon_de_bolt_jam.png"
+  },
+  "weapon_de_hmg": {
+   "name": "weapon_de_hmg",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c07"
+   ],
+   "file": "weapons/weapon_de_hmg.png"
+  },
+  "weapon_de_hmg_jam": {
+   "name": "weapon_de_hmg_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c04"
+   ],
+   "file": "weapons/weapon_de_hmg_jam.png"
+  },
+  "weapon_de_lmg": {
+   "name": "weapon_de_lmg",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c05"
+   ],
+   "file": "weapons/weapon_de_lmg.png"
+  },
+  "weapon_de_lmg_jam": {
+   "name": "weapon_de_lmg_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c06"
+   ],
+   "file": "weapons/weapon_de_lmg_jam.png"
+  },
+  "weapon_de_luger": {
+   "name": "weapon_de_luger",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c04"
+   ],
+   "file": "weapons/weapon_de_luger.png"
+  },
+  "weapon_de_luger_jam": {
+   "name": "weapon_de_luger_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c07"
+   ],
+   "file": "weapons/weapon_de_luger_jam.png"
+  },
+  "weapon_de_mmg": {
+   "name": "weapon_de_mmg",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c06"
+   ],
+   "file": "weapons/weapon_de_mmg.png"
+  },
+  "weapon_de_mmg_jam": {
+   "name": "weapon_de_mmg_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c05"
+   ],
+   "file": "weapons/weapon_de_mmg_jam.png"
+  },
+  "weapon_de_mp": {
+   "name": "weapon_de_mp",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c03"
+   ],
+   "file": "weapons/weapon_de_mp.png"
+  },
+  "weapon_de_mp_jam": {
+   "name": "weapon_de_mp_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c08"
+   ],
+   "file": "weapons/weapon_de_mp_jam.png"
+  },
+  "weapon_de_radio": {
+   "name": "weapon_de_radio",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r06c09"
+   ],
+   "file": "weapons/weapon_de_radio.png"
+  },
+  "weapon_de_radio_back": {
+   "name": "weapon_de_radio_back",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r06c02"
+   ],
+   "file": "weapons/weapon_de_radio_back.png"
+  },
+  "weapon_us_bar": {
+   "name": "weapon_us_bar",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c00"
+   ],
+   "file": "weapons/weapon_us_bar.png"
+  },
+  "weapon_us_bar_jam": {
+   "name": "weapon_us_bar_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c11"
+   ],
+   "file": "weapons/weapon_us_bar_jam.png"
+  },
+  "weapon_us_bazooka": {
+   "name": "weapon_us_bazooka",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 4,
+   "sheet": "f50",
+   "cells": [
+    "f50 r01c08",
+    "f50 r01c09",
+    "f50 r01c10",
+    "f50 r01c11"
+   ],
+   "file": "weapons/weapon_us_bazooka.png"
+  },
+  "weapon_us_bazooka_jam": {
+   "name": "weapon_us_bazooka_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 4,
+   "sheet": "r50",
+   "cells": [
+    "r50 r01c00",
+    "r50 r01c01",
+    "r50 r01c02",
+    "r50 r01c03"
+   ],
+   "file": "weapons/weapon_us_bazooka_jam.png"
+  },
+  "weapon_us_carbine": {
+   "name": "weapon_us_carbine",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c06"
+   ],
+   "file": "weapons/weapon_us_carbine.png"
+  },
+  "weapon_us_carbine_jam": {
+   "name": "weapon_us_carbine_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c05"
+   ],
+   "file": "weapons/weapon_us_carbine_jam.png"
+  },
+  "weapon_us_flamethrower": {
+   "name": "weapon_us_flamethrower",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r03c02"
+   ],
+   "file": "weapons/weapon_us_flamethrower.png"
+  },
+  "weapon_us_flamethrower_jam": {
+   "name": "weapon_us_flamethrower_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r03c09"
+   ],
+   "file": "weapons/weapon_us_flamethrower_jam.png"
+  },
+  "weapon_us_hmg": {
+   "name": "weapon_us_hmg",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c03"
+   ],
+   "file": "weapons/weapon_us_hmg.png"
+  },
+  "weapon_us_hmg_jam": {
+   "name": "weapon_us_hmg_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c08"
+   ],
+   "file": "weapons/weapon_us_hmg_jam.png"
+  },
+  "weapon_us_m1": {
+   "name": "weapon_us_m1",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c01"
+   ],
+   "file": "weapons/weapon_us_m1.png"
+  },
+  "weapon_us_m1_jam": {
+   "name": "weapon_us_m1_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c10"
+   ],
+   "file": "weapons/weapon_us_m1_jam.png"
+  },
+  "weapon_us_mmg": {
+   "name": "weapon_us_mmg",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c02"
+   ],
+   "file": "weapons/weapon_us_mmg.png"
+  },
+  "weapon_us_mmg_jam": {
+   "name": "weapon_us_mmg_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c09"
+   ],
+   "file": "weapons/weapon_us_mmg_jam.png"
+  },
+  "weapon_us_pistol45": {
+   "name": "weapon_us_pistol45",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c05"
+   ],
+   "file": "weapons/weapon_us_pistol45.png"
+  },
+  "weapon_us_pistol45_jam": {
+   "name": "weapon_us_pistol45_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c06"
+   ],
+   "file": "weapons/weapon_us_pistol45_jam.png"
+  },
+  "weapon_us_radio": {
+   "name": "weapon_us_radio",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r03c01"
+   ],
+   "file": "weapons/weapon_us_radio.png"
+  },
+  "weapon_us_radio_back": {
+   "name": "weapon_us_radio_back",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r03c10"
+   ],
+   "file": "weapons/weapon_us_radio_back.png"
+  },
+  "weapon_us_satchel": {
+   "name": "weapon_us_satchel",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 6,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c07",
+    "f50 r02c08",
+    "f50 r02c09",
+    "f50 r02c10",
+    "f50 r02c11",
+    "f50 r03c00"
+   ],
+   "file": "weapons/weapon_us_satchel.png"
+  },
+  "weapon_us_satchel_jam": {
+   "name": "weapon_us_satchel_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 6,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c00",
+    "r50 r02c01",
+    "r50 r02c02",
+    "r50 r02c03",
+    "r50 r02c04",
+    "r50 r03c11"
+   ],
+   "file": "weapons/weapon_us_satchel_jam.png"
+  },
+  "weapon_us_smg": {
+   "name": "weapon_us_smg",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "f50",
+   "cells": [
+    "f50 r02c04"
+   ],
+   "file": "weapons/weapon_us_smg.png"
+  },
+  "weapon_us_smg_jam": {
+   "name": "weapon_us_smg_jam",
+   "group": "weapons",
+   "size_px": 140,
+   "copies": 1,
+   "sheet": "r50",
+   "cells": [
+    "r50 r02c07"
+   ],
+   "file": "weapons/weapon_us_smg_jam.png"
+  }
+ },
+ "fallback": {
+  "de_soldier_Y_standing": {
+   "name": "de_soldier_Y_standing",
+   "group": "fallback",
+   "file": "fallback/de_soldier_Y_standing.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/y.GIF.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "de_soldier_Y_crouching": {
+   "name": "de_soldier_Y_crouching",
+   "group": "fallback",
+   "file": "fallback/de_soldier_Y_crouching.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/ycrouch.GIF.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "de_soldier_Z_standing": {
+   "name": "de_soldier_Z_standing",
+   "group": "fallback",
+   "file": "fallback/de_soldier_Z_standing.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/z.GIF.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "de_soldier_Z_crouching": {
+   "name": "de_soldier_Z_crouching",
+   "group": "fallback",
+   "file": "fallback/de_soldier_Z_crouching.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/zcrouch.GIF.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_die_d10_a": {
+   "name": "marker_die_d10_a",
+   "group": "fallback",
+   "file": "fallback/marker_die_d10_a.png",
+   "size_px": 26,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/decahedron3.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_die_d10_b": {
+   "name": "marker_die_d10_b",
+   "group": "fallback",
+   "file": "fallback/marker_die_d10_b.png",
+   "size_px": 28,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/decahedron4.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_die_d10_c": {
+   "name": "marker_die_d10_c",
+   "group": "fallback",
+   "file": "fallback/marker_die_d10_c.png",
+   "size_px": 29,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/decahedron5.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_paragraph_1": {
+   "name": "marker_paragraph_1",
+   "group": "fallback",
+   "file": "fallback/marker_paragraph_1.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/para1.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_paragraph_2": {
+   "name": "marker_paragraph_2",
+   "group": "fallback",
+   "file": "fallback/marker_paragraph_2.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/para2.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_no_event": {
+   "name": "marker_no_event",
+   "group": "fallback",
+   "file": "fallback/marker_no_event.png",
+   "size_px": 84,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/noevent.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_jam": {
+   "name": "marker_jam",
+   "group": "fallback",
+   "file": "fallback/marker_jam.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/jam.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_disabled": {
+   "name": "marker_disabled",
+   "group": "fallback",
+   "file": "fallback/marker_disabled.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/disabled.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_thrown_tread": {
+   "name": "marker_thrown_tread",
+   "group": "fallback",
+   "file": "fallback/marker_thrown_tread.png",
+   "size_px": 42,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/throwntread.gif",
+   "note": "not present on the remastered counter sheets"
+  },
+  "marker_fire": {
+   "name": "marker_fire",
+   "group": "fallback",
+   "file": "fallback/marker_fire.png",
+   "size_px": 56,
+   "copies": 1,
+   "source": "source/assets/Vassal_images/fire.gif",
+   "note": "not present on the remastered counter sheets"
+  }
+ },
+ "other": [
+  "cards/soldier_cards_sheet_1.png",
+  "cards/soldier_cards_sheet_2.png",
+  "cards/soldier_cards_sheet_3.png",
+  "cards/soldier_cards_sheet_4.png",
+  "cards/soldier_cards_sheet_5.png",
+  "cards/soldier_cards_sheet_6.png",
+  "map/map_a.png",
+  "map/map_a_tactical.png",
+  "map/map_b.png",
+  "map/map_b_tactical.png",
+  "reference/action_round_track.png",
+  "reference/bluerules2.png",
+  "reference/facingchart.png",
+  "reference/firechart.png",
+  "reference/generationchart.png",
+  "reference/german_action_track.png",
+  "reference/grenadechart.png",
+  "reference/map_key.png",
+  "reference/squad_record_form.png",
+  "reference/vehiclesummary.png",
+  "reference/weaponchart.png"
+ ],
+ "unassigned_cells": []
+}

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ambush! Trainer — Lesson Modules (M5 mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --olive:#4B5320; --field-gray:#6B6E6A; --paper:#EDE6D4; --ink:#22221E;
+    --alert:#8E2A22; --amber:#C9A227; --bg:#1C1D1B; --panel-bg:#26271F; --panel-border:#4a4b3f;
+    --font-head:'Staatliches','Arial Narrow',sans-serif;
+    --font-ui:'Inter',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; height:100%; background:var(--bg); color:var(--paper); font-family:var(--font-ui); overflow:hidden;}
+  #app{display:flex; flex-direction:column; height:100vh;}
+
+  /* ---- top bar ---- */
+  #topbar{display:flex; align-items:center; gap:20px; padding:0 18px; height:46px; flex-shrink:0;
+    background:#1f2019; border-bottom:1px solid var(--panel-border);}
+  #topbar .logo{font-family:var(--font-head); font-size:19px; letter-spacing:1px; color:var(--amber);}
+  #topbar .logo span{color:var(--paper); font-weight:400;}
+  #topbar .note{font-family:var(--font-mono); font-size:10.5px; color:#7a7c6e; margin-left:auto;}
+
+  /* ---- lesson ladder ---- */
+  #ladder{display:flex; gap:8px; padding:10px 18px; background:#20211a; border-bottom:1px solid var(--panel-border); flex-shrink:0;}
+  .lesson-tab{display:flex; align-items:center; gap:8px; background:#1f2019; border:1px solid var(--panel-border);
+    border-radius:3px; padding:7px 13px; cursor:pointer; font-size:12px; color:#c7c9b8;}
+  .lesson-tab .num{font-family:var(--font-mono); font-size:11px; width:20px; height:20px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; background:#34362b; color:#c7c9b8;}
+  .lesson-tab.active{border-color:var(--amber); background:#2c2e22;}
+  .lesson-tab.active .num{background:var(--amber); color:#22221a; font-weight:600;}
+  .lesson-tab.done .num{background:var(--olive); color:var(--paper);}
+  .lesson-tab .check{color:var(--amber); font-size:13px; display:none;}
+  .lesson-tab.done .check{display:inline;}
+  .lesson-tab.locked{opacity:.45; cursor:not-allowed;}
+  .lesson-tab.locked .num{background:#26271f; color:#6d6f60;}
+  .lesson-tab .lock{font-size:11px; color:#8c8e80; display:none;}
+  .lesson-tab.locked .lock{display:inline;}
+
+  /* ---- module shell: explain | show/practice ---- */
+  #shell{flex:1; display:flex; min-height:0;}
+  #explain{width:340px; flex-shrink:0; background:var(--panel-bg); border-right:1px solid var(--panel-border);
+    padding:20px; overflow-y:auto;}
+  #explain h2{font-family:var(--font-head); font-size:26px; color:var(--amber); letter-spacing:.5px; margin:0 0 4px;}
+  #explain .kicker{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:1.5px; color:#8c8e80; margin-bottom:16px;}
+  #explain p{font-size:13.5px; line-height:1.65; color:#d8d9cc;}
+  #explain .drill{margin-top:18px; background:#1f2019; border:1px solid var(--panel-border); border-left:3px solid var(--amber);
+    border-radius:3px; padding:12px 14px;}
+  #explain .drill h4{font-family:var(--font-ui); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:1.2px; color:var(--amber); margin:0 0 6px;}
+  #explain .drill p{font-size:12.5px; margin:0 0 10px;}
+  #stage{flex:1; min-width:0; overflow-y:auto; padding:22px; position:relative;}
+
+  /* ---- buttons ---- */
+  .btn{font-family:var(--font-ui); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.8px;
+    color:var(--paper); background:linear-gradient(180deg,#5a5d3e,#454724); border:1px solid #6d7048; border-radius:3px;
+    padding:8px 14px; cursor:pointer; box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgba(0,0,0,.5);}
+  .btn:hover{background:linear-gradient(180deg,#666a46,#50522a); border-color:var(--amber);}
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn.amber{background:linear-gradient(180deg,var(--amber),#a5811d); color:#22221a; border-color:#e0bb3d;}
+  .btn.small{padding:6px 10px; font-size:10.5px;}
+
+  .stage-panel{background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:4px; padding:16px; margin-bottom:16px;}
+  .stage-panel h3{font-family:var(--font-ui); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:1.4px; color:#c7c9b8; margin:0 0 12px;}
+
+  .module{display:none;}
+  .module.active{display:block;}
+
+  /* ---- Select Team ---- */
+  .roster{display:flex; gap:10px; flex-wrap:wrap;}
+  .soldier-card{width:120px; background:#1f2019; border:1px solid var(--panel-border); border-radius:4px; padding:10px; text-align:center; cursor:grab;}
+  .soldier-card:hover{border-color:var(--amber);}
+  .soldier-card.assigned{opacity:.35; cursor:default;}
+  .soldier-card img{width:48px; height:48px; image-rendering:pixelated;}
+  .soldier-card .cn{font-family:var(--font-head); font-size:16px; color:var(--amber);}
+  .soldier-card .cr{font-family:var(--font-mono); font-size:9.5px; color:#9a9c8f; margin-bottom:4px;}
+  .soldier-card .cs{font-family:var(--font-mono); font-size:9.5px; color:#c7c9b8; line-height:1.5;}
+  .soldier-card .cost{font-family:var(--font-mono); font-size:10px; color:var(--amber); margin-top:5px;}
+  .budget{font-family:var(--font-mono); font-size:13px; color:#d8d9cc; margin-bottom:12px;}
+  .budget b{color:var(--amber); font-size:16px;}
+  .slots{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+  .slot{min-height:96px; background:#151610; border:1px dashed #4a4b3f; border-radius:4px; padding:8px; text-align:center; position:relative;}
+  .slot.filled{border-style:solid; background:#1f2019;}
+  .slot .letter{position:absolute; top:5px; left:7px; font-family:var(--font-head); font-size:15px; color:#6d7048;}
+  .slot img{width:40px; height:40px; image-rendering:pixelated; margin-top:14px;}
+  .slot .sn{font-family:var(--font-mono); font-size:10px; color:var(--amber); margin-top:3px;}
+  .slot.dragover{border-color:var(--amber); background:#2c2e22;}
+
+  /* ---- callout chips ---- */
+  .callouts{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; font-size:12px; margin-top:4px;}
+  .callouts dt{font-family:var(--font-mono); color:var(--amber); font-weight:600;}
+  .callouts dd{margin:0; color:#c7c9b8;}
+
+  /* ---- view sleeve (scenario) ---- */
+  .sleeve{position:relative; background:linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40%), #e9e2cf;
+    color:var(--ink); border-radius:6px; padding:16px 18px; box-shadow:0 2px 10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.4);}
+  .sleeve h4{font-family:var(--font-head); font-size:19px; margin:0 0 2px; letter-spacing:.5px;}
+  .sleeve .sub{font-family:var(--font-mono); font-size:10.5px; color:#5a5c4e; margin-bottom:12px;}
+  .condition-row{display:flex; gap:10px; padding:6px 0; border-bottom:1px dashed #b9b39c; font-family:var(--font-mono); font-size:12px;}
+  .condition-row .cnum{width:24px; font-weight:600;}
+  .condition-row.current{background:rgba(201,162,39,.25); border-radius:3px; padding-left:6px; font-weight:600;}
+  .condition-row.masked .ctext{color:#8a8674;}
+
+  .obj-list{list-style:none; margin:0; padding:0;}
+  .obj-list li{display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px dashed #3a3b32; font-size:13px;}
+  .obj-list .vp{font-family:var(--font-mono); font-size:11px; color:var(--amber); margin-left:auto;}
+
+  /* ---- movement stage ---- */
+  .map-strip{position:relative; width:100%; border:1px solid var(--panel-border); border-radius:4px; overflow:hidden;}
+  .map-strip img.mapimg{width:100%; display:block;}
+  .move-counter{position:absolute; width:34px; height:34px; margin:-17px 0 0 -17px;}
+  .move-counter img{width:100%; height:100%; image-rendering:pixelated; filter:drop-shadow(0 1px 2px rgba(0,0,0,.7));}
+  .terrain-cost{display:grid; grid-template-columns:auto auto 1fr; gap:6px 14px; font-family:var(--font-mono); font-size:12px; align-items:center;}
+  .terrain-cost img{width:30px; height:30px; image-rendering:pixelated;}
+  .terrain-cost .mp{color:var(--amber); font-weight:600;}
+  .terrain-cost .tn{color:#c7c9b8;}
+
+  /* ---- events stage ---- */
+  .cond-track{display:flex; gap:5px; margin:10px 0;}
+  .cond-track .c{flex:1; text-align:center; font-family:var(--font-mono); font-size:12px; padding:7px 0;
+    background:#1f2019; border:1px solid var(--panel-border); border-radius:2px; color:#9a9c8f;}
+  .cond-track .c.current{background:var(--amber); color:#22221a; border-color:var(--amber); font-weight:600;}
+  .para-reveal{background:#e9e2cf; color:var(--ink); border-radius:4px; padding:14px 16px; font-size:14px; line-height:1.6; font-style:italic; margin-top:12px;}
+  .para-reveal .ptag{font-family:var(--font-mono); font-size:10px; color:#5a5c4e; font-style:normal; margin-bottom:8px;}
+  .event-flow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12.5px; color:#c7c9b8;}
+  .event-flow .step{background:#1f2019; border:1px solid var(--panel-border); border-radius:3px; padding:7px 11px;}
+  .event-flow .arrow{color:#6d7048; font-family:var(--font-mono);}
+
+  /* ---- combat stage ---- */
+  .combat-row{display:flex; align-items:center; gap:18px; margin-bottom:12px;}
+  .combatant{background:#1f2019; border:1px solid var(--panel-border); border-radius:4px; padding:10px; width:150px; text-align:center;}
+  .combatant img{width:48px; height:48px; image-rendering:pixelated;}
+  .combatant .cname{font-family:var(--font-head); font-size:15px; color:var(--amber);}
+  .combatant .cstat{font-family:var(--font-mono); font-size:10px; color:#c7c9b8; margin-top:3px;}
+  .vs{font-family:var(--font-head); font-size:20px; color:#6d7048;}
+  .dice-tray{display:flex; align-items:center; gap:14px; margin:14px 0;}
+  .die-face{width:52px; height:52px; background:var(--paper); color:var(--ink); border-radius:6px;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:600; font-size:26px;
+    box-shadow:0 2px 4px rgba(0,0,0,.5); transition:transform .15s;}
+  .die-face.rolling{transform:rotate(8deg) scale(1.05);}
+  .combat-mode{display:flex; gap:8px; margin-bottom:14px;}
+  table.chart{border-collapse:collapse; font-family:var(--font-mono); font-size:11.5px;}
+  table.chart th,table.chart td{border:1px solid #4a4b3f; padding:4px 9px; text-align:center;}
+  table.chart th{background:#2c2e24; color:#c7c9b8;}
+  table.chart tr.hit td{background:var(--amber); color:#22221a; font-weight:600;}
+  .result-line{font-family:var(--font-mono); font-size:13px; color:var(--paper); margin-top:12px; min-height:20px;}
+  .result-line b{color:var(--amber);}
+
+  .ready-banner{display:none; margin-top:14px; background:rgba(75,83,32,.4); border:1px solid var(--olive);
+    border-radius:4px; padding:10px 14px; font-size:12.5px; color:var(--paper);}
+  .ready-banner.show{display:block;}
+  .ready-banner b{color:var(--amber);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div class="logo">AMBUSH! <span>Trainer</span></div>
+    <div class="note">M5 mockup · trainer shell (Upfront-style) · explain → show → practice → sandbox · <a href="#" onclick="unlockAll(); return false;" style="color:#8c8e80;">dev: unlock all</a></div>
+  </div>
+
+  <div id="ladder">
+    <div class="lesson-tab active" data-mod="team" onclick="showModule('team')"><span class="num">1</span> Select Team <span class="check">✓</span><span class="lock">🔒</span></div>
+    <div class="lesson-tab locked" data-mod="scenario" onclick="showModule('scenario')" title="Locked — complete the previous lesson first"><span class="num">2</span> Scenario &amp; Objectives <span class="check">✓</span><span class="lock">🔒</span></div>
+    <div class="lesson-tab locked" data-mod="movement" onclick="showModule('movement')" title="Locked — complete the previous lesson first"><span class="num">3</span> Movement <span class="check">✓</span><span class="lock">🔒</span></div>
+    <div class="lesson-tab locked" data-mod="events" onclick="showModule('events')" title="Locked — complete the previous lesson first"><span class="num">4</span> Events <span class="check">✓</span><span class="lock">🔒</span></div>
+    <div class="lesson-tab locked" data-mod="combat" onclick="showModule('combat')" title="Locked — complete the previous lesson first"><span class="num">5</span> Combat <span class="check">✓</span><span class="lock">🔒</span></div>
+    <div class="lesson-tab locked" data-mod="sandbox" onclick="showModule('sandbox')" title="Locked — complete the previous lesson first"><span class="num">6</span> Free Play Sandbox <span class="check">✓</span><span class="lock">🔒</span></div>
+  </div>
+
+  <div id="shell">
+    <div id="explain">
+      <!-- populated per module -->
+    </div>
+    <div id="stage">
+
+      <!-- ============ MODULE 1: SELECT TEAM ============ -->
+      <div class="module active" id="mod-team">
+        <div class="stage-panel">
+          <h3>Available Soldiers — drag or click to assign</h3>
+          <div class="budget">Squad Points: <b id="budget">10</b> remaining</div>
+          <div class="roster" id="roster">
+            <div class="soldier-card" draggable="true" data-id="A" data-name="Soldier A" data-role="Runner" data-stats="IN:3 PC:5 WS:-1 MPA:4 DS:2" data-cost="3" data-img="us_soldiers/standing_A.png">
+              <img src="../../assets/extracted/counters/us_soldiers/standing_A.png"><div class="cn">A</div><div class="cr">Runner</div><div class="cs">IN3 PC5 WS-1</div><div class="cost">3 pts</div>
+            </div>
+            <div class="soldier-card" draggable="true" data-id="B" data-name="Soldier B" data-role="Jeep Driver" data-stats="IN:2 PC:3 WS:-2 MPA:4 DS:6" data-cost="2" data-img="us_soldiers/crouch_B.png">
+              <img src="../../assets/extracted/counters/us_soldiers/crouch_B.png"><div class="cn">B</div><div class="cr">Jeep Driver</div><div class="cs">IN2 PC3 WS-2</div><div class="cost">2 pts</div>
+            </div>
+            <div class="soldier-card" draggable="true" data-id="C" data-name="Soldier C" data-role="Runner" data-stats="IN:1 PC:2 WS:-2 MPA:3 DS:0" data-cost="2" data-img="us_soldiers/standing_C.png">
+              <img src="../../assets/extracted/counters/us_soldiers/standing_C.png"><div class="cn">C</div><div class="cr">Runner</div><div class="cs">IN1 PC2 WS-2</div><div class="cost">2 pts</div>
+            </div>
+            <div class="soldier-card" draggable="true" data-id="D" data-name="Soldier D" data-role="Rifleman" data-stats="IN:3 PC:4 WS:0 MPA:4 DS:1" data-cost="4" data-img="us_soldiers/standing_D.png">
+              <img src="../../assets/extracted/counters/us_soldiers/standing_D.png"><div class="cn">D</div><div class="cr">Rifleman</div><div class="cs">IN3 PC4 WS0</div><div class="cost">4 pts</div>
+            </div>
+          </div>
+        </div>
+        <div class="stage-panel">
+          <h3>Your Squad Record</h3>
+          <div class="slots" id="squadSlots">
+            <div class="slot" data-slot="0"><div class="letter">A</div></div>
+            <div class="slot" data-slot="1"><div class="letter">B</div></div>
+            <div class="slot" data-slot="2"><div class="letter">C</div></div>
+            <div class="slot" data-slot="3"><div class="letter">D</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MODULE 2: SCENARIO ============ -->
+      <div class="module" id="mod-scenario">
+        <div class="stage-panel">
+          <h3>Mission Card — in the View Sleeve</h3>
+          <div class="sleeve">
+            <h4>Mission 1 — Bloody St. Mick</h4>
+            <div class="sub">MAP A · top edge is north · late June, 1944</div>
+            <div class="condition-row current"><div class="cnum">C.1</div><div class="ctext">Active condition — visible through the sleeve window.</div></div>
+            <div class="condition-row masked"><div class="cnum">C.2</div><div class="ctext">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ (hidden until reached)</div></div>
+            <div class="condition-row masked"><div class="cnum">C.3</div><div class="ctext">▓▓▓▓▓▓▓▓▓▓▓▓▓▓ (hidden)</div></div>
+            <div class="condition-row masked"><div class="cnum">C.4</div><div class="ctext">▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ (hidden)</div></div>
+          </div>
+        </div>
+        <div class="stage-panel">
+          <h3>Objectives &amp; Victory Points</h3>
+          <ul class="obj-list">
+            <li>Seize the St. Michaux road junction <span class="vp">+5 VP</span></li>
+            <li>Exit soldiers off the east edge <span class="vp">+2 VP each</span></li>
+            <li>Each surviving soldier at mission end <span class="vp">+1 VP</span></li>
+            <li>Soldier killed or incapacitated <span class="vp" style="color:var(--alert);">−2 VP</span></li>
+          </ul>
+          <p style="font-family:var(--font-mono); font-size:10.5px; color:#8c8e80; margin-top:10px;">Sample objectives for layout — not verbatim mission text; no paragraph-book content shown.</p>
+        </div>
+      </div>
+
+      <!-- ============ MODULE 3: MOVEMENT ============ -->
+      <div class="module" id="mod-movement">
+        <div class="stage-panel">
+          <h3>The Board — Soldier B in the open</h3>
+          <div class="map-strip" id="moveStrip">
+            <img class="mapimg" src="../../assets/extracted/maps/map_a_tactical.png" alt="tactical map">
+            <div class="move-counter" style="left:14%; top:33%;"><img src="../../assets/extracted/counters/us_soldiers/crouch_B.png"></div>
+          </div>
+        </div>
+        <div class="stage-panel">
+          <h3>Movement Cost by Terrain</h3>
+          <div class="terrain-cost">
+            <img src="../../assets/extracted/counters/terrain_markers/crater.png"><span class="mp">2 MP</span><span class="tn">Crater / rough ground</span>
+            <img src="../../assets/extracted/counters/terrain_markers/rubble.png"><span class="mp">2 MP</span><span class="tn">Rubble</span>
+            <img src="../../assets/extracted/counters/terrain_markers/wall1.png"><span class="mp">+1 MP</span><span class="tn">Cross a wall hexside</span>
+            <img src="../../assets/extracted/counters/terrain_markers/stonebridge.png"><span class="mp">1 MP</span><span class="tn">Bridge (road rate)</span>
+          </div>
+          <p style="font-size:12.5px; color:#c7c9b8; margin-top:12px;">A soldier spends Movement Points (MPA) from their allowance each Action Round. Facing matters — a soldier can only see and fire within their facing arc, shown as a highlighted wedge when selected.</p>
+        </div>
+      </div>
+
+      <!-- ============ MODULE 4: EVENTS ============ -->
+      <div class="module" id="mod-events">
+        <div class="stage-panel">
+          <h3>Event Check Flow</h3>
+          <div class="event-flow">
+            <span class="step">Enter a hex with an event dot</span>
+            <span class="arrow">▸</span>
+            <span class="step">Roll for event</span>
+            <span class="arrow">▸</span>
+            <span class="step">Look up paragraph #</span>
+            <span class="arrow">▸</span>
+            <span class="step">Resolve &amp; maybe change Condition</span>
+          </div>
+        </div>
+        <div class="stage-panel">
+          <h3>Condition Track</h3>
+          <div class="cond-track">
+            <div class="c current" id="ev-c1">1</div><div class="c" id="ev-c2">2</div><div class="c" id="ev-c3">3</div>
+            <div class="c" id="ev-c4">4</div><div class="c" id="ev-c5">5</div><div class="c" id="ev-c6">6</div>
+          </div>
+          <div class="para-reveal" id="paraReveal">
+            <div class="ptag">[SAMPLE — placeholder narrative, not actual paragraph-book content]</div>
+            A twig snaps in the hedgerow ahead. The squad freezes — then the moment passes. No change to your condition.
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MODULE 5: COMBAT ============ -->
+      <div class="module" id="mod-combat">
+        <div class="stage-panel">
+          <h3>Resolution Type</h3>
+          <div class="combat-mode">
+            <button class="btn small amber" data-mode="fire" onclick="setCombatMode(event,'fire')">Fire Combat</button>
+            <button class="btn small" data-mode="grenade" onclick="setCombatMode(event,'grenade')">Grenade</button>
+            <button class="btn small" data-mode="hth" onclick="setCombatMode(event,'hth')">Hand-to-Hand</button>
+          </div>
+          <div class="combat-row">
+            <div class="combatant">
+              <img src="../../assets/extracted/counters/us_soldiers/crouch_B.png"><div class="cname">Soldier B</div><div class="cstat" id="attackerStat">WS:-2 · Pistol</div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="combatant">
+              <img src="../../assets/extracted/counters/german_position_counters/gray_crouch_T.png"><div class="cname">German</div><div class="cstat">range 2 · in cover</div>
+            </div>
+          </div>
+          <div class="dice-tray">
+            <div class="die-face" id="cdie">–</div>
+            <button class="btn amber" id="cRoll" onclick="rollCombat()">Roll</button>
+          </div>
+          <table class="chart" id="combatTable">
+            <tr><th>DIE</th><th>2-3</th><th>4</th><th>A</th><th>S</th></tr>
+            <tr><td>0-2</td><td>808</td><td>920</td><td>808</td><td>813</td></tr>
+            <tr id="crow47"><td>4-7</td><td>802</td><td>809</td><td>802</td><td>802</td></tr>
+            <tr><td>8-9</td><td>800</td><td>813</td><td>800</td><td>839</td></tr>
+          </table>
+          <div class="result-line" id="combatResult">Choose a resolution type, then roll.</div>
+        </div>
+        <div class="stage-panel">
+          <h3>Wounds &amp; Incapacitation</h3>
+          <div class="terrain-cost">
+            <img src="../../assets/extracted/counters/status_markers/wound.png"><span class="mp">Wound</span><span class="tn">Reduced effectiveness; stat penalties apply.</span>
+            <img src="../../assets/extracted/counters/status_markers/incap.png"><span class="mp">Incap</span><span class="tn">Out of action, may recover; −2 VP if unrecovered.</span>
+            <img src="../../assets/extracted/counters/status_markers/kia.png"><span class="mp">KIA</span><span class="tn">Removed from play; −2 VP.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MODULE 6: FREE PLAY SANDBOX ============ -->
+      <div class="module" id="mod-sandbox">
+        <div class="stage-panel">
+          <h3>Sandbox Board — everything you learned, no stakes</h3>
+          <div class="map-strip">
+            <img class="mapimg" src="../../assets/extracted/maps/map_a_tactical.png" alt="tactical map">
+            <div class="move-counter" style="left:14%; top:33%;"><img src="../../assets/extracted/counters/us_soldiers/crouch_B.png"></div>
+            <div class="move-counter" style="left:22%; top:41%;"><img src="../../assets/extracted/counters/us_soldiers/standing_A.png"></div>
+            <div class="move-counter" style="left:38%; top:30%;"><img src="../../assets/extracted/counters/german_position_counters/gray_crouch_T.png"></div>
+          </div>
+        </div>
+        <div class="stage-panel">
+          <h3>Sandbox Controls</h3>
+          <div class="combat-mode">
+            <button class="btn small amber">Move</button>
+            <button class="btn small">Fire</button>
+            <button class="btn small">Event Check</button>
+            <button class="btn small">Charts &amp; Tables</button>
+            <button class="btn small">Reset Board</button>
+          </div>
+          <div class="dice-tray">
+            <div class="die-face">–</div>
+            <button class="btn amber">Roll</button>
+          </div>
+          <p style="font-size:12.5px; color:#c7c9b8; margin-top:4px;">Mockup only — in the built trainer this is a small live board: select a soldier, move it hex to hex, fire at the German, trigger sample events. All charts openable, every roll visible, nothing scored, reset anytime.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- module explain content ----
+  const explainData = {
+    team: {title:'Select Team', kicker:'Lesson 1 · Explain', body:
+      `<p>Before a mission you build a squad from available soldiers, spending a fixed pool of <b>Squad Points</b>. Better soldiers cost more, so you trade quantity for quality.</p>
+       <p>Every soldier has five ratings you'll use constantly: Initiative (IN), Perception (PC), Weapon Skill (WS), Movement (MPA), and Driving (DS). Assign each chosen soldier to a slot on the Squad Record.</p>`,
+      drill:{q:'Fill all four slots without going below 0 Squad Points.', btn:'I filled the squad'}},
+    scenario: {title:'Read the Scenario', kicker:'Lesson 2 · Explain', body:
+      `<p>Each mission is a card that lives in a <b>view sleeve</b> — only the current condition shows through the window; later conditions stay hidden until you reach them.</p>
+       <p>Read your objectives and how Victory Points are scored before you move a single soldier. Knowing what earns and costs VP shapes every decision.</p>`,
+      drill:{q:'Identify which objective is worth the most VP.', btn:'Got it'}},
+    movement: {title:'Movement', kicker:'Lesson 3 · Explain', body:
+      `<p>Soldiers act in <b>Action Rounds</b>, spending Movement Points from their MPA. Different terrain costs different amounts — open ground is cheap, rough terrain and walls cost more.</p>
+       <p><b>Facing</b> determines what a soldier can see and shoot. Turning to face a new direction is part of how you spend a round.</p>`,
+      drill:{q:'Trace a path that reaches cover in one round.', btn:'I traced a path'}},
+    events: {title:'Events', kicker:'Lesson 4 · Explain', body:
+      `<p>Certain hexes and actions trigger an <b>event check</b>. You roll, look up the resulting paragraph number, and read only that paragraph — the rest of the book stays hidden, just like the tabletop.</p>
+       <p>Events can advance the mission's <b>Condition</b>, which changes what's true on the board. Watch the condition track.</p>`,
+      drill:{q:'Run an event check and see if the condition changes.', btn:'I ran a check'}},
+    combat: {title:'Combat & Resolution', kicker:'Lesson 5 · Explain', body:
+      `<p>Combat comes in a few flavors — <b>fire</b>, <b>grenades</b>, and <b>hand-to-hand</b> — but all resolve the same transparent way: a visible die roll cross-referenced on a visible table.</p>
+       <p>Results range from a miss to a wound, incapacitation, or KIA. The math is always shown so you learn <i>why</i> an outcome happened.</p>`,
+      drill:{q:'Resolve one fire attack and read the result.', btn:'I resolved combat'}},
+    sandbox: {title:'Free Play Sandbox', kicker:'Lesson 6 · Play', body:
+      `<p>No new rules here — this is where it all comes together. Move your soldiers, take shots at the German position, run event checks, and open any chart whenever you want.</p>
+       <p>Nothing is scored and nothing is hidden from you except the German's identity — exactly the uncertainty you'll face in a real mission. Reset the board as often as you like.</p>`,
+      drill:{q:'Free play — when you feel ready, the real game awaits.', btn:'Ready for a mission'}}
+  };
+
+  // ---- sequential lesson gating ----
+  const lessonOrder = ['team','scenario','movement','events','combat','sandbox'];
+  function unlockNext(mod){
+    const next = lessonOrder[lessonOrder.indexOf(mod)+1];
+    if(next) document.querySelector(`.lesson-tab[data-mod="${next}"]`).classList.remove('locked');
+  }
+  function unlockAll(){
+    document.querySelectorAll('.lesson-tab').forEach(t=>t.classList.remove('locked'));
+  }
+
+  function renderExplain(mod){
+    const d = explainData[mod];
+    document.getElementById('explain').innerHTML =
+      `<div class="kicker">${d.kicker}</div><h2>${d.title}</h2>${d.body}
+       <div class="drill"><h4>Practice Drill</h4><p>${d.drill.q}</p>
+       <button class="btn amber small" onclick="markReady('${mod}')">${d.drill.btn} ✓</button>
+       <div class="ready-banner" id="ready-${mod}">Lesson marked <b>ready</b> — the next lesson is now unlocked.</div></div>`;
+  }
+
+  function showModule(mod){
+    if(document.querySelector(`.lesson-tab[data-mod="${mod}"]`).classList.contains('locked')) return;
+    document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+    document.getElementById('mod-'+mod).classList.add('active');
+    document.querySelectorAll('.lesson-tab').forEach(t=>t.classList.toggle('active', t.dataset.mod===mod));
+    renderExplain(mod);
+  }
+  function markReady(mod){
+    document.getElementById('ready-'+mod).classList.add('show');
+    document.querySelector(`.lesson-tab[data-mod="${mod}"]`).classList.add('done');
+    unlockNext(mod);
+  }
+
+  // ---- Select Team: drag + click assign ----
+  let budget = 10, pickedId = null;
+  function refreshBudget(){ document.getElementById('budget').textContent = budget; }
+  document.querySelectorAll('.soldier-card').forEach(card=>{
+    card.addEventListener('dragstart', e=>{ e.dataTransfer.setData('id', card.dataset.id); });
+    card.addEventListener('click', ()=>{
+      if(card.classList.contains('assigned')) return;
+      document.querySelectorAll('.soldier-card').forEach(c=>c.style.outline='');
+      pickedId = card.dataset.id; card.style.outline='2px solid var(--amber)';
+    });
+  });
+  document.querySelectorAll('.slot').forEach(slot=>{
+    slot.addEventListener('dragover', e=>{ e.preventDefault(); slot.classList.add('dragover'); });
+    slot.addEventListener('dragleave', ()=>slot.classList.remove('dragover'));
+    slot.addEventListener('drop', e=>{ e.preventDefault(); slot.classList.remove('dragover'); assign(e.dataTransfer.getData('id'), slot); });
+    slot.addEventListener('click', ()=>{ if(pickedId) assign(pickedId, slot); });
+  });
+  function assign(id, slot){
+    if(slot.classList.contains('filled')) return;
+    const card = document.querySelector(`.soldier-card[data-id="${id}"]`);
+    if(!card || card.classList.contains('assigned')) return;
+    const cost = parseInt(card.dataset.cost,10);
+    if(cost > budget){ document.getElementById('budget').style.color='var(--alert)'; setTimeout(()=>document.getElementById('budget').style.color='',600); return; }
+    budget -= cost; refreshBudget();
+    card.classList.add('assigned'); card.style.outline='';
+    slot.classList.add('filled');
+    slot.innerHTML = `<div class="letter">${slot.querySelector('.letter').textContent}</div>
+      <img src="../../assets/extracted/counters/${card.dataset.img}"><div class="sn">${card.dataset.name}</div>`;
+    pickedId = null;
+  }
+
+  // ---- Events: demo check ----
+  // (kept simple — the paragraph text is placeholder only)
+
+  // ---- Combat ----
+  const modeStat = { fire:'WS:-2 · Pistol', grenade:'throw · 1 hex radius', hth:'CCV vs CCV · adjacent' };
+  function setCombatMode(e, mode){
+    document.querySelectorAll('.combat-mode .btn').forEach(b=>b.classList.toggle('amber', b.dataset.mode===mode));
+    document.getElementById('attackerStat').textContent = modeStat[mode];
+    document.getElementById('combatResult').textContent = 'Roll to resolve ' + (mode==='hth'?'hand-to-hand':mode) + ' combat.';
+  }
+  function rollCombat(){
+    const die = document.getElementById('cdie'); die.classList.add('rolling');
+    document.getElementById('cRoll').disabled = true;
+    const val = 1 + Math.floor(Math.random()*10);
+    setTimeout(()=>{
+      die.textContent = val; die.classList.remove('rolling');
+      document.querySelectorAll('#combatTable tr').forEach(r=>r.classList.remove('hit'));
+      const hit = (val>=4 && val<=7);
+      if(hit) document.getElementById('crow47').classList.add('hit');
+      document.getElementById('combatResult').innerHTML = hit
+        ? `d10=<b>${val}</b> → row 4-7 → paragraph <b>802</b> → target wounded`
+        : `d10=<b>${val}</b> → edge row → miss`;
+      document.getElementById('cRoll').disabled = false;
+    }, 220);
+  }
+
+  // init
+  renderExplain('team');
+  refreshBudget();
+</script>
+</body>
+</html>

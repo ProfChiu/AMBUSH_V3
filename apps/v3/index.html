@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ambush! Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="counters.css">
+<link rel="stylesheet" href="mission.css">
+<link rel="stylesheet" href="lesson.css">
+</head>
+<body>
+
+<!-- Title -->
+<section id="title" class="screen" aria-label="Title">
+  <div class="backdrop"></div>
+  <img class="cast left" src="../../assets/characters/whitaker/sprites/whitaker-work-salute.png" alt="">
+  <img class="cast right" src="../../assets/characters/kranz/sprite/kranz-salute.png" alt="">
+  <div class="stack">
+    <h1 class="logo">Ambush!</h1>
+    <p class="tagline">Solitaire squad combat · Normandy 1944</p>
+    <div class="menu">
+      <button class="btn primary" id="t-play">Play</button>
+      <button class="btn" id="t-learn">Learn to play</button>
+      <button class="btn" id="t-settings">Settings</button>
+    </div>
+  </div>
+  <div class="foot">Ambush! © 1983 Victory Games · digital edition, v3 in development</div>
+</section>
+
+<!-- Mission select -->
+<section id="missions" class="screen" aria-label="Mission select">
+  <div class="backdrop"></div>
+  <header>
+    <button class="btn" id="m-back">← Back</button>
+    <h2>Missions</h2>
+    <span class="spacer" style="flex:1"></span>
+    <button class="btn" id="m-settings">Settings</button>
+  </header>
+  <div class="mission-grid" id="mission-grid"></div>
+</section>
+
+<!-- Learn to play (Phase 6): the chapter list; a tick marks a finished lesson -->
+<section id="learn" class="screen" aria-label="Learn to play">
+  <div class="backdrop"></div>
+  <header>
+    <button class="btn" id="l-back">← Back</button>
+    <h2>Learn to play</h2>
+    <span class="spacer" style="flex:1"></span>
+  </header>
+  <div class="chapter-list" id="chapter-list"></div>
+</section>
+
+<!-- Game: the map fills the window, the HUD floats over it. Mission 1 (Phase 3) is v2's controller
+     (mission1.js, copied from apps/game/mission1demo.js) re-pointed at this stage; every element id
+     below is one it, or the bot's seam, reaches for. -->
+<section id="game" class="screen" aria-label="Mission">
+  <div id="board"><div id="world">
+    <img class="map map-image" src="../../assets/library/map/map_a_tactical.png" alt="Map A" draggable="false">
+    <svg id="grid"></svg>
+  </div></div>
+  <nav class="strip" aria-label="Menu strip">
+    <span class="brand">Ambush!</span>
+    <span class="mission"><b id="g-mission">Bloody St. Mick</b><small id="g-sub">Mission 1 · Normal</small></span>
+    <span class="phase"><small>Phase</small><b id="tb-phase">Squad Generation</b><span id="tb-difficulty" hidden>Normal</span></span>
+    <div class="seg" id="zoom-seg"><span class="lbl">Zoom</span></div>
+    <div class="seg" id="speedCtl" title="Resolution speed. Hold Space, or hold the mouse on the map, to run to the next decision.">
+      <span class="lbl">Speed</span><button class="btn" data-speed="slow">Slow</button><button class="btn" data-speed="normal">Normal</button><button class="btn" data-speed="fast">Fast</button>
+    </div>
+    <span class="spacer"></span>
+    <button class="btn" id="objectivesBtn">Objectives</button>
+    <button class="btn" id="voiceBtn" title="Voice-over is off">Voice</button>
+    <button class="btn" data-pop="log">Log</button>
+    <button class="btn" data-pop="squad">Squad</button>
+    <button class="btn" data-pop="settings">Settings</button>
+    <button class="btn" data-pop="menu">Menu</button>
+  </nav>
+
+  <!-- top right: what is happening, the score, the Action Round track -->
+  <aside class="hud-panel" id="hud-status" aria-label="Status">
+    <div id="status-banner">Generating your squad...</div>
+    <div class="vp">
+      <div class="vp-readout"><span>Gained</span><b id="vp-gained">0</b></div>
+      <div class="vp-readout"><span>Lost</span><b id="vp-lost">0</b></div>
+      <div class="vp-readout total"><span>Total <small>need <span id="vp-need">13</span></small></span><b id="vp-total">0</b></div>
+    </div>
+    <div class="sec" id="track-sec" style="display:none;">
+      <h3>Action Round track</h3>
+      <div class="ar-track" id="ar-track"></div>
+    </div>
+    <div class="sec" id="round-sec" style="display:none;">
+      <button class="btn primary wide" id="newRoundBtn">Start next Round</button>
+    </div>
+  </aside>
+
+  <!-- bottom left: the soldier the orders are for. His verbs are on the ring around his counter. -->
+  <aside class="hud-panel" id="hud-soldier" aria-label="Soldier">
+    <div class="sec" id="movement-sec" style="display:none;">
+      <h3>Selected soldier</h3>
+      <div class="mini-card">
+        <div class="row"><img id="mc-img" src="" alt=""><div class="name" id="mc-name">—</div></div>
+        <div class="stats" id="mc-stats"></div>
+        <div class="mp-readout" id="mc-mp"></div>
+      </div>
+      <div class="verbs" data-ring="movement">
+        <button class="btn" id="stance-standing">Stand</button>
+        <button class="btn" id="stance-crouching">Crouch</button>
+        <button class="btn" id="stance-prone">Prone</button>
+        <button class="btn" id="exitMapBtn">Exit map</button>
+        <button class="btn" id="clearJamOpsBtn">Clear jam</button>
+      </div>
+      <div id="groupMoveRow" class="opt" style="display:none;">
+        <label><input type="checkbox" id="groupMoveToggle"> Move as group (<span id="groupMoveCount">0</span> soldiers here, same stance: one Paragraph Check, &sect;5/3)</label>
+      </div>
+      <div id="bringPrisonerRow" class="opt" style="display:none;">
+        <label><input type="checkbox" id="bringPrisonerToggle"> Bring the captured German along (&sect;11/2); leaving him behind frees him</label>
+      </div>
+    </div>
+    <div class="sec" id="pick-sec" style="display:none;">
+      <h3>Who goes next</h3>
+      <p class="opt">These soldiers share the space on the Action Round track. They go in any order you wish (&sect;6/1): click one here or on the map.</p>
+      <div id="pick-list"></div>
+    </div>
+    <div class="sec" id="action-sec" style="display:none;">
+      <h3>Current actor</h3>
+      <div class="mini-card">
+        <div class="row"><img id="act-img" src="" alt=""><div class="name" id="act-name">—</div></div>
+        <div class="stats" id="act-stats"></div>
+      </div>
+      <div class="verbs" data-ring="action">
+        <button class="btn" id="moveBtn">Move</button>
+        <button class="btn" id="fireAimed">Aimed fire</button>
+        <button class="btn" id="fireSnap">Snap fire</button>
+        <button class="btn" id="assaultBtn">Assault</button>
+        <button class="btn" id="grenadeBtn">Grenade</button>
+        <button class="btn" id="dragBtn">Drag</button>
+        <button class="btn" id="giveTurnBtn">Give Turn</button>
+        <button class="btn" id="makeAwareBtn">Make aware</button>
+        <button class="btn" id="changeStanceBtn">Stance</button>
+        <button class="btn" id="prepareWeaponBtn">Prepare</button>
+        <button class="btn" id="pickupBtn">Pick up</button>
+        <button class="btn" id="clearJamBtn">Clear jam</button>
+        <button class="btn pass" id="passTurn">Pass</button>
+      </div>
+      <button class="btn wide" id="cancelMoveBtn" style="display:none;">Cancel move</button>
+    </div>
+  </aside>
+
+  <!-- the ring of verbs around the selected soldier (ring.js moves the buttons above into it) -->
+  <div id="ring" aria-label="Orders"></div>
+  <!-- everything in a stacked hex (stack.js) -->
+  <div id="stack-panel" role="dialog" aria-label="Stack"></div>
+  <div id="banner"></div>
+  <!-- Major Kranz voices the German side's reasons at notable moments (cues.js) -->
+  <!-- the lesson's staging (director.js): spotlight, pointer, and Sgt Whitaker's bubble -->
+  <div id="lesson-spot" class="none" hidden></div>
+  <svg id="lesson-arrow" aria-hidden="true"><defs><marker id="lesson-arrow-head" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z"/></marker></defs><path id="lesson-arrow-path" marker-end="url(#lesson-arrow-head)"/></svg>
+  <div id="tutor" hidden aria-live="polite">
+    <div id="guide"><img id="guide-img" alt="Sgt June Whitaker"></div>
+    <div id="tutor-bubble">
+      <div class="tutor-head"><span class="who">Sgt. Whitaker</span><span id="beat-step"></span><button class="btn ghost" id="btn-leave">Leave lesson</button></div>
+      <h3 id="beat-title"></h3>
+      <div id="tutor-body">
+        <div id="beat-card" hidden></div>
+        <p id="beat-say"></p>
+        <div id="beat-ask" hidden></div>
+        <div id="beat-debrief" hidden></div>
+        <ol id="beat-steps" hidden></ol>
+        <div id="beat-refuse" role="alert" hidden></div>
+        <div id="beat-explain"></div>
+      </div>
+      <div class="tutor-foot">
+        <button class="btn" id="btn-back" title="Back (←)">◂ Back</button>
+        <button class="btn" id="btn-why">Why?</button>
+        <span style="flex:1"></span>
+        <button class="btn primary" id="btn-continue" title="Next (Space, Enter, →)">Next ▸</button>
+      </div>
+    </div>
+  </div>
+  <div id="kranz" aria-live="polite" hidden><img alt="Major Kranz"><div class="bubble"><span class="who">Maj. Kranz</span><div class="say"></div></div></div>
+</section>
+
+<!-- Popups -->
+<div class="scrim" id="pop-settings" role="dialog" aria-modal="true" aria-labelledby="set-h">
+  <div class="popup">
+    <button class="btn close" data-close>Close</button>
+    <h3 id="set-h">Settings</h3>
+    <div class="set-row"><label for="s-master">Master volume</label><input type="range" id="s-master" min="0" max="100" step="5"><output for="s-master"></output></div>
+    <div class="set-row"><label for="s-music">Music</label><input type="range" id="s-music" min="0" max="100" step="5"><output for="s-music"></output></div>
+    <div class="set-row"><label for="s-sfx">Sound effects</label><input type="range" id="s-sfx" min="0" max="100" step="5"><output for="s-sfx"></output></div>
+    <div class="set-row wide"><label>Game speed</label>
+      <div class="seg" id="s-speed"><button class="btn" data-v="slow">Slow</button><button class="btn" data-v="normal">Normal</button><button class="btn" data-v="fast">Fast</button></div></div>
+    <div class="set-row wide"><label>Reduced motion</label>
+      <div class="seg" id="s-still"><button class="btn" data-v="0">Off</button><button class="btn" data-v="1">On</button></div></div>
+    <div class="set-row wide"><label>Hex grid</label>
+      <div class="seg" id="s-grid"><button class="btn" data-v="0">Hidden</button><button class="btn" data-v="1">Shown</button></div></div>
+    <div class="actions"><button class="btn" id="s-test">Test sound</button><button class="btn" id="s-reset">Defaults</button></div>
+  </div>
+</div>
+<div class="scrim" id="pop-log" role="dialog" aria-modal="true" aria-labelledby="log-heading">
+  <div class="popup wide"><button class="btn close" data-close>Close</button><h3 id="log-heading">Radio log</h3>
+    <div id="log-sec"><div id="combatlog"></div></div>
+    <div class="actions"><button class="btn" id="downloadLogBtn">Download log</button></div></div>
+</div>
+<div class="scrim" id="pop-squad" role="dialog" aria-modal="true" aria-labelledby="squad-h">
+  <div class="popup wide"><button class="btn close" data-close>Close</button><h3 id="squad-h">Squad</h3>
+    <div id="roster-sec"><div id="roster-list"></div></div></div>
+</div>
+<div class="scrim" id="pop-menu" role="dialog" aria-modal="true" aria-labelledby="menu-h">
+  <div class="popup" style="width:min(420px,92vw)"><h3 id="menu-h">Paused</h3>
+    <div class="menu" style="width:100%">
+      <button class="btn primary" data-close>Resume</button>
+      <div class="pair"><button class="btn" id="saveGameBtn">Save</button><button class="btn" id="loadGameBtn">Load</button></div>
+      <div class="pair"><button class="btn" id="exportSaveBtn">Export save</button><button class="btn" id="importSaveBtn">Import save</button></div>
+      <input type="file" id="importSaveFile" accept="application/json" hidden>
+      <button class="btn" id="p-settings">Settings</button>
+      <button class="btn" id="resetBtn">Restart mission</button>
+      <button class="btn" id="p-quit">Quit to title</button>
+      <button class="btn" id="presentationBtn" hidden>Presentation…</button><b id="build-label" hidden></b>
+    </div></div>
+</div>
+
+<div id="dialogs-root"></div>
+
+<!-- v2's rules engine, byte-identical (apps/game/), and its data. v2's dialog engine
+     (ambushdialogs.js) is loaded unchanged; its controller is v3's copy, mission1.js. -->
+<script src="../game/hexgrid.js"></script>
+<script src="../game/movementrules.js"></script>
+<script src="../game/losrules.js"></script>
+<script src="../game/checksrules.js"></script>
+<script src="../game/arrules.js"></script>
+<script src="../game/arscheduler.js"></script>
+<script src="../game/firecombat.js"></script>
+<script src="../../assets/data/grenade_scatter.js"></script>
+<script src="../game/grenaderules.js"></script>
+<script src="../game/assaultrules.js"></script>
+<script src="../game/crewweaponrules.js"></script>
+<script src="../game/hazardrules.js"></script>
+<script src="../game/penetrationrules.js"></script>
+<script src="../game/equipmentrules.js"></script>
+<script src="../game/squadgenrules.js"></script>
+<script src="../game/victoryrules.js"></script>
+<script src="../game/difficulty.js"></script>
+<script src="../game/germanactions.js"></script>
+<script src="../game/paragraphinterpreter.js"></script>
+<script src="../game/operationsloop.js"></script>
+<script src="../../assets/data/terrain_map_a.js"></script>
+<script src="../../assets/data/los_map_a.js"></script>
+<script src="../../assets/data/ar_track.js"></script>
+<script src="../../assets/data/weapon_chart.js"></script>
+<script src="../../assets/data/squad_generation.js"></script>
+<script src="../../assets/data/german_roster.js"></script>
+<script src="../../assets/data/missions.js"></script>
+<script src="../../assets/data/paragraphs.js"></script>
+<script src="../../assets/data/mission_cards.js"></script>
+<script src="../../assets/data/mission_cards_movement.js"></script>
+<script src="../../assets/data/paragraph_programs.js"></script>
+<script src="../../assets/data/german_action_programs.js"></script>
+<script src="../../assets/data/lesson_fixtures.js"></script>
+<!-- v3 presentation -->
+<script src="settings.js"></script>
+<script src="audio.js"></script>
+<script src="cues.js"></script>
+<script src="board.js"></script>
+<script src="counters.js"></script>
+<script src="../game/ambushdialogs.js"></script>
+<script src="mission1.js"></script>
+<script src="shell.js"></script>
+<script src="ring.js"></script>
+<script src="stack.js"></script>
+<script src="lessons.js"></script>
+<script src="lesson.js"></script>
+<script src="director.js"></script>
+</body>
+</html>

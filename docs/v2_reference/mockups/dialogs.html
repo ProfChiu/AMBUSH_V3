@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ambush! Digital — Dialog &amp; Popup Library (M4)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --olive:#4B5320; --field-gray:#6B6E6A; --paper:#EDE6D4; --ink:#22221E;
+    --alert:#8E2A22; --amber:#C9A227; --bg:#1C1D1B; --panel-bg:#26271F; --panel-border:#4a4b3f;
+    --font-head:'Staatliches','Arial Narrow',sans-serif;
+    --font-ui:'Inter',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; min-height:100vh; background:var(--bg); color:var(--paper); font-family:var(--font-ui); padding:28px;}
+  h1{font-family:var(--font-head); font-size:32px; letter-spacing:1px; margin:0 0 4px; color:var(--paper);}
+  h1 span{color:var(--amber);}
+  .status-line{font-family:var(--font-mono); font-size:12.5px; color:#9a9c8f; margin-bottom:26px;}
+  .launcher{display:flex; gap:12px; flex-wrap:wrap;}
+
+  /* ---- buttons ---- */
+  .btn{font-family:var(--font-ui); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:1px;
+       color:var(--paper); background:linear-gradient(180deg,#5a5d3e,#454724);
+       border:1px solid #6d7048; border-radius:3px; padding:11px 20px; cursor:pointer;
+       box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.5);}
+  .btn:hover{background:linear-gradient(180deg,#666a46,#50522a); border-color:var(--amber);}
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn.amber{background:linear-gradient(180deg,var(--amber),#a5811d); color:#22221a; border-color:#e0bb3d;}
+  .btn.small{padding:6px 10px; font-size:11px;}
+
+  /* ---- popups ---- */
+  .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:20;}
+  .backdrop.open{display:flex;}
+  .popup{background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:3px; width:680px; max-width:92vw;
+    max-height:88vh; display:flex; flex-direction:column; box-shadow:0 8px 30px rgba(0,0,0,.6);}
+  .popup.narrow{width:460px;}
+  .popup.wide{width:820px;}
+  .popup .popup-head{display:flex; align-items:center; justify-content:space-between; padding:11px 18px;
+    background:#1f2019; border-bottom:1px solid var(--panel-border); font-family:var(--font-ui); font-weight:600;
+    font-size:12.5px; text-transform:uppercase; letter-spacing:1.5px; color:var(--amber);}
+  .popup .popup-head button{background:none; border:none; color:#9a9c8f; font-size:17px; cursor:pointer;}
+  .popup .popup-body{padding:18px; overflow-y:auto; font-size:13.5px; color:#d8d9cc;}
+  .popup .popup-body img.full{max-width:100%; border:1px solid var(--panel-border); border-radius:2px;}
+  .popup .popup-foot{display:flex; justify-content:flex-end; gap:10px; padding:14px 18px; border-top:1px solid var(--panel-border);}
+  .tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;}
+  .tabs button{background:#1f2019; border:1px solid var(--panel-border); color:#c7c9b8; font-family:var(--font-mono);
+    font-size:11px; padding:5px 10px; cursor:pointer; border-radius:2px;}
+  .tabs button.active{background:var(--amber); color:#22221a; border-color:var(--amber);}
+
+  /* ---- Squad Record ---- */
+  .squad-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .slot{background:#1f2019; border:1px solid var(--panel-border); border-radius:3px; padding:10px;}
+  .slot.empty{opacity:.4;}
+  .slot .slot-head{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .slot .letter{font-family:var(--font-head); font-size:20px; color:var(--amber); width:20px;}
+  .slot .sname{font-family:var(--font-ui); font-weight:600; font-size:12.5px;}
+  .slot .statrow{font-family:var(--font-mono); font-size:11px; color:#c7c9b8; margin-bottom:5px;}
+  .slot .row-label{font-family:var(--font-mono); font-size:9.5px; color:#8c8e80; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px;}
+  .boxes{display:flex; gap:3px; margin-bottom:6px;}
+  .boxes div{flex:1; height:16px; border:1px solid #4a4b3f; border-radius:2px; background:#151610;}
+  .squad-summary{display:flex; gap:24px; font-family:var(--font-mono); font-size:12px; color:#c7c9b8; margin-top:14px;
+    border-top:1px solid #34362b; padding-top:12px;}
+  .squad-summary b{color:var(--amber);}
+
+  /* ---- Mission Card / View Sleeve ---- */
+  .sleeve{position:relative; background:linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40%),
+      #e9e2cf; color:var(--ink); border-radius:6px; padding:18px 20px; box-shadow:0 2px 10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.4);}
+  .sleeve::after{content:""; position:absolute; inset:0; border-radius:6px; pointer-events:none;
+      box-shadow:inset 0 0 30px rgba(255,255,255,.15); background:linear-gradient(100deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 18%);}
+  .sleeve h4{font-family:var(--font-head); font-size:20px; margin:0 0 2px; letter-spacing:.5px;}
+  .sleeve .sub{font-family:var(--font-mono); font-size:11px; color:#5a5c4e; margin-bottom:14px;}
+  .condition-row{display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px dashed #b9b39c; font-family:var(--font-mono); font-size:12.5px;}
+  .condition-row .cnum{width:22px; font-weight:600;}
+  .condition-row.current{background:rgba(201,162,39,.25); border-radius:3px; padding-left:6px; font-weight:600;}
+  .condition-row.masked .ctext{background:#3a3c30; color:#3a3c30; border-radius:2px; user-select:none;}
+  .sleeve-note{font-family:var(--font-mono); font-size:10.5px; color:#8c8e80; margin-top:12px;}
+
+  /* ---- Event dialog ---- */
+  .event-body{font-size:15px; line-height:1.7; font-style:italic; color:var(--paper);}
+  .event-tag{font-family:var(--font-mono); font-size:10.5px; color:#8c8e80; margin-bottom:10px; font-style:normal;}
+
+  /* ---- Combat Resolution ---- */
+  .combat-row{display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:6px;}
+  .combatant{background:#1f2019; border:1px solid var(--panel-border); border-radius:4px; padding:12px; width:180px; text-align:center;}
+  .combatant img{width:56px; height:56px; image-rendering:pixelated; margin-bottom:6px;}
+  .combatant .cname{font-family:var(--font-head); font-size:16px; color:var(--amber);}
+  .combatant .cstat{font-family:var(--font-mono); font-size:11px; color:#c7c9b8; margin-top:4px;}
+  .vs{font-family:var(--font-head); font-size:22px; color:#6d7048;}
+  .dice-tray{display:flex; align-items:center; gap:16px; justify-content:center; margin:18px 0;}
+  .die-face{width:56px; height:56px; background:var(--paper); color:var(--ink); border-radius:6px;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:600; font-size:28px;
+    box-shadow:0 2px 4px rgba(0,0,0,.5); transition:transform .15s;}
+  .die-face.rolling{transform:rotate(8deg) scale(1.05);}
+  table.chart{border-collapse:collapse; font-family:var(--font-mono); font-size:11.5px; margin:0 auto;}
+  table.chart th,table.chart td{border:1px solid #4a4b3f; padding:4px 9px; text-align:center;}
+  table.chart th{background:#2c2e24; color:#c7c9b8;}
+  table.chart tr.hit td{background:var(--amber); color:#22221a; font-weight:600;}
+  .result-line{text-align:center; font-family:var(--font-mono); font-size:13px; color:var(--paper); margin-top:14px; min-height:20px;}
+  .result-line b{color:var(--amber);}
+</style>
+</head>
+<body>
+
+<h1>AMBUSH! <span>Digital</span> — Dialog &amp; Popup Library</h1>
+<div class="status-line">M4 deliverable · high-fidelity versions of the 5 secondary screens sketched as stubs in M3 · built from the approved M2 design system</div>
+
+<div class="launcher">
+  <button class="btn" onclick="openPopup('squad')">Squad Record</button>
+  <button class="btn" onclick="openPopup('charts')">Charts &amp; Tables</button>
+  <button class="btn" onclick="openPopup('mission')">Mission Card / View Sleeve</button>
+  <button class="btn" onclick="openPopup('event')">Event Dialog</button>
+  <button class="btn amber" onclick="openPopup('combat')">Combat Resolution</button>
+</div>
+
+<!-- ================= SQUAD RECORD ================= -->
+<div class="backdrop" id="backdrop-squad">
+  <div class="popup wide">
+    <div class="popup-head"><span>Squad Record</span><button onclick="closePopup('squad')">✕</button></div>
+    <div class="popup-body">
+      <div class="squad-grid">
+        <div class="slot">
+          <div class="slot-head"><div class="letter">A</div><div class="sname">Soldier A — US Runner</div></div>
+          <div class="statrow">IN:3  PC:5  WS:-1  MPA:4  DS:2</div>
+          <div class="row-label">Port</div>
+          <div class="boxes"><div style="flex:3;"></div></div>
+          <div class="row-label">Ammo</div>
+          <div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+          <div class="row-label">CP's</div>
+          <div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+        <div class="slot">
+          <div class="slot-head"><div class="letter">B</div><div class="sname">Soldier B — US Jeep Driver</div></div>
+          <div class="statrow">IN:2  PC:3  WS:-2  MPA:4  DS:6</div>
+          <div class="row-label">Port</div>
+          <div class="boxes"><div style="flex:3;"></div></div>
+          <div class="row-label">Ammo</div>
+          <div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+          <div class="row-label">CP's</div>
+          <div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+        <div class="slot">
+          <div class="slot-head"><div class="letter">C</div><div class="sname">Soldier C — US Runner</div></div>
+          <div class="statrow">IN:1  PC:2  WS:-2  MPA:3  DS:0</div>
+          <div class="row-label">Port</div>
+          <div class="boxes"><div style="flex:3;"></div></div>
+          <div class="row-label">Ammo</div>
+          <div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+          <div class="row-label">CP's</div>
+          <div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+        <div class="slot empty">
+          <div class="slot-head"><div class="letter">D</div><div class="sname">— empty —</div></div>
+          <div class="statrow">IN:–  PC:–  WS:–  MPA:–  DS:–</div>
+          <div class="row-label">Port</div><div class="boxes"><div style="flex:3;"></div></div>
+          <div class="row-label">Ammo</div><div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+          <div class="row-label">CP's</div><div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+        <div class="slot empty">
+          <div class="slot-head"><div class="letter">E</div><div class="sname">— empty —</div></div>
+          <div class="statrow">IN:–  PC:–  WS:–  MPA:–  DS:–</div>
+          <div class="row-label">Port</div><div class="boxes"><div style="flex:3;"></div></div>
+          <div class="row-label">Ammo</div><div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+          <div class="row-label">CP's</div><div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+        <div class="slot empty">
+          <div class="slot-head"><div class="letter">F</div><div class="sname">— empty —</div></div>
+          <div class="statrow">IN:–  PC:–  WS:–  MPA:–  DS:–</div>
+          <div class="row-label">Port</div><div class="boxes"><div style="flex:3;"></div></div>
+          <div class="row-label">Ammo</div><div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+          <div class="row-label">CP's</div><div class="boxes"><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="squad-summary">
+        <div>Squad Points: <b>—</b></div>
+        <div>Weapons Points: <b>—</b></div>
+        <div>Victory Points Gained: <b>0</b></div>
+        <div>Lost: <b>0</b></div>
+      </div>
+      <p style="font-family:var(--font-mono); font-size:10.5px; color:#8c8e80; margin-top:12px;">Digital recreation of the original paper form (see `assets/extracted/squad_record/`). Live-updating values are an M6 engine task — this is the layout/visual reference.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CHARTS & TABLES ================= -->
+<div class="backdrop" id="backdrop-charts">
+  <div class="popup">
+    <div class="popup-head"><span>Charts &amp; Tables</span><button onclick="closePopup('charts')">✕</button></div>
+    <div class="popup-body">
+      <div class="tabs">
+        <button class="active" onclick="showChartTab(event,'facing')">Facing</button>
+        <button onclick="showChartTab(event,'fire')">Fire</button>
+        <button onclick="showChartTab(event,'grenade')">Grenade</button>
+        <button onclick="showChartTab(event,'vehicle')">Vehicle</button>
+        <button onclick="showChartTab(event,'weapon')">Weapon</button>
+        <button onclick="showChartTab(event,'generation')">Squad Generation</button>
+      </div>
+      <img class="full" id="chart-img" src="../../assets/extracted/counters/charts_reference/facingchart.png">
+    </div>
+  </div>
+</div>
+
+<!-- ================= MISSION CARD / VIEW SLEEVE ================= -->
+<div class="backdrop" id="backdrop-mission">
+  <div class="popup narrow">
+    <div class="popup-head"><span>Mission Card — View Sleeve</span><button onclick="closePopup('mission')">✕</button></div>
+    <div class="popup-body">
+      <div class="sleeve">
+        <h4>Mission 1 — Bloody St. Mick</h4>
+        <div class="sub">MAP A · top edge is north · late June, 1944</div>
+        <div class="condition-row"><div class="cnum">C.1</div><div class="ctext">Squad enters from west edge, any hex.</div></div>
+        <div class="condition-row current" id="cond-current"><div class="cnum" id="cond-num">C.2</div><div class="ctext" id="cond-text">Currently active condition — visible through the sleeve window.</div></div>
+        <div class="condition-row masked"><div class="cnum">C.3</div><div class="ctext">█████████████████████████</div></div>
+        <div class="condition-row masked"><div class="cnum">C.4</div><div class="ctext">█████████████████████</div></div>
+        <div class="condition-row masked"><div class="cnum">C.5</div><div class="ctext">████████████████████████████</div></div>
+        <div class="condition-row masked"><div class="cnum">C.6</div><div class="ctext">██████████████████</div></div>
+        <div class="sleeve-note">Sample layout only — condition text is placeholder, not actual paragraph-book content.</div>
+      </div>
+      <div style="text-align:center; margin-top:14px;">
+        <button class="btn small" onclick="advanceCondition()">Advance to Next Condition ▸</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= EVENT DIALOG ================= -->
+<div class="backdrop" id="backdrop-event">
+  <div class="popup narrow">
+    <div class="popup-head"><span>Event</span><button onclick="closePopup('event')">✕</button></div>
+    <div class="popup-body">
+      <div class="event-tag">[SAMPLE TEXT — placeholder narrative, not actual paragraph-book content]</div>
+      <div class="event-body">A twig snaps somewhere in the hedgerow ahead. The squad freezes, straining to place the sound before it's lost in the wind.</div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn amber" onclick="closePopup('event')">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= COMBAT RESOLUTION ================= -->
+<div class="backdrop" id="backdrop-combat">
+  <div class="popup narrow">
+    <div class="popup-head"><span>Combat Resolution</span><button onclick="closePopup('combat')">✕</button></div>
+    <div class="popup-body">
+      <div class="combat-row">
+        <div class="combatant">
+          <img src="../../assets/extracted/counters/us_soldiers/crouch_B.png">
+          <div class="cname">Soldier B</div>
+          <div class="cstat">WS:-2 firing Pistol</div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="combatant">
+          <img src="../../assets/extracted/counters/german_position_counters/gray_crouch_T.png">
+          <div class="cname">Unidentified German</div>
+          <div class="cstat">Target · range 2 hexes</div>
+        </div>
+      </div>
+
+      <div class="dice-tray">
+        <div class="die-face" id="cdie">–</div>
+        <button class="btn amber" id="cdRollBtn" onclick="rollCombatDie()">Roll</button>
+      </div>
+
+      <table class="chart" id="combatTable">
+        <tr><th>DIE</th><th>2-3</th><th>4</th><th>A</th><th>S</th></tr>
+        <tr><td>0-2</td><td>808</td><td>920</td><td>808</td><td>813</td></tr>
+        <tr id="crow47"><td>4-7</td><td>802</td><td>809</td><td>802</td><td>802</td></tr>
+        <tr><td>8-9</td><td>800</td><td>813</td><td>800</td><td>839</td></tr>
+      </table>
+
+      <div class="result-line" id="combatResult">Roll to resolve fire combat.</div>
+    </div>
+    <div class="popup-foot">
+      <button class="btn" onclick="closePopup('combat')">Cancel</button>
+      <button class="btn amber" id="cdApplyBtn" onclick="applyCombat()" disabled>Apply</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- generic popup open/close ----
+  function openPopup(id){ document.getElementById('backdrop-'+id).classList.add('open'); }
+  function closePopup(id){ document.getElementById('backdrop-'+id).classList.remove('open'); }
+  document.querySelectorAll('.backdrop').forEach(b=>{
+    b.addEventListener('click', e=>{ if(e.target===b) b.classList.remove('open'); });
+  });
+
+  // ---- charts tabs ----
+  const chartMap = {
+    facing:'facingchart.png', fire:'firechart.png', grenade:'grenadechart.png',
+    vehicle:'vehiclesummary.png', weapon:'weaponchart.png', generation:'generationchart.png'
+  };
+  function showChartTab(e, key){
+    document.querySelectorAll('#backdrop-charts .tabs button').forEach(b=>b.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById('chart-img').src = '../../assets/extracted/counters/charts_reference/' + chartMap[key];
+  }
+
+  // ---- mission sleeve: demo condition advance ----
+  const sampleConditions = [
+    "Currently active condition — visible through the sleeve window.",
+    "Next condition, revealed once the previous is resolved.",
+    "A later condition, still masked until reached.",
+  ];
+  let condIndex = 0;
+  function advanceCondition(){
+    condIndex = (condIndex + 1) % 5;
+    document.getElementById('cond-num').textContent = 'C.' + (condIndex + 2);
+    document.getElementById('cond-text').textContent = sampleConditions[condIndex % sampleConditions.length];
+  }
+
+  // ---- combat resolution ----
+  function rollCombatDie(){
+    const die = document.getElementById('cdie');
+    die.classList.add('rolling');
+    const val = 1 + Math.floor(Math.random()*10);
+    document.getElementById('cdRollBtn').disabled = true;
+    setTimeout(()=>{
+      die.textContent = val;
+      die.classList.remove('rolling');
+      document.querySelectorAll('#combatTable tr').forEach(r=>r.classList.remove('hit'));
+      const hitRow = (val>=4 && val<=7);
+      if(hitRow) document.getElementById('crow47').classList.add('hit');
+      document.getElementById('combatResult').innerHTML = hitRow
+        ? `d10=<b>${val}</b> → row 4-7 → paragraph <b>802</b> → resolve result`
+        : `d10=<b>${val}</b> → edge row — see full table for exact column`;
+      document.getElementById('cdApplyBtn').disabled = false;
+      document.getElementById('cdRollBtn').disabled = false;
+    }, 220);
+  }
+  function applyCombat(){
+    closePopup('combat');
+  }
+</script>
+</body>
+</html>

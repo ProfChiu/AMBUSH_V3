@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ambush! v3 — Counter test</title>
+<link rel="stylesheet" href="counters.css">
+<style>
+  html,body{margin:0; height:100%; overflow:hidden; background:#141511; color:#e8e2cf;
+    font:15px/1.4 'Inter',-apple-system,sans-serif;}
+  /* the map fills the window; the HUD floats over it (brief decision 2) */
+  #board{position:fixed; inset:0; overflow:hidden; cursor:grab; touch-action:none;}
+  #board.dragging{cursor:grabbing;}
+  #world{position:absolute; left:0; top:0; transform-origin:0 0;}
+  #world > img.map{display:block; user-select:none; -webkit-user-drag:none;}
+  #grid{position:absolute; inset:0; pointer-events:none; display:none;}
+  #grid.on{display:block;}
+  #grid polygon{fill:none; stroke:#ff3df0; stroke-width:3;}
+  .row-tag{position:absolute; transform:translate(-50%,-50%); padding:8px 16px; border-radius:6px;
+    background:rgba(20,21,17,.88); color:var(--amber); border:2px solid var(--amber);
+    font:700 34px/1 'Staatliches','Arial Narrow',sans-serif; letter-spacing:2px; white-space:nowrap; pointer-events:none;}
+
+  #hud{position:fixed; left:16px; top:16px; z-index:20; width:300px; padding:14px 16px;
+    background:rgba(18,19,15,.92); border:1px solid #4a4b3f; border-radius:8px; box-shadow:0 6px 24px rgba(0,0,0,.6);}
+  #hud h1{margin:0 0 2px; font:700 24px/1 'Staatliches','Arial Narrow',sans-serif; letter-spacing:2px; color:var(--amber);}
+  #hud .sub{margin:0 0 12px; color:#a9a690; font-size:13px;}
+  #hud .lbl{margin:10px 0 4px; font-size:12px; text-transform:uppercase; letter-spacing:1px; color:#8c8e80;}
+  .seg{display:flex; gap:4px;}
+  .seg button{flex:1; padding:7px 0; border:1px solid #4a4b3f; border-radius:5px; background:#26271F; color:#e8e2cf;
+    font:600 13px/1 inherit; cursor:pointer;}
+  .seg button.on{background:var(--amber); color:#1c1d1b; border-color:var(--amber);}
+  .seg button:focus-visible{outline:2px solid #fff;}
+  #hud .keys{margin-top:12px; color:#a9a690; font-size:12.5px;}
+  #hud kbd{padding:0 5px; border:1px solid #4a4b3f; border-radius:3px; background:#26271F; font-size:11.5px;}
+  #readout{margin-top:10px; min-height:20px; font-size:13px; color:#e8e2cf;}
+</style>
+</head>
+<body>
+<div id="board"><div id="world">
+  <img class="map" src="../../assets/library/map/map_a_tactical.png" alt="Map A" draggable="false">
+  <svg id="grid"></svg>
+</div></div>
+
+<div id="hud">
+  <h1>Counter test</h1>
+  <p class="sub">Phase 1 · every soldier in every v2 state</p>
+  <div class="lbl">Zoom</div>
+  <div class="seg" id="zoom-seg">
+    <button data-zoom="0">Map</button><button data-zoom="1">Sector</button><button data-zoom="2">Squad</button><button data-zoom="3">Close</button>
+  </div>
+  <div class="lbl">Counter colours</div>
+  <div class="seg" id="pal-seg">
+    <button data-pal="print" class="on">Print</button><button data-pal="vassal">Vassal</button>
+  </div>
+  <div class="lbl">Hex grid</div>
+  <div class="seg" id="grid-seg">
+    <button data-grid="0" class="on">Off</button><button data-grid="1">On</button>
+  </div>
+  <div class="keys">Wheel zooms toward the cursor · <kbd>1</kbd>–<kbd>4</kbd> <kbd>+</kbd> <kbd>−</kbd> · drag to pan · click a counter to select it</div>
+  <div id="readout"></div>
+</div>
+
+<script src="../game/hexgrid.js"></script>
+<script src="counters.js"></script>
+<script src="board.js"></script>
+<script>
+(function () {
+  'use strict';
+  var G = window.AmbushHexGrid, C = window.AmbushCounters;
+  var W = G.MAP_WIDTH, H = G.MAP_HEIGHT;
+  var board = document.getElementById('board'), world = document.getElementById('world');
+
+  function hexXY(id) { var p = G.parseId(id), px = G.hexToPixel(p.colIdx, p.rowIdx); return { x: px.x, y: px.y }; }
+  function at(el, id, dy) { var c = hexXY(id); el.style.left = c.x + 'px'; el.style.top = (c.y + (dy || 0)) + 'px'; }
+
+  // ---- the test layout: one column per soldier (A-X), one row per state, a label in column Y
+  var US = 'ABCDEFGHJK'.split(''), DE = 'LMNPQRSTUVWXYZ'.split('');
+  var ROSTER = US.map(function (l) { return { side: 'us', letter: l }; })
+    .concat(DE.map(function (l) { return { side: 'german', letter: l }; }));
+  var ROWS = [
+    { row: 2,  tag: 'Standing',   s: { stance: 'standing',  status: 'ok' } },
+    { row: 3,  tag: 'Crouching',  s: { stance: 'crouching', status: 'ok' } },
+    { row: 4,  tag: 'Prone',      s: { stance: 'prone',     status: 'ok' } },
+    { row: 5,  tag: 'Wounded',    s: { stance: 'standing',  status: 'wounded' } },
+    { row: 6,  tag: 'Incap / KIA / captured', s: { stance: 'standing', status: 'killed' } },
+    { row: 7,  tag: 'Selected',   s: { stance: 'standing',  status: 'ok' }, cls: 'selected' },
+    { row: 8,  tag: 'Acting now', s: { stance: 'standing',  status: 'ok' }, cls: 'active-actor' },
+    { row: 10, tag: 'Results',    s: { stance: 'standing',  status: 'ok' }, badges: true },
+  ];
+  // v2's badge words and tones (mission1demo.js FX.badge calls)
+  var BADGES = [['WOUNDED', 'bad'], ['KILLED', 'bad'], ['MISS', 'neutral'], ['JAMMED', 'bad'], ['NO EFFECT', 'neutral'],
+                ['ASSAULT', 'amber'], ['CLIP SPENT', 'neutral'], ['BOOM', 'bad'], ['DUD', 'neutral'], ['CHARGE', 'amber']];
+
+  var selected = null, badgeHexes = [];
+  ROWS.forEach(function (r) {
+    ROSTER.forEach(function (who, i) {
+      var hex = G.colLetter(i) + r.row;
+      var s = { id: who.letter + '-' + r.row, side: who.side, letter: who.letter, stance: r.s.stance, status: r.s.status };
+      var el = C.make(s);
+      if (r.cls) el.classList.add(r.cls);
+      at(el, hex);
+      el.title = (who.side === 'us' ? 'US ' : 'German ') + who.letter + ' · ' + r.tag + ' · ' + hex;
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (selected && selected !== el) selected.classList.remove('selected');
+        el.classList.toggle('selected'); selected = el.classList.contains('selected') ? el : null;
+        readout.textContent = el.title;
+      });
+      world.appendChild(el);
+      if (r.badges) badgeHexes.push(hex);
+    });
+    var tag = document.createElement('div');
+    tag.className = 'row-tag'; tag.textContent = r.tag;
+    at(tag, 'Y' + r.row); world.appendChild(tag);
+  });
+
+  // Results row: badges land and fade on a loop, as v2's do (2.6 s on screen)
+  function fireBadges() {
+    badgeHexes.forEach(function (hex, i) {
+      var b = BADGES[i % BADGES.length];
+      setTimeout(function () {
+        var el = document.createElement('div');
+        el.className = 'fx-badge fx-' + b[1]; el.textContent = b[0];
+        at(el, hex, -96); world.appendChild(el);
+        setTimeout(function () { el.classList.add('fx-gone'); setTimeout(function () { el.remove(); }, 450); }, 2600);
+      }, i * 60);
+    });
+  }
+  fireBadges(); setInterval(fireBadges, 4200);
+
+  // ---- hex grid overlay (to check counters sit on hex centres)
+  var svg = document.getElementById('grid');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('width', W); svg.setAttribute('height', H);
+  var R = G.GRID.col_pitch * 2 / 3, h = G.GRID.row_pitch / 2;
+  G.allHexIds().forEach(function (id) {
+    var c = hexXY(id), pts = [[R, 0], [R / 2, h], [-R / 2, h], [-R, 0], [-R / 2, -h], [R / 2, -h]]
+      .map(function (p) { return (c.x + p[0]).toFixed(1) + ',' + (c.y + p[1]).toFixed(1); }).join(' ');
+    var poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', pts); svg.appendChild(poly);
+  });
+
+  // ---- four fixed zoom levels and pan: the shared map view (board.js)
+  var view = AmbushBoard.create({ board: board, world: world, width: W, height: H,
+    isPiece: function (t) { return !!t.closest('.counter'); },
+    onChange: function (level) {
+      document.querySelectorAll('#zoom-seg [data-zoom]').forEach(function (b) { b.classList.toggle('on', +b.dataset.zoom === level); });
+    } });
+  function zoomTo(level, cx, cy) { view.zoomTo(level, cx, cy); }
+  document.addEventListener('keydown', function (e) {
+    if (e.key >= '1' && e.key <= '4') zoomTo(+e.key - 1);
+    else if (e.key === '+' || e.key === '=') view.step(1);
+    else if (e.key === '-' || e.key === '_') view.step(-1);
+  });
+  document.querySelectorAll('#zoom-seg [data-zoom]').forEach(function (b) {
+    b.addEventListener('click', function () { zoomTo(+b.dataset.zoom); });
+  });
+
+  // HUD toggles
+  var readout = document.getElementById('readout');
+  function seg(id, attr, fn) {
+    document.querySelectorAll('#' + id + ' button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('#' + id + ' button').forEach(function (o) { o.classList.toggle('on', o === b); });
+        fn(b.dataset[attr]);
+      });
+    });
+  }
+  seg('pal-seg', 'pal', function (v) { document.body.classList.toggle('palette-vassal', v === 'vassal'); });
+  seg('grid-seg', 'grid', function (v) { svg.classList.toggle('on', v === '1'); });
+
+  window.__counterTest = { view: view.state, zoomTo: zoomTo, levelScales: view.scales, count: function () { return document.querySelectorAll('.counter').length; } };
+})();
+</script>
+</body>
+</html>

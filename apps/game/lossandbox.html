@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ambush! Digital — Line of Sight Sandbox (Phase 5)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --olive:#4B5320; --paper:#EDE6D4; --ink:#22221E;
+    --alert:#8E2A22; --amber:#C9A227; --bg:#1C1D1B; --panel-bg:#26271F; --panel-border:#4a4b3f;
+    --clear:#8fce6a;
+    --font-head:'Staatliches','Arial Narrow',sans-serif;
+    --font-ui:'Inter',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; height:100%; background:var(--bg); color:var(--paper); font-family:var(--font-ui); overflow:hidden;}
+  #app{display:flex; flex-direction:column; height:100vh;}
+
+  #topbar{display:flex; align-items:center; gap:24px; padding:0 18px; height:48px; flex-shrink:0;
+    background:#1f2019; border-bottom:1px solid var(--panel-border);}
+  #topbar .logo{font-family:var(--font-head); font-size:20px; letter-spacing:1px; color:var(--amber);}
+  #topbar .logo span{color:var(--paper); font-weight:400;}
+  #topbar .field{font-family:var(--font-mono); font-size:12.5px; color:#c7c9b8;}
+  #topbar .field b{color:var(--paper); font-weight:600;}
+  #topbar .spacer{flex:1;}
+  #topbar .note{font-family:var(--font-mono); font-size:10.5px; color:#7a7c6e;}
+
+  #main{flex:1; display:flex; min-height:0;}
+
+  #map-viewport{flex:1; position:relative; overflow-y:auto; overflow-x:hidden;
+    background:#111209; padding:20px 0 10% 0; min-width:0;}
+  #map-canvas{position:relative; width:100%; aspect-ratio:5336/4850; cursor:crosshair;}
+  #map-canvas img.map-image{width:100%; height:100%; display:block; object-fit:fill; user-select:none; -webkit-user-drag:none;}
+
+  .hex-hit{position:absolute; width:4.1%; aspect-ratio:1.06/1; transform:translate(-50%,-50%); z-index:1;}
+
+  .los-mark{position:absolute; width:1.5%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+    border-radius:50%; z-index:2; pointer-events:none; box-shadow:0 0 0 1px rgba(0,0,0,.5);}
+  .los-mark.clear{background:var(--clear); opacity:.75;}
+  .los-mark.blocked{background:var(--alert); opacity:.75;}
+
+  .sighter-mark{position:absolute; width:3.4%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+    border-radius:50%; z-index:4; pointer-events:none; background:var(--amber);
+    box-shadow:0 0 0 3px rgba(0,0,0,.55), 0 0 14px 2px rgba(201,162,39,.85);}
+  .sighter-mark::after{content:'S'; position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-family:var(--font-head); font-size:15px; color:#22221a;}
+
+  .target-mark{position:absolute; width:3.4%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+    border-radius:50%; z-index:4; pointer-events:none; background:#fff;
+    box-shadow:0 0 0 3px rgba(0,0,0,.55);}
+  .target-mark::after{content:'T'; position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-family:var(--font-head); font-size:15px; color:#22221a;}
+  .target-mark.blocked{background:var(--alert);}
+  .target-mark.blocked::after{color:var(--paper);}
+
+  .path-mark{position:absolute; width:0.9%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+    border-radius:50%; background:#fff; opacity:.9; z-index:3; pointer-events:none;
+    box-shadow:0 0 0 1px rgba(0,0,0,.6);}
+  .path-mark.blocking{background:var(--alert); width:1.4%; box-shadow:0 0 0 2px #fff;}
+
+  .edge-mark{position:absolute; width:1.1%; aspect-ratio:1/1; transform:translate(-50%,-50%);
+    border-radius:2px; z-index:2; pointer-events:none; opacity:.9;}
+  .edge-mark.crest{background:#111;}
+  .edge-mark.embankment{background:#a9714a;}
+  .edge-mark.on-path{box-shadow:0 0 0 2px #fff; z-index:3;}
+
+  #svg-line{position:absolute; inset:0; z-index:3; pointer-events:none; width:100%; height:100%;}
+
+  #hud{width:300px; flex-shrink:0; background:var(--panel-bg); border-left:1px solid var(--panel-border);
+    display:flex; flex-direction:column; padding:12px; gap:12px; overflow-y:auto;}
+  #hud h3{font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:1.4px; color:#c7c9b8; margin:0 0 6px;}
+  .sec{border-top:1px solid #34362b; padding-top:10px;}
+  .sec:first-child{border-top:none; padding-top:0;}
+
+  .mini-card{background:#1f2019; border:1px solid var(--panel-border); border-radius:3px; padding:10px;
+    font-family:var(--font-mono); font-size:12px; color:#d8d9cc; line-height:1.7;}
+  .mini-card .hexid{font-family:var(--font-head); font-size:22px; color:var(--amber); letter-spacing:.5px;}
+  .mini-card.empty{color:#7a7c6e; font-style:italic;}
+
+  .verdict{font-family:var(--font-head); font-size:24px; letter-spacing:1px; text-align:center;
+    padding:8px 0; border-radius:3px; margin-bottom:8px;}
+  .verdict.clear{background:rgba(143,206,106,.15); color:var(--clear); border:1px solid #4c7a35;}
+  .verdict.blocked{background:rgba(142,42,34,.18); color:#e8b9b3; border:1px solid #6d1f18;}
+  .why{font-family:var(--font-ui); font-size:12.5px; color:#d8d9cc; line-height:1.5;}
+  .why b{color:var(--paper);}
+
+  .btn{font-family:var(--font-ui); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px;
+    color:var(--paper); background:linear-gradient(180deg,#5a5d3e,#454724); border:1px solid #6d7048; border-radius:3px;
+    padding:8px 6px; cursor:pointer; text-align:center;}
+  .btn:hover{background:linear-gradient(180deg,#666a46,#50522a); border-color:var(--amber);}
+  .btn.wide{width:100%;}
+
+  .toggle-row{display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:12px; color:#c7c9b8; padding:4px 0;}
+  .toggle-row input{accent-color:var(--amber);}
+
+  .legend-row{display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11px; color:#c7c9b8; padding:2px 0;}
+  .legend-dot{width:11px; height:11px; border-radius:50%; flex-shrink:0;}
+  .legend-sq{width:11px; height:11px; border-radius:2px; flex-shrink:0;}
+
+  .stat-line{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11.5px; color:#c7c9b8; padding:2px 0;}
+  .stat-line b{color:var(--paper);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div class="logo">AMBUSH! <span>Digital</span></div>
+    <div class="field">LINE OF SIGHT SANDBOX</div>
+    <div class="field">HOVER: <b id="tb-hover">—</b></div>
+    <div class="spacer"></div>
+    <div class="note">Phase 5 — real Map A, real reviewed LOS data, &sect;8/1-8/2 rules · building apertures not modeled yet</div>
+  </div>
+
+  <div id="main">
+    <div id="map-viewport">
+      <div id="map-canvas">
+        <img class="map-image" src="../../assets/library/map/map_a_tactical.png" alt="Map A" draggable="false">
+        <svg id="svg-line" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line id="sightline-halo" x1="0" y1="0" x2="0" y2="0" stroke="#000" stroke-width="0.65" opacity="0"/>
+          <line id="sightline" x1="0" y1="0" x2="0" y2="0" stroke="#fff" stroke-width="0.32" stroke-dasharray="1.4,1.1" opacity="0"/>
+        </svg>
+      </div>
+    </div>
+
+    <div id="hud">
+      <div class="sec">
+        <h3>How to use</h3>
+        <div class="mini-card">Click a hex to place the <b style="color:var(--amber)">sighter (S)</b>. Every other hex
+          is instantly shaded green (visible) or red (blocked). Click any hex to make it the
+          <b>target (T)</b> and see exactly why.</div>
+      </div>
+
+      <div class="sec">
+        <h3>Sighter</h3>
+        <div class="mini-card empty" id="sighter-card">none — click the map</div>
+      </div>
+
+      <div class="sec">
+        <h3>Target</h3>
+        <div class="mini-card empty" id="target-card">none — click a shaded hex</div>
+      </div>
+
+      <div class="sec">
+        <h3>Display</h3>
+        <div class="toggle-row"><input type="checkbox" id="tog-elev" checked><label for="tog-elev">Elevation numbers</label></div>
+        <div class="toggle-row"><input type="checkbox" id="tog-edges" checked><label for="tog-edges">Crest / embankment hexsides</label></div>
+      </div>
+
+      <div class="sec">
+        <h3>Legend</h3>
+        <div class="legend-row"><span class="legend-dot" style="background:var(--clear);"></span>Visible from sighter</div>
+        <div class="legend-row"><span class="legend-dot" style="background:var(--alert);"></span>Blocked</div>
+        <div class="legend-row"><span class="legend-sq" style="background:#111;"></span>Crest hexside</div>
+        <div class="legend-row"><span class="legend-sq" style="background:#a9714a;"></span>Embankment hexside</div>
+      </div>
+
+      <div class="sec">
+        <h3>Sweep stats</h3>
+        <div id="sweep-stats" class="mini-card empty">—</div>
+      </div>
+
+      <div class="sec" style="margin-top:auto;">
+        <button class="btn wide" id="clearBtn">Clear selection</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="hexgrid.js"></script>
+<script src="losrules.js"></script>
+<script src="../../assets/data/los_map_a.js"></script>
+<script src="lossandboxdemo.js"></script>
+</body>
+</html>

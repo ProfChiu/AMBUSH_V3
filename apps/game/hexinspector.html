@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ambush! Digital — Hex Inspector (Phase 4 terrain review)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --olive:#4B5320; --paper:#EDE6D4; --ink:#22221E;
+    --alert:#8E2A22; --amber:#C9A227; --bg:#1C1D1B; --panel-bg:#26271F; --panel-border:#4a4b3f;
+    --font-head:'Staatliches','Arial Narrow',sans-serif;
+    --font-ui:'Inter',-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; height:100%; background:var(--bg); color:var(--paper); font-family:var(--font-ui); overflow:hidden;}
+  #app{display:flex; flex-direction:column; height:100vh;}
+
+  #topbar{display:flex; align-items:center; gap:20px; padding:0 18px; height:48px; flex-shrink:0;
+    background:#1f2019; border-bottom:1px solid var(--panel-border);}
+  #topbar .logo{font-family:var(--font-head); font-size:20px; letter-spacing:1px; color:var(--amber);}
+  #topbar .logo span{color:var(--paper); font-weight:400;}
+  #topbar .note{font-family:var(--font-mono); font-size:10.5px; color:#7a7c6e; margin-left:auto;}
+
+  #main{flex:1; display:flex; min-height:0;}
+
+  #map-viewport{flex:1; position:relative; overflow-y:auto; overflow-x:hidden;
+    background:#111209; padding:20px 0 10% 0; min-width:0;}
+  #map-canvas{position:relative; width:100%; aspect-ratio:5336/4850;}
+  #map-canvas img.map-image{width:100%; height:100%; display:block; object-fit:fill; user-select:none; -webkit-user-drag:none;}
+
+  .hexmark{position:absolute; width:1.55%; aspect-ratio:1/1; border-radius:50%; transform:translate(-50%,-50%);
+    cursor:pointer; box-shadow:0 0 0 1px rgba(0,0,0,.5); opacity:.88;}
+  .hexmark:hover{outline:2px solid #fff; outline-offset:1px; opacity:1;}
+  .hexmark.sel{outline:3px solid #fff; outline-offset:1px; opacity:1; z-index:5;}
+  .hexmark.conf-low{box-shadow:0 0 0 2px var(--alert);}
+  .hexmark.conf-medium{box-shadow:0 0 0 2px var(--amber);}
+  .hexmark.corrected::after{content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:7px; color:#22221a; font-weight:700;}
+  .hexmark.hidden-filtered{display:none;}
+
+  #hud{width:320px; flex-shrink:0; background:var(--panel-bg); border-left:1px solid var(--panel-border);
+    display:flex; flex-direction:column; padding:12px; gap:12px; overflow-y:auto;}
+  #hud h3{font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:1.4px; color:#c7c9b8; margin:0 0 6px;}
+  .sec{border-top:1px solid #34362b; padding-top:10px;}
+  .sec:first-child{border-top:none; padding-top:0;}
+
+  .legend-row{display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11px; color:#c7c9b8; padding:2px 0; cursor:pointer;}
+  .legend-row.off{opacity:.35;}
+  .swatch{width:12px; height:12px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1px rgba(0,0,0,.5);}
+
+  .conf-row{display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11px; color:#c7c9b8; padding:2px 0; cursor:pointer;}
+  .conf-row.off{opacity:.35;}
+  .conf-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+
+  .counts{font-family:var(--font-mono); font-size:11px; color:#9a9c8f; line-height:1.7;}
+  .counts b{color:var(--paper);}
+
+  .detail{background:#1f2019; border:1px solid var(--panel-border); border-radius:3px; padding:11px; font-family:var(--font-mono); font-size:11.5px;}
+  .detail .hid{font-family:var(--font-head); font-size:22px; color:var(--amber); letter-spacing:.5px;}
+  .detail .row{display:flex; justify-content:space-between; margin-top:4px; color:#c7c9b8;}
+  .detail .row b{color:var(--paper); font-weight:600;}
+  .badge{display:inline-block; padding:1px 7px; border-radius:9px; font-size:10px; text-transform:uppercase; letter-spacing:.5px;}
+  .badge.high{background:rgba(120,170,90,.2); color:#9fd67a; border:1px solid #4d6b3a;}
+  .badge.medium{background:rgba(201,162,39,.2); color:var(--amber); border:1px solid #6d5f2a;}
+  .badge.low{background:rgba(142,42,34,.25); color:#e8b9b3; border:1px solid #6d1f18;}
+
+  select, button.btn{font-family:var(--font-ui); font-size:11.5px;}
+  .btn{font-weight:600; text-transform:uppercase; letter-spacing:.7px; color:var(--paper);
+    background:linear-gradient(180deg,#5a5d3e,#454724); border:1px solid #6d7048; border-radius:3px;
+    padding:8px 10px; cursor:pointer; width:100%; margin-top:8px;}
+  .btn:hover{background:linear-gradient(180deg,#666a46,#50522a); border-color:var(--amber);}
+  .btn.amber{background:linear-gradient(180deg,var(--amber),#a5811d); color:#22221a; border-color:#e0bb3d;}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+
+  select#correctSelect{width:100%; margin-top:8px; padding:6px; background:#1f2019; color:var(--paper);
+    border:1px solid var(--panel-border); border-radius:3px; font-family:var(--font-mono);}
+
+  textarea#exportBox{width:100%; height:110px; margin-top:8px; background:#1f2019; color:#c7c9b8;
+    border:1px solid var(--panel-border); font-family:var(--font-mono); font-size:10px; padding:6px; display:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div class="logo">AMBUSH! <span>Digital</span></div>
+    <div class="logo" style="font-size:14px; color:#8c8e80;">— Hex Inspector (Phase 4 terrain review)</div>
+    <div class="note">assets/data/terrain_map_a.js · auto-classified, 475 hexes · correct low/medium-confidence hexes below</div>
+  </div>
+
+  <div id="main">
+    <div id="map-viewport">
+      <div id="map-canvas">
+        <img class="map-image" src="../../assets/library/map/map_a_tactical.png" alt="Map A" draggable="false">
+      </div>
+    </div>
+
+    <div id="hud">
+      <div class="sec">
+        <h3>Legend — terrain (click to filter)</h3>
+        <div id="legendList"></div>
+      </div>
+
+      <div class="sec">
+        <h3>Confidence (click to filter)</h3>
+        <div id="confList"></div>
+      </div>
+
+      <div class="sec">
+        <h3>Summary</h3>
+        <div class="counts" id="summary"></div>
+      </div>
+
+      <div class="sec">
+        <h3>Selected Hex</h3>
+        <div id="detailBox">
+          <p style="font-family:var(--font-mono); font-size:11.5px; color:#8c8e80;">Click a marker on the map, or "Next to review".</p>
+        </div>
+        <button class="btn amber" id="nextReview">Next low-confidence hex ▸</button>
+      </div>
+
+      <div class="sec">
+        <h3>Export</h3>
+        <div class="counts" id="corrCount">0 corrections made this session</div>
+        <button class="btn" id="exportBtn">Show corrected JSON</button>
+        <textarea id="exportBox" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="hexgrid.js"></script>
+<script src="../../assets/data/terrain_map_a.js"></script>
+<script src="hexinspector.js"></script>
+</body>
+</html>

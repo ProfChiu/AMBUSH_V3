@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ambush! Digital — Design System (M2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Staatliches&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --olive:#4B5320;
+    --field-gray:#6B6E6A;
+    --paper:#EDE6D4;
+    --ink:#22221E;
+    --alert:#8E2A22;
+    --amber:#C9A227;
+    --bg:#1C1D1B;
+    --panel-bg:#26271F;
+    --panel-border:#4a4b3f;
+    --unit:8px;
+    --font-head:'Staatliches', 'Arial Narrow', sans-serif;
+    --font-ui:'Inter', -apple-system, sans-serif;
+    --font-mono:'IBM Plex Mono', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--paper);
+    font-family:var(--font-ui); line-height:1.5;
+    padding:calc(var(--unit)*6) calc(var(--unit)*5) calc(var(--unit)*12);
+  }
+  h1{font-family:var(--font-head); font-size:42px; letter-spacing:1px; margin:0 0 4px; color:var(--paper);}
+  h1 span{color:var(--amber);}
+  .status-line{font-family:var(--font-mono); font-size:13px; color:#9a9c8f; margin-bottom:calc(var(--unit)*6);}
+  h2{font-family:var(--font-head); font-size:24px; letter-spacing:.5px; color:var(--amber);
+     border-bottom:1px solid var(--panel-border); padding-bottom:6px; margin:calc(var(--unit)*7) 0 calc(var(--unit)*3);}
+  h3{font-family:var(--font-ui); font-weight:600; font-size:13px; text-transform:uppercase; letter-spacing:1.5px;
+     color:#c7c9b8; margin:calc(var(--unit)*3) 0 var(--unit);}
+  p.note{font-size:13.5px; color:#a9ab9c; max-width:760px;}
+  .grid{display:flex; flex-wrap:wrap; gap:calc(var(--unit)*2);}
+
+  /* ---- palette ---- */
+  .swatch{width:150px; border:1px solid var(--panel-border); border-radius:3px; overflow:hidden;
+          background:var(--panel-bg);}
+  .swatch .fill{height:80px;}
+  .swatch .label{padding:8px 10px; font-family:var(--font-mono); font-size:11.5px;}
+  .swatch .label b{display:block; font-family:var(--font-ui); font-size:12.5px; font-weight:600; margin-bottom:2px;}
+
+  /* ---- type specimen ---- */
+  .type-row{display:flex; align-items:baseline; gap:20px; padding:10px 0; border-bottom:1px dashed #3a3b32;}
+  .type-row .tag{width:180px; font-family:var(--font-mono); font-size:11px; color:#8c8e80; flex-shrink:0;}
+  .type-h{font-family:var(--font-head); font-size:32px; color:var(--paper);}
+  .type-body{font-family:var(--font-ui); font-size:16px; color:var(--paper);}
+  .type-label{font-family:var(--font-ui); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:1.2px; color:var(--amber);}
+  .type-mono{font-family:var(--font-mono); font-size:16px; color:var(--paper);}
+
+  /* ---- panel chrome ---- */
+  .panel{background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:2px;
+         box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.4);
+         width:320px; padding:0;}
+  .panel .panel-head{font-family:var(--font-ui); font-weight:600; font-size:11px; text-transform:uppercase;
+      letter-spacing:1.5px; color:var(--amber); background:#1f2019; padding:9px 14px; border-bottom:1px solid var(--panel-border);}
+  .panel .panel-body{padding:14px; font-size:13.5px; color:#d8d9cc;}
+
+  /* ---- buttons ---- */
+  .btn{font-family:var(--font-ui); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:1px;
+       color:var(--paper); background:linear-gradient(180deg,#5a5d3e,#454724);
+       border:1px solid #6d7048; border-radius:3px; padding:9px 18px; cursor:pointer;
+       box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.5);}
+  .btn:hover{background:linear-gradient(180deg,#666a46,#50522a); border-color:var(--amber);}
+  .btn:active{background:#3a3c22; box-shadow:inset 0 2px 3px rgba(0,0,0,0.5); transform:translateY(1px);}
+  .btn[disabled]{opacity:.4; cursor:not-allowed;}
+  .btn.danger{background:linear-gradient(180deg,#8a3b32,#6b241d); border-color:#a5453a;}
+  .btn.amber{background:linear-gradient(180deg,var(--amber),#a5811d); color:#22221a; border-color:#e0bb3d;}
+  .btn-row{display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+
+  /* ---- hex / counter ---- */
+  .hexfield{background:#2a2c22 url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2252%22><polygon points=%2215,0 45,0 60,26 45,52 15,52 0,26%22 fill=%22none%22 stroke=%22%233a3c30%22 stroke-width=%221%22/></svg>');
+      background-size:60px 52px; width:360px; height:210px; position:relative; border:1px solid var(--panel-border); border-radius:3px;}
+  .counter-demo{position:absolute; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .counter-demo img{width:42px; height:42px; image-rendering:pixelated; filter:drop-shadow(0 1px 1px rgba(0,0,0,.6));}
+  .counter-demo.selected img{outline:2px solid var(--amber); outline-offset:2px; border-radius:50%;}
+  .counter-demo .stack{position:relative;}
+  .counter-demo .overlay{position:absolute; bottom:-4px; right:-6px; width:20px; height:20px;}
+  .counter-tag{font-family:var(--font-mono); font-size:10px; color:#9a9c8f; text-align:center;}
+
+  /* ---- dice widget ---- */
+  .dice-widget{display:flex; gap:16px; align-items:center; background:var(--panel-bg); border:1px solid var(--panel-border);
+      border-radius:3px; padding:14px; width:fit-content;}
+  .die-face{width:52px; height:52px; background:var(--paper); color:var(--ink); border-radius:6px;
+      display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:600; font-size:26px;
+      box-shadow:0 2px 4px rgba(0,0,0,.5);}
+  table.chart{border-collapse:collapse; font-family:var(--font-mono); font-size:12px;}
+  table.chart th,table.chart td{border:1px solid #4a4b3f; padding:5px 10px; text-align:center;}
+  table.chart th{background:#2c2e24; color:#c7c9b8;}
+  table.chart tr.hit td{background:var(--amber); color:#22221a; font-weight:600;}
+
+  /* ---- asset row ---- */
+  .asset-row{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;}
+  .asset-tile{background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:3px; padding:8px; text-align:center; width:76px;}
+  .asset-tile img{width:44px; height:44px; image-rendering:pixelated;}
+  .asset-tile div{font-family:var(--font-mono); font-size:9.5px; color:#9a9c8f; margin-top:4px;}
+
+  .spacing-ruler{display:flex; align-items:flex-end; gap:2px;}
+  .spacing-ruler div{background:var(--amber);}
+  .footer{margin-top:60px; padding-top:16px; border-top:1px solid var(--panel-border); font-size:12px; color:#7a7c6e; font-family:var(--font-mono);}
+</style>
+</head>
+<body>
+
+<h1>AMBUSH! <span>Digital</span> — Design System</h1>
+<div class="status-line">M2 deliverable · rendered from the approved 03_UX_SPEC.md (signed off 2026-07-12) · single source of truth for M3–M6 mockups</div>
+
+<p class="note">This page is the literal component library — every color, type spec, panel, button, and counter treatment used from M3 onward should be copied from here, not re-decided per screen. All counter/chart imagery below is the real extracted asset, not a placeholder.</p>
+
+<h2>1. Color Palette</h2>
+<div class="grid">
+  <div class="swatch"><div class="fill" style="background:var(--olive)"></div><div class="label"><b>Olive Drab</b>#4B5320 — primary chrome</div></div>
+  <div class="swatch"><div class="fill" style="background:var(--field-gray)"></div><div class="label"><b>Field Gray</b>#6B6E6A — secondary/German</div></div>
+  <div class="swatch"><div class="fill" style="background:var(--paper)"></div><div class="label"><b>Paper Cream</b>#EDE6D4 — map/paper surfaces</div></div>
+  <div class="swatch"><div class="fill" style="background:var(--ink)"></div><div class="label"><b>Ink</b>#22221E — text on paper</div></div>
+  <div class="swatch"><div class="fill" style="background:var(--alert)"></div><div class="label"><b>Alert Red</b>#8E2A22 — wounds/danger</div></div>
+  <div class="swatch"><div class="fill" style="background:var(--amber)"></div><div class="label"><b>Highlight Amber</b>#C9A227 — selection/dice/focus</div></div>
+  <div class="swatch"><div class="fill" style="background:var(--bg)"></div><div class="label"><b>App Background</b>#1C1D1B — dark charcoal shell</div></div>
+</div>
+
+<h2>2. Typography</h2>
+<div class="type-row"><div class="tag">H1 / Staatliches 32px</div><div class="type-h">Bloody St. Mick</div></div>
+<div class="type-row"><div class="tag">Label / Inter 600 12px caps</div><div class="type-label">Squad Record</div></div>
+<div class="type-row"><div class="tag">Body / Inter 400 16px</div><div class="type-body">Soldier B moves into the hedgerow, spending 2 movement points.</div></div>
+<div class="type-row"><div class="tag">Table numbers / IBM Plex Mono 16px</div><div class="type-mono">IN:3  PC:5  WS:-1  MPA:4  DS:2</div></div>
+
+<h2>3. Panel Chrome</h2>
+<div class="panel">
+  <div class="panel-head">Charts &amp; Tables</div>
+  <div class="panel-body">Thin 1px border, subtle inner bevel (light top edge / dark bottom edge), small-caps amber label header. Used for every popup reference panel.</div>
+</div>
+
+<h2>4. Buttons</h2>
+<div class="btn-row">
+  <button class="btn">Default</button>
+  <button class="btn amber">Primary / Roll</button>
+  <button class="btn danger">Danger / Fire</button>
+  <button class="btn" disabled>Disabled</button>
+</div>
+<p class="note">Beveled gradient fill, not flat web buttons — hover brightens + amber border, active presses down 1px with an inset shadow.</p>
+
+<h2>5. Counter-on-Hex Treatment</h2>
+<div class="hexfield">
+  <div class="counter-demo" style="top:40px; left:60px;">
+    <img src="../../assets/extracted/counters/us_soldiers/standing_A.png" alt="US soldier A">
+    <div class="counter-tag">idle</div>
+  </div>
+  <div class="counter-demo selected" style="top:40px; left:150px;">
+    <div class="stack">
+      <img src="../../assets/extracted/counters/us_soldiers/crouch_B.png" alt="US soldier B">
+    </div>
+    <div class="counter-tag">selected (amber ring)</div>
+  </div>
+  <div class="counter-demo" style="top:110px; left:240px;">
+    <div class="stack">
+      <img src="../../assets/extracted/counters/german_named_soldiers/L_wounded.png" alt="German soldier L wounded">
+    </div>
+    <div class="counter-tag">wounded state</div>
+  </div>
+</div>
+<p class="note">Faint always-on hex grid (per M2 sign-off). Counter scaled to sit comfortably inside the hex, matching original counter/hex ratio. Selection = amber ring, no fill change. Status (wound/KIA/prone) is baked into the counter art itself where the source provides it (e.g. `_wounded` variants) rather than a separate stacked overlay.</p>
+
+<h2>6. Dice Widget &amp; Table Resolution</h2>
+<div class="dice-widget">
+  <div class="die-face">7</div>
+  <table class="chart">
+    <tr><th>DIE</th><th>2-3</th><th>4</th><th>A</th><th>S</th></tr>
+    <tr><td>0-2</td><td>808</td><td>920</td><td>808</td><td>813</td></tr>
+    <tr class="hit"><td>4-7</td><td>802</td><td>809</td><td>802</td><td>802</td></tr>
+    <tr><td>8-9</td><td>800</td><td>813</td><td>800</td><td>839</td></tr>
+  </table>
+</div>
+<p class="note">Roll shown big and first; the resolving row highlights amber on the actual table (not a summary). Log line format: <span class="type-mono">d10=7 → row 4-7 → paragraph 802</span>.</p>
+
+<h2>7. Reference Assets (sample, from `assets/extracted/`)</h2>
+<div class="asset-row">
+  <div class="asset-tile"><img src="../../assets/extracted/counters/vehicles/sherman.png"><div>Sherman</div></div>
+  <div class="asset-tile"><img src="../../assets/extracted/counters/terrain_markers/minefield.png"><div>Minefield</div></div>
+  <div class="asset-tile"><img src="../../assets/extracted/counters/status_markers/kia.png"><div>KIA</div></div>
+  <div class="asset-tile"><img src="../../assets/extracted/counters/status_markers/event.png"><div>Event</div></div>
+  <div class="asset-tile"><img src="../../assets/extracted/counters/weapons_us/bar.png"><div>BAR</div></div>
+  <div class="asset-tile"><img src="../../assets/extracted/counters/german_position_counters/gray_standing_S.png"><div>GE (hidden)</div></div>
+</div>
+
+<h2>8. Spacing &amp; Layout Rules</h2>
+<p class="note">Base unit: 8px. Side HUD width: 260px (fixed, per sign-off). Panel padding: 14px. Bottom dice-tray strip height: ~72px.</p>
+<div class="spacing-ruler">
+  <div style="width:8px; height:8px;"></div><div style="width:16px; height:8px;"></div><div style="width:24px; height:8px;"></div><div style="width:32px; height:8px;"></div><div style="width:48px; height:8px;"></div>
+</div>
+
+<div class="footer">Ambush! Digital — Design System · M2 · built from `03_UX_SPEC.md` finalized decisions · fonts: Staatliches / Inter / IBM Plex Mono (Google Fonts, requires internet on first load)</div>
+
+</body>
+</html>

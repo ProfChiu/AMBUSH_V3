@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# Claude Code, machine-local
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# caches
+__pycache__/
+*.pyc

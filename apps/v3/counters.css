@@ -1,0 +1,50 @@
+/* Ambush! v3 — soldier counters (Phase 1).
+ * A square counter in the Vassal style: the cut-out scan (letter already printed on it) over a
+ * drawn backing. Everything but the scan is CSS, so it stays crisp at every zoom level.
+ * Sizes are world pixels (map_a_tactical.png's own pixels); the board's one transform scales them.
+ * States are v2's (apps/game/mission1.html .counter rules), carried over unchanged in meaning. */
+:root{
+  --amber:#C9A227;
+  /* "print": the counters' own colours, as keyed out of the scans' backgrounds */
+  --us-face:rgb(208,221,60);  --us-edge:#6f7620;
+  --de-face:rgb(200,219,208); --de-edge:#66766d;
+}
+.palette-vassal{
+  --us-face:#9d9c42; --us-edge:#55541f;
+  --de-face:#a4a8a0; --de-edge:#565a52;
+}
+.counter{
+  position:absolute; width:172px; height:172px; transform:translate(-50%,-50%);
+  box-sizing:border-box; border-radius:7px; cursor:pointer;
+  background:var(--us-face); border:2px solid var(--us-edge);
+  /* bevel (light top-left, dark bottom-right) plus a short shadow on the map */
+  box-shadow:inset 4px 4px 0 rgba(255,255,255,.35), inset -4px -4px 0 rgba(0,0,0,.25),
+             3px 5px 6px rgba(0,0,0,.55);
+  transition:filter .2s, opacity .2s;
+}
+.counter.de{background:var(--de-face); border-color:var(--de-edge);}
+.counter img{position:absolute; inset:5px; width:calc(100% - 10px); height:calc(100% - 10px);
+  object-fit:contain; pointer-events:none; -webkit-user-drag:none; user-select:none;}
+/* v2 states. Wounded tints the figure only, so the square keeps its side's colour (Wan, 2026-10-21) */
+.counter.wounded img{filter:sepia(.5) saturate(3) hue-rotate(-30deg);}
+.counter.dead{opacity:.3; filter:grayscale(1);}
+/* the commander's star (§6/3): top-right corner, readable from Map zoom */
+.counter .cmd-badge{position:absolute; top:-22px; right:-22px; width:64px; height:64px; border-radius:50%;
+  display:grid; place-items:center; background:var(--amber); color:#22221a; border:4px solid #22221a;
+  font:400 40px/1 sans-serif; box-shadow:0 3px 6px rgba(0,0,0,.6); pointer-events:none;}
+.counter.selected{outline:9px solid var(--amber); outline-offset:5px;}
+.counter.active-actor{outline:9px solid #fff; outline-offset:5px; animation:counter-pulse 1.1s ease-in-out infinite;}
+@keyframes counter-pulse{0%,100%{outline-color:#fff;} 50%{outline-color:var(--amber);}}
+/* Phase 4: a counter changing hex is lifted off the map for the glide (mission1.js glideEl) */
+.counter.moving{z-index:5; animation:counter-hop var(--glide,.42s) ease-in-out;}
+@keyframes counter-hop{0%,100%{scale:1; box-shadow:inset 4px 4px 0 rgba(255,255,255,.35), inset -4px -4px 0 rgba(0,0,0,.25), 3px 5px 6px rgba(0,0,0,.55);}
+  50%{scale:1.12; box-shadow:inset 4px 4px 0 rgba(255,255,255,.35), inset -4px -4px 0 rgba(0,0,0,.25), 14px 24px 22px rgba(0,0,0,.5);}}
+
+/* v2's result badges, sized for world pixels */
+.fx-badge{position:absolute; z-index:7; transform:translate(-50%,-100%); padding:6px 18px; border-radius:5px;
+  white-space:nowrap; font:700 40px/1.1 'Staatliches','Arial Narrow',sans-serif; letter-spacing:2px;
+  background:#e8e2cf; color:#22221a; box-shadow:0 4px 10px rgba(0,0,0,.6); pointer-events:none;
+  transition:opacity .4s, transform .4s;}
+.fx-badge.fx-bad{background:#8E2A22; color:#fff;}
+.fx-badge.fx-amber{background:var(--amber); color:#22221a;}
+.fx-badge.fx-gone{opacity:0; transform:translate(-50%,-130%);}

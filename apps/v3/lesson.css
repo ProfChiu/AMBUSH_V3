@@ -1,0 +1,163 @@
+/* Ambush! v3 — learn to play (Phase 6): the chapter list, and the lesson's staging (director.js),
+ * after PhantomFury's: a spotlight that dims all but the piece in play, a pointer to it, and Sgt
+ * Whitaker's bubble standing still at the bottom centre. Same tokens as theme.css. */
+
+/* ---- chapter list */
+#learn{display:flex; flex-direction:column; align-items:center; padding:5vh 4vw; box-sizing:border-box;}
+#learn header{position:relative; width:min(1100px,100%); display:flex; align-items:center; gap:16px; margin-bottom:22px;}
+#learn h2{margin:0; font:400 54px/1 var(--font-head); letter-spacing:.06em; color:var(--amber);}
+.chapter-list{position:relative; width:min(1100px,100%); display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+  overflow-y:auto; padding-bottom:16px;}
+.chapter{display:flex; flex-direction:column; gap:6px; padding:16px 18px; border-radius:var(--r);
+  background:var(--panel); border:1px solid var(--edge); box-shadow:var(--shadow);}
+.chapter .num{font:400 15px/1 var(--font-head); letter-spacing:.16em; color:var(--ink-3);}
+.chapter h3{margin:0; font:400 28px/1.05 var(--font-head); letter-spacing:.04em;}
+.chapter p{margin:0; color:var(--ink-2); font-size:14px;}
+.chapter .go, .chapter .lock{margin-top:auto; padding-top:8px; font-size:13px; letter-spacing:.08em; text-transform:uppercase;}
+.chapter .go{color:var(--amber); font-weight:700;}
+.chapter .lock{color:var(--ink-3);}
+.chapter.locked{opacity:.55;}
+.chapter.live{grid-column:1/-1; cursor:pointer; border-color:var(--amber); transition:transform .12s, background .12s;}
+.chapter.live h3{font-size:46px; color:var(--amber);}
+.chapter.live p{font-size:16px; color:var(--ink);}
+.chapter.live:hover, .chapter.live:focus-visible{background:#2a2b20; transform:translateY(-2px); outline:none;}
+.chapter.done .go{color:var(--ok);}
+@media (max-width:900px){ .chapter-list{grid-template-columns:1fr 1fr;} }
+
+/* ---- spotlight and pointer (above the HUD, under the ring so its verbs stay bright) */
+#lesson-spot{position:fixed; z-index:22; pointer-events:none; border-radius:14px;
+  border:3px solid var(--amber); box-shadow:0 0 0 9999px rgba(6,7,4,.5), 0 0 22px rgba(201,162,39,.65);
+  transition:left .25s ease, top .25s ease, width .25s ease, height .25s ease, opacity .3s;
+  animation:spot-pulse 1.6s ease-in-out infinite;}
+#lesson-spot.none{border-color:transparent; box-shadow:0 0 0 9999px rgba(6,7,4,.28); animation:none;}
+body.lesson-flying #lesson-spot{opacity:0;}
+@keyframes spot-pulse{50%{box-shadow:0 0 0 9999px rgba(6,7,4,.5), 0 0 34px rgba(227,189,62,.95);}}
+#lesson-arrow{position:fixed; inset:0; width:100%; height:100%; z-index:27; pointer-events:none; overflow:visible; opacity:0;}
+#lesson-arrow path{fill:none; stroke:var(--amber); stroke-width:4; stroke-linecap:round; stroke-dasharray:9 8;}
+#lesson-arrow marker path{fill:var(--amber); stroke:none;}
+#lesson-arrow.show{opacity:1; transition:opacity .3s ease .05s;}
+
+/* ---- Whitaker and her bubble: bottom centre, between the HUD's corner panels */
+#tutor{position:absolute; left:50%; bottom:16px; z-index:36; transform:translateX(-50%);
+  width:clamp(560px, calc(100vw - 720px), 900px); display:flex; align-items:flex-end; gap:0;}
+#guide{flex:none; width:150px; align-self:flex-end; margin-right:-14px; position:relative; z-index:1;}
+#guide img{display:block; width:150px; height:174px; object-fit:contain; object-position:bottom center;
+  filter:drop-shadow(0 6px 12px rgba(0,0,0,.7));}
+#guide.swap img{animation:guide-swap .28s ease-out;}
+@keyframes guide-swap{from{transform:translateY(6px) scale(.97); opacity:.6;}}
+#tutor-bubble{flex:1; min-width:0; display:flex; flex-direction:column; max-height:min(470px, 52vh);
+  background:var(--panel-solid); border:1px solid var(--edge-hi); border-radius:var(--r); box-shadow:var(--shadow);
+  padding:12px 18px 12px 26px;}
+.tutor-head{display:flex; align-items:center; gap:12px; font-size:12.5px; color:var(--ink-3); letter-spacing:.08em; text-transform:uppercase;}
+.tutor-head .who{font:400 15px/1 var(--font-head); letter-spacing:.12em; color:var(--amber);}
+.tutor-head #beat-step{flex:1;}
+.btn.ghost{padding:4px 10px; font-size:12.5px; background:transparent; border-color:var(--edge);}
+#beat-title{margin:6px 0 4px; font:400 30px/1.05 var(--font-head); letter-spacing:.04em; color:var(--ink);}
+#tutor-body{overflow-y:auto; min-height:0; font-size:17px; line-height:1.5;}
+#beat-say{margin:0 0 8px;}
+#beat-say b, #beat-explain b, .db-take b{color:var(--amber-hi);}
+#beat-explain{display:none; clear:both; margin:6px 0 4px; padding:8px 12px; border-left:3px solid var(--amber); background:#1c1d16;
+  color:var(--ink-2); font-size:15px;}
+#beat-explain .cite{color:var(--ink-3); font-size:13px; white-space:nowrap;}
+#tutor.why-open #beat-explain{display:block;}
+#tutor.why-open #btn-why{background:var(--amber); border-color:var(--amber); color:#17170f;}
+.tutor-foot{display:flex; align-items:center; gap:10px; margin-top:10px;}
+#btn-continue{min-width:130px; font-size:18px;}
+#btn-back:disabled{opacity:.4; cursor:default;}
+
+/* the debrief is the one long read: it gets more height */
+#tutor.debriefing #tutor-bubble{max-height:min(640px, 74vh);}
+
+/* the steps: the question, then how */
+#beat-steps{list-style:none; margin:6px 0 4px; padding:0; display:flex; flex-direction:column; gap:5px;}
+#beat-steps .ask{font:400 20px/1 var(--font-head); letter-spacing:.08em; color:var(--amber); margin-bottom:2px;}
+#beat-steps li{display:flex; align-items:center; gap:10px;}
+#beat-steps .step-n{flex:none; width:24px; height:24px; border-radius:50%; display:grid; place-items:center;
+  background:var(--amber); color:#17170f; font-weight:700; font-size:13px;}
+#beat-steps li.done{color:var(--ink-3);}
+#beat-steps li.done .step-n{background:var(--ok);}
+#tutor.refused #beat-steps .ask{display:none;}
+#tutor.busy #beat-steps .ask{color:var(--ink-2);}
+#beat-refuse{margin:6px 0; padding:8px 12px; border-radius:var(--r-sm); background:rgba(181,58,46,.18); border:1px solid var(--alert);
+  color:#f2c6bd; font-weight:600;}
+#beat-refuse.shake{animation:refuse-shake .38s ease;}
+@keyframes refuse-shake{20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(3px);}}
+
+/* the counter, large, with his ratings */
+#beat-card{float:right; margin:0 0 8px 14px;}
+.pc{display:flex; gap:14px; align-items:center; padding:10px; border-radius:var(--r-sm); background:#1c1d16; border:1px solid var(--edge);}
+.pc-flip{width:96px; height:96px; perspective:500px; cursor:pointer; flex:none;}
+.pc-inner{position:relative; width:100%; height:100%; transition:transform .6s; transform-style:preserve-3d;}
+.pc.flipped .pc-inner{transform:rotateY(180deg);}
+.pc-face{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; backface-visibility:hidden; border-radius:4px;
+  box-shadow:0 3px 8px rgba(0,0,0,.6);}
+.pc-face.back{transform:rotateY(180deg);}
+.pc-info{font-size:13.5px; min-width:180px;}
+.pc-name{font:400 18px/1.1 var(--font-head); letter-spacing:.06em; color:var(--amber); margin-bottom:4px;}
+.pc-stat{display:flex; justify-content:space-between; gap:12px; color:var(--ink-2);}
+.pc-stat b{color:var(--ink); font-family:'IBM Plex Mono',monospace;}
+.pc-tip{margin-top:4px; font-size:11.5px; color:var(--ink-3);}
+.roster{border-collapse:collapse; width:100%; font-size:13.5px; margin:2px 0 6px;}
+.roster th{font-weight:600; color:var(--ink-3); text-align:left; padding:2px 6px; border-bottom:1px solid var(--edge);}
+.roster td{padding:2px 6px; color:var(--ink-2);}
+.roster td.num{font-family:'IBM Plex Mono',monospace; color:var(--ink); text-align:center;}
+.roster td.ltr{font:400 16px/1 var(--font-head); color:var(--amber);}
+.pc-kit{margin-top:4px; font-size:12.5px; color:var(--ink-2); text-transform:capitalize;}
+
+/* a prediction (Phase 7): the answers, then which was right and why */
+#beat-ask{display:flex; flex-direction:column; gap:6px; margin:6px 0 4px;}
+#beat-ask .ask{font:400 20px/1 var(--font-head); letter-spacing:.08em; color:var(--amber); margin-bottom:2px;}
+#beat-ask .ask-opt{text-align:left; justify-content:flex-start; font-size:15px; padding:8px 12px;}
+#beat-ask .ask-opt:disabled{cursor:default; opacity:.55;}
+#beat-ask .ask-opt.right{opacity:1; border-color:var(--ok); box-shadow:inset 3px 0 0 var(--ok);}
+#beat-ask .ask-opt.wrong{opacity:1; border-color:var(--alert); box-shadow:inset 3px 0 0 var(--alert);}
+.ask-verdict{margin-top:4px; padding:8px 10px; border-radius:var(--r-sm); background:var(--panel-2); color:var(--ink); font-size:15px; line-height:1.4;}
+.ask-verdict b{color:var(--ok);}
+.ask-verdict.wrong b{color:var(--amber);}
+
+/* the debrief */
+.db-kicker{margin:8px 0 4px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);}
+.db-rows, .db-take{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px;}
+.db-row{display:flex; gap:10px; align-items:flex-start;}
+.db-mark{flex:none; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; background:var(--ok); color:#111; font-weight:700; font-size:12px;}
+.db-mark.retry{background:var(--amber);}
+.db-mark.miss{background:var(--alert); color:var(--ink);}
+.db-what{font-weight:600;}
+.db-res{font-size:13px; color:var(--ink-3);}
+.db-lesson{font-size:14.5px; color:var(--ink-2);}
+.db-take li{padding-left:16px; position:relative; font-size:15.5px;}
+.db-take li::before{content:'▸'; position:absolute; left:0; color:var(--amber);}
+.db-next{margin-top:8px; font-weight:600; color:var(--amber);}
+
+/* entering, swapping words, looking back */
+#tutor.enter #tutor-bubble{animation:tutor-in .32s cubic-bezier(.2,.9,.3,1.1);}
+@keyframes tutor-in{from{transform:translateY(14px); opacity:0;}}
+#tutor-bubble > *{transition:opacity .18s;}
+#tutor.swapping #tutor-bubble > *:not(.tutor-foot){opacity:0;}
+body.lesson-flying #tutor-body, body.lesson-flying #beat-title{opacity:0;}
+#tutor-body, #beat-title{transition:opacity .25s ease;}
+#tutor.reviewing #tutor-bubble{border-color:var(--ink-3);}
+
+/* in a lesson Kranz cuts in at the top left, clear of the bubble */
+body.in-lesson #kranz{left:16px !important; top:90px; bottom:auto;}
+body.in-lesson #kranz .bubble{margin:0 0 0 6px;}
+
+body.still #lesson-spot{transition:none; animation:none;}
+body.still #tutor.enter #tutor-bubble, body.still #guide.swap img, body.still #beat-refuse.shake{animation:none;}
+body.still .pc-inner{transition:none;}
+
+/* Phase 7b (chapter 3): the sight line, drawn by mission1.js's Sight layer in map pixels */
+#sight-layer{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2;}
+#sight-layer .sight{fill:none; stroke-width:12; stroke-linecap:round;}
+#sight-layer .sight.clear{stroke:var(--ok); stroke-dasharray:34 14;}
+#sight-layer .sight.blocked{stroke:var(--alert);}
+#sight-layer .sight.beyond{stroke:rgba(181,58,46,.45); stroke-width:8; stroke-dasharray:10 16;}
+#sight-layer .sight.end{stroke-width:6; fill:rgba(16,17,13,.6);}
+#sight-layer .sight-block{fill:rgba(181,58,46,.22); stroke:var(--alert); stroke-width:8;}
+body.lesson-asking #dialogs-root{visibility:hidden;}
+body.lesson-pointing #ring{visibility:hidden;}
+/* Phase 8b: a German's Action table (chapter 5); the marked column, and the cell he reads */
+.gc-name{font-weight:600; font-size:13.5px; line-height:1.3; color:var(--ink); margin:0 0 4px;}
+.gcard-table th.on{color:var(--amber);}
+.gcard-table td.on{background:rgba(201,162,39,.10);}
+.gcard-table td.hit{background:rgba(201,162,39,.32); color:var(--ink); font-weight:700; outline:1px solid var(--amber);}

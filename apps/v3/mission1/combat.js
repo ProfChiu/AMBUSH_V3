@@ -96,7 +96,7 @@
         fxLanded: function (roll) { if (FC.resolveAmmoExpenditure(weapon, roll).expended) M1.FX.badge(firer.hexId, 'CLIP SPENT', 'neutral'); },
       }, function (roll) {
         var ammo = FC.resolveAmmoExpenditure(weapon, roll);
-        if (ammo.expended) { EQ.expendAmmo(firer.inventory, firer.weaponId); renderRoster(); }
+        if (ammo.expended) { EQ.expendAmmo(firer.inventory, firer.weaponId); M1.renderRoster(); }
         onDone();
       });
     }
@@ -180,7 +180,7 @@
     // here rather than at the end the way a personal weapon's probabilistic ammo check does.
     if (thrower.inventory) {
       EQ.expendGrenade(thrower.inventory);
-      if (thrower.side !== 'german') renderRoster();
+      if (thrower.side !== 'german') M1.renderRoster();
     }
 
     var arc = { resolve: function () {} };
@@ -347,10 +347,10 @@
       target.isActive = false;
       if (M1.state.track) Sched.removeFromRound(M1.state.track, target.id);
       recordCasualty(target, newStatus === 'killed' ? 'killed' : 'incapacitated');
-      updateCounterVisual(target); renderTrack(); renderRoster(); renderVP();
+      M1.updateCounterVisual(target); renderTrack(); M1.renderRoster(); M1.renderVP();
       checkEndingConditions();
       if (target.side === 'german') return;
-      if (!activeUS().length) { endMission('all-us-down'); return; }
+      if (!M1.activeUS().length) { endMission('all-us-down'); return; }
     } else if (newStatus === 'wounded') {
       target.wounded = true; target.stance = 'prone';
       if (M1.state.track) Sched.applyWoundedStatus(M1.state.track, target.id);
@@ -367,11 +367,11 @@
         dropped.droppedItemIds.forEach(function (id) {
           // Task #68 (docs/37_PICKUP_EXCHANGE.md): actually lands in the hex now, pickup-able by
           // Pick Up/Exchange Equipment — previously just logged and vanished (docs/33's own gap).
-          addGroundItem(target.hexId, id, 'port');
-          M1.logLine(target.name + ' drops ' + equipmentName(id) + ' (wounded, Port Box reduced to one).', 'event');
+          M1.addGroundItem(target.hexId, id, 'port');
+          M1.logLine(target.name + ' drops ' + M1.equipmentName(id) + ' (wounded, Port Box reduced to one).', 'event');
         });
       }
-      updateCounterVisual(target); renderTrack();
+      M1.updateCounterVisual(target); renderTrack();
     } else if (newStatus === 'panicked') {
       if (M1.state.track) Sched.applyPanicStatus(M1.state.track, target.id);
       renderTrack();
@@ -384,7 +384,7 @@
     target.isActive = false;
     Sched.removeFromRound(M1.state.track, target.id);
     recordCasualty(target, 'captured');
-    updateCounterVisual(target); renderTrack(); renderRoster(); renderVP();
+    M1.updateCounterVisual(target); renderTrack(); M1.renderRoster(); M1.renderVP();
     checkEndingConditions();
   }
   // §11/2 second half (Task #72, docs/46_CAPTURED_GERMAN.md): "During Operations, if a captured
@@ -404,8 +404,8 @@
   // once Rounds has already ended and control has returned to Operations.
   function checkCapturedGermanEscapes() {
     if (M1.state.phase !== 'movement') return;
-    allGermans().filter(function (g) { return g.status === 'captured'; }).forEach(function (g) {
-      var guarded = activeUS().some(function (s) { return s.hexId === g.hexId; });
+    M1.allGermans().filter(function (g) { return g.status === 'captured'; }).forEach(function (g) {
+      var guarded = M1.activeUS().some(function (s) { return s.hexId === g.hexId; });
       if (!guarded) freeGerman(g);
     });
   }
@@ -415,18 +415,18 @@
     // soldier" like the normal Self-Preservation trigger (arrules.js's own proximity check,
     // still applied normally for every OTHER German); this one simply always wins for him.
     g.forcedSelfPreservation = true;
-    var seen = activeUS().some(function (s) { return losClearBetween(g, s); });
+    var seen = M1.activeUS().some(function (s) { return losClearBetween(g, s); });
     if (!seen) {
       g.isActive = false;
-      var el = counterEls[g.id]; if (el) { el.remove(); delete counterEls[g.id]; }
+      var el = M1.counterEls[g.id]; if (el) { el.remove(); delete M1.counterEls[g.id]; }
       M1.logHeader(g.name + ' is left unguarded with no US soldier in sight &mdash; he flees the map for good (&sect;11/2).');
-      renderRoster();
+      M1.renderRoster();
       return;
     }
     g.isActive = true;
     M1.logHeader(g.name + ' is left unguarded &mdash; he is free! All US soldiers are now aware of him (&sect;11/2).');
-    activeUS().forEach(function (s) { s.aware = true; });
-    renderRoster();
+    M1.activeUS().forEach(function (s) { s.aware = true; });
+    M1.renderRoster();
     startActionRound(1);
   }
   function recordCasualty(soldier, outcome) {
@@ -449,10 +449,10 @@
   // falls prone at Round-end regardless of which slot his marker sits in. Applies to both sides:
   // a German can be panicked by the same 'P' damage code a US soldier can.
   function fallPronePanickedSoldiers() {
-    activeUS().concat(activeGermans()).forEach(function (s) {
+    M1.activeUS().concat(M1.activeGermans()).forEach(function (s) {
       if (s.status === 'panicked' && s.stance !== 'prone') {
         s.stance = 'prone';
-        updateCounterVisual(s);
+        M1.updateCounterVisual(s);
         M1.logLine(s.name + ' falls prone (panicked, &sect;13/1).', 'event');
       }
     });
@@ -462,7 +462,7 @@
     fallPronePanickedSoldiers();
     M1.Cues.banner('round', 'Round ' + M1.state.roundNum + ' Complete');
     M1.infoPopup({ title: 'Round ' + M1.state.roundNum + ' Complete', bodyHtml: 'Round ' + M1.state.roundNum + ' complete.' }, function () {
-      if (!activeGermans().length) {
+      if (!M1.activeGermans().length) {
         // All Germans down or captured — back to Operations, matching §6's Rounds-end rule.
         M1.state.phase = 'movement';
         document.getElementById('tb-phase').textContent = 'Operations';
@@ -473,7 +473,7 @@
         // §11/2 (Task #72): a captured German whose captor didn't survive/stay in his hex through
         // the rest of the Round is immediately unguarded the moment Operations resumes.
         checkCapturedGermanEscapes();
-        if (M1.state.phase === 'movement') deselect(activeUS().length ? activeUS()[0].id : null);
+        if (M1.state.phase === 'movement') deselect(M1.activeUS().length ? M1.activeUS()[0].id : null);
         return;
       }
       document.getElementById('round-sec').style.display = '';
@@ -514,7 +514,7 @@
     }, function (picked) { finishExit(s, picked); });
   }
   function finishExit(s, carried) {
-    var remaining = activeUS().filter(function (o) { return o.id !== s.id; }).length;
+    var remaining = M1.activeUS().filter(function (o) { return o.id !== s.id; }).length;
     M1.infoPopup({
       actor: s, title: 'Exit Map',
       bodyHtml: s.name + ' leaves the map at ' + s.hexId + '.' +
@@ -524,19 +524,19 @@
       logHtml: s.name + ' exits the map at ' + s.hexId + (carried ? ', carrying ' + carried.name + ' off (VP loss avoided)' : '') + '.',
     }, function () {
       s.exited = true;
-      var el = counterEls[s.id]; if (el) { el.remove(); delete counterEls[s.id]; }
+      var el = M1.counterEls[s.id]; if (el) { el.remove(); delete M1.counterEls[s.id]; }
       if (carried) {
         carried.exited = true;
         markExfiltrated(carried);
-        var cel = counterEls[carried.id]; if (cel) { cel.remove(); delete counterEls[carried.id]; }
+        var cel = M1.counterEls[carried.id]; if (cel) { cel.remove(); delete M1.counterEls[carried.id]; }
       }
-      renderRoster();
-      renderVP(); // an exfiltrated casualty changes the VP total the moment he's off the map
+      M1.renderRoster();
+      M1.renderVP(); // an exfiltrated casualty changes the VP total the moment he's off the map
       checkEndingConditions();
       if (M1.state.phase === 'over') return;
       checkCapturedGermanEscapes(); // §11/2: exiting can leave a captured German unguarded
       if (M1.state.phase !== 'movement') return; // freeing a German can immediately commence Rounds
-      var left = activeUS();
+      var left = M1.activeUS();
       if (left.length) deselect(left[0].id);
       else { clearDestMarks(); renderStatusBanner(); }
     });
@@ -551,14 +551,14 @@
   // ---------------------------------------------------------------------
   function checkEndingConditions() {
     if (M1.state.phase === 'over') return;
-    var allExited = activeUS().every(function (s) { return s.exited; }) && M1.state.usSoldiers.some(function (s) { return s.isActive; });
+    var allExited = M1.activeUS().every(function (s) { return s.exited; }) && M1.state.usSoldiers.some(function (s) { return s.isActive; });
     if (V.checkEnding2(allExited)) { endMission('ending2'); return; }
 
-    var t8 = activeUS().some(function (s) { return !s.exited && s.hexId === 'T8'; });
-    var k13 = activeUS().some(function (s) { return !s.exited && s.hexId === 'K13'; });
-    var l13 = activeUS().some(function (s) { return !s.exited && s.hexId === 'L13'; });
-    var heights = activeUS().some(function (s) { return !s.exited && HEIGHTS_CANDIDATE_HEXES[s.hexId]; });
-    if (V.checkEnding1({ t8Occupied: t8, k13Occupied: k13, l13Occupied: l13, heightsHexWithFullRoadLOS: heights, activeGermanCount: activeGermans().length })) {
+    var t8 = M1.activeUS().some(function (s) { return !s.exited && s.hexId === 'T8'; });
+    var k13 = M1.activeUS().some(function (s) { return !s.exited && s.hexId === 'K13'; });
+    var l13 = M1.activeUS().some(function (s) { return !s.exited && s.hexId === 'L13'; });
+    var heights = M1.activeUS().some(function (s) { return !s.exited && HEIGHTS_CANDIDATE_HEXES[s.hexId]; });
+    if (V.checkEnding1({ t8Occupied: t8, k13Occupied: k13, l13Occupied: l13, heightsHexWithFullRoadLOS: heights, activeGermanCount: M1.activeGermans().length })) {
       M1.state.vpState.awards.push({ amount: 4, note: 'Ending 1 — Hold the Ground' });
       // §15's second exfiltration clause: "or, if mission ending 1 is accomplished, by moving him
       // into either building hex." JUDGMENT CALL on "either": the same victory paragraph calls T8
@@ -578,7 +578,7 @@
     document.getElementById('round-sec').style.display = 'none';
     document.getElementById('movement-sec').style.display = 'none';
     clearDestMarks();
-    var totals = renderVP();
+    var totals = M1.renderVP();
     var result = V.resolveVictory(totals.total, vpRequirement());
     M1.Cues.banner('end', result === 'won' ? 'Mission Accomplished' : 'Mission Failed', totals.total + ' VP · need ' + vpRequirement(), result === 'won' ? 'won' : 'lost');
     M1.Cues.kranz(result === 'won' ? 'frustrated' : 'smug', result === 'won'

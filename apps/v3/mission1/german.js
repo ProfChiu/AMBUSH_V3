@@ -9,7 +9,7 @@
   // Number..." — a one-time override for just this re-roll, distinct from (and layered on top
   // of) every other self-preservation trigger below.
   function germanAutoTurn(opts) {
-    var g = findSoldier(M1.state.currentActorId);
+    var g = M1.findSoldier(M1.state.currentActorId);
     var ignoreSelfPreservation = !!(opts && opts.ignoreSelfPreservation);
     // §11/4 / §6/8: the Self-Preservation column applies "whenever the German is in a hex occupied
     // or adjacent to an active US soldier, regardless of LOS". §11/2 (Task #72): a freed former
@@ -24,7 +24,7 @@
     var selfPreservationActive = !ignoreSelfPreservation && (
       !!g.forcedSelfPreservation ||
       (!(g.specialReaction && g.specialReactionIgnoresSelfPreservation) &&
-        activeUS().some(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= 1; }))
+        M1.activeUS().some(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= 1; }))
     );
     // A card only carries columns for the Conditions its scenario expects (GE 33/V, for instance,
     // has CONDITION 4 and SPECIAL S and nothing else). If the mission is in a Condition his card
@@ -58,9 +58,9 @@
         if (g.forcedSelfPreservation) {
           why = 'he was freed after being captured, so he uses Self-Preservation for the rest of the mission (&sect;11/2)';
         } else {
-          var near = activeUS().filter(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= 1; });
+          var near = M1.activeUS().filter(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= 1; });
           why = near.length
-            ? nameFor(near[0].id) + ' is ' + (near[0].hexId === g.hexId ? 'in his hex' : 'adjacent') +
+            ? M1.nameFor(near[0].id) + ' is ' + (near[0].hexId === g.hexId ? 'in his hex' : 'adjacent') +
               ' at ' + near[0].hexId + (near.length > 1 ? ' (and ' + (near.length - 1) + ' more)' : '') +
               ', regardless of line of sight (&sect;11/4)'
             : 'a US soldier is in or adjacent to his hex (&sect;11/4)';
@@ -131,15 +131,15 @@
       : openish[terrainKey] ? 'open' : 'other';
     return {
       targetsInSight: visible.length,
-      targetsInHex: activeUS().filter(function (s) { return s.hexId === g.hexId; }).length,
-      targetsWithin: function (n) { return activeUS().filter(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= n && losClearBetween(g, s); }).length; },
-      inUsSight: activeUS().some(function (s) { return losClearBetween(s, g); }),
+      targetsInHex: M1.activeUS().filter(function (s) { return s.hexId === g.hexId; }).length,
+      targetsWithin: function (n) { return M1.activeUS().filter(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= n && losClearBetween(g, s); }).length; },
+      inUsSight: M1.activeUS().some(function (s) { return losClearBetween(s, g); }),
       terrain: terrain,
       inActivationHex: g.hexId === g.activationHexId,
-      germansSameOrAdjacent: activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 1; }).length,
-      germansWithinTwo: activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 2; }).length,
+      germansSameOrAdjacent: M1.activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 1; }).length,
+      germansWithinTwo: M1.activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 2; }).length,
       germansLost: M1.state.vpState.germanDefeats.length,
-      usOccupiesHex: function (hex) { return activeUS().some(function (s) { return s.hexId === hex; }); },
+      usOccupiesHex: function (hex) { return M1.activeUS().some(function (s) { return s.hexId === hex; }); },
       // Task #63 (docs/35_GRENADE_COMBAT.md): real, from the German's own lightweight grenade
       // inventory (see guessGermanGrenadeCount) — no longer hardcoded false.
       hasGrenade: !!(g.inventory && EQ.hasGrenade(g.inventory)),
@@ -149,14 +149,14 @@
       // whole reason 833 carried a `bespoke` stub.
       adjacentTraversableTargets: adjacentTraversableUS(g).length,
       germanInAdjacentTargetHex: adjacentTraversableUS(g).some(function (s) {
-        return activeGermans().some(function (o) { return o.id !== g.id && o.hexId === s.hexId; });
+        return M1.activeGermans().some(function (o) { return o.id !== g.id && o.hexId === s.hexId; });
       }),
       freeStanceChange: !g.wounded, // §6/7: "Wounded soldiers never receive a free stance change."
     };
   }
   // Active US soldiers in a hex adjacent to `g` that he could actually reach — i.e. not walled off.
   function adjacentTraversableUS(g) {
-    return activeUS().filter(function (s) {
+    return M1.activeUS().filter(function (s) {
       if (FC.hexDistance(g.hexId, s.hexId) !== 1) return false;
       return M.hexsideCost(edgeFeatureBetween(g.hexId, s.hexId)) !== Infinity;
     });
@@ -231,7 +231,7 @@
     if (a.action === 'stance') {
       if (g.stance === a.to) { next(); return; }
       g.stance = a.to;
-      updateCounterVisual(g);
+      M1.updateCounterVisual(g);
       M1.infoPopup({ actor: g, title: 'Stance', bodyHtml: g.name + ' goes <b>' + a.to + '</b>.',
         fx: function () { M1.FX.badge(g.hexId, a.to.toUpperCase(), 'neutral'); } }, next);
       return;
@@ -254,8 +254,8 @@
           M1.infoPopup({
             actor: g, title: 'Second Weapon',
             bodyHtml: g.name + '\u2019s ' + brokenWeapon.name + ' is ' + (wasJammed ? 'jammed' : 'broken') +
-              ', so he draws his ' + equipmentName(second) + ' &mdash; \u00a79/4: "a German with a jammed weapon will use his second weapon, if he has one".',
-            logHtml: g.name + ' switches to his ' + equipmentName(second) + ' (&sect;9/4 second weapon).',
+              ', so he draws his ' + M1.equipmentName(second) + ' &mdash; \u00a79/4: "a German with a jammed weapon will use his second weapon, if he has one".',
+            logHtml: g.name + ' switches to his ' + M1.equipmentName(second) + ' (&sect;9/4 second weapon).',
             // Re-enter the SAME action index rather than building a one-off chain: the fire
             // branch simply runs again, now with a usable weapon, and the rest of the paragraph's
             // actions still follow.
@@ -297,7 +297,7 @@
         M1.infoPopup({
           actor: g, title: 'Cannot Fire',
           bodyHtml: g.name + ' is ' + g.stance + ', and a crew weapon can only be fired crouching (&sect;9/7). He holds his fire.',
-          logHtml: g.name + ': no fire &mdash; must be crouching to fire the ' + equipmentName(g.weaponId) + ' (&sect;9/7).',
+          logHtml: g.name + ': no fire &mdash; must be crouching to fire the ' + M1.equipmentName(g.weaponId) + ' (&sect;9/7).',
         }, next);
         return;
       }
@@ -321,9 +321,9 @@
             var actualFirer = firerId === mate.id ? mate : g;
             M1.infoPopup({
               actor: actualFirer, title: 'Crew Weapon',
-              bodyHtml: g.name + ' and ' + mate.name + ' crew the ' + equipmentName(g.weaponId) + ' together, which is what allows aimed fire (&sect;9/7). ' +
+              bodyHtml: g.name + ' and ' + mate.name + ' crew the ' + M1.equipmentName(g.weaponId) + ' together, which is what allows aimed fire (&sect;9/7). ' +
                 actualFirer.name + ' is the firer &mdash; the higher Weapon Skill of the two (' + M1.fmtSigned(actualFirer.WS) + ').',
-              logHtml: g.name + ' + ' + mate.name + ' crew the ' + equipmentName(g.weaponId) + '; ' + actualFirer.name + ' fires (higher WS, &sect;9/7).',
+              logHtml: g.name + ' + ' + mate.name + ' crew the ' + M1.equipmentName(g.weaponId) + '; ' + actualFirer.name + ' fires (higher WS, &sect;9/7).',
             }, function () { fireChain(actualFirer, target, fireType, next); });
             return;
           }
@@ -349,7 +349,7 @@
       return;
     }
     if (a.action === 'assault') {
-      var inHex = activeUS().filter(function (s) { return s.hexId === g.hexId; });
+      var inHex = M1.activeUS().filter(function (s) { return s.hexId === g.hexId; });
       // §11/3 Charge Assault: "A soldier who does not begin his turn in the same hex with a target
       // may perform a Move/Charge Assault Action to move into the hex and then assault... movement
       // always comes first." Only paragraph 833's exception clause asks for one, and only against
@@ -361,8 +361,8 @@
         var fromHex = g.hexId;
         if (g.stance !== 'standing') g.stance = 'standing';
         g.hexId = victim.hexId;
-        placeEl(counterEls[g.id], g.hexId);
-        updateCounterVisual(g);
+        M1.placeEl(M1.counterEls[g.id], g.hexId);
+        M1.updateCounterVisual(g);
         unprepareWeaponOnMove(g);
         M1.infoPopup({
           actor: g, title: 'Charge Assault',
@@ -378,7 +378,7 @@
         ? Asl.resolveGermanAssaultTarget(inHex.map(function (s) { return { id: s.id, stance: s.stance, wounded: s.status === 'wounded' }; }), M1.d10)
         : { id: inHex[0].id };
       var defender = inHex.filter(function (s) { return s.id === pick.id; })[0] || inHex[0];
-      if (g.stance !== 'standing') { g.stance = 'standing'; updateCounterVisual(g); }
+      if (g.stance !== 'standing') { g.stance = 'standing'; M1.updateCounterVisual(g); }
       assaultChain(g, defender, { capture: false, charge: false }, next);
       return;
     }
@@ -396,8 +396,8 @@
     if (a.action === 'move' && a.toHex) {
       var fromHexId = g.hexId;
       g.hexId = a.toHex;
-      if (counterEls[g.id]) placeEl(counterEls[g.id], a.toHex);
-      scrollMapTo(a.toHex);
+      if (M1.counterEls[g.id]) M1.placeEl(M1.counterEls[g.id], a.toHex);
+      M1.scrollMapTo(a.toHex);
       unprepareWeaponOnMove(g); // Task #69 (docs/43_PREPARE_WEAPON.md)
       M1.infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' ' + (a.style === 'crawl' ? 'crawls' : 'moves') + ' ' + fromHexId + ' &rarr; <b>' + a.toHex + '</b>.' }, next);
       return;
@@ -502,8 +502,8 @@
   function germanLeavesMap(g, next) {
     g.isActive = false;
     Sched.removeFromRound(M1.state.track, g.id);
-    if (counterEls[g.id]) { counterEls[g.id].remove(); delete counterEls[g.id]; }
-    renderTrack(); renderRoster(); renderVP();
+    if (M1.counterEls[g.id]) { M1.counterEls[g.id].remove(); delete M1.counterEls[g.id]; }
+    renderTrack(); M1.renderRoster(); M1.renderVP();
     checkEndingConditions();
     next();
   }
@@ -582,9 +582,9 @@
     var fromHexId = g.hexId;
     g.stance = open ? 'standing' : 'crouching';
     g.hexId = destHexId;
-    if (counterEls[g.id]) placeEl(counterEls[g.id], destHexId);
-    updateCounterVisual(g);
-    scrollMapTo(destHexId);
+    if (M1.counterEls[g.id]) M1.placeEl(M1.counterEls[g.id], destHexId);
+    M1.updateCounterVisual(g);
+    M1.scrollMapTo(destHexId);
     M1.FX.trail(fromHexId, destHexId);
     var remaining = mpRemaining - cost;
     M1.infoPopup({

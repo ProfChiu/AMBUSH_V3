@@ -3,10 +3,10 @@
 // Uses from M1:
 //   core: state
 //   present: FX, fmtSigned
+//   roster: activeGermans, canvas, findSoldier
 // Still global (their files are not wrapped yet):
 //   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
 //   edgeFeatures, losClear, terrainRowFor, weaponById, weaponUsable
-//   roster: activeGermans, canvas, findSoldier
 //   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute
 //   contact: estimateHitChanceBreakdown
 //   rounds: canFireAt
@@ -41,7 +41,7 @@
       svg.setAttribute('id', 'info-layer');
       svg.setAttribute('viewBox', '0 0 ' + MW + ' ' + MH);
       svg.setAttribute('preserveAspectRatio', 'none');
-      canvas.insertBefore(svg, canvas.children[1] || null); // above the map scan, below counters
+      M1.canvas.insertBefore(svg, M1.canvas.children[1] || null); // above the map scan, below counters
       return svg;
     }
     function center(hexId) { var p = G.parseId(hexId); return G.hexToPixel(p.colIdx, p.rowIdx); }
@@ -68,7 +68,7 @@
     // Who the player is acting for right now, if anyone.
     function viewer() {
       if (M1.state.phase === 'movement') return selectedSoldier() || null;
-      if (M1.state.phase === 'round') { var a = findSoldier(M1.state.currentActorId); return a && a.side !== 'german' ? a : null; }
+      if (M1.state.phase === 'round') { var a = M1.findSoldier(M1.state.currentActorId); return a && a.side !== 'german' ? a : null; }
       return null;
     }
     function decisionPending() { return !Dialogs.current; }
@@ -120,7 +120,7 @@
     // Hit Chance c hits on a roll of 0..c (0 always hits, 9 always misses): (c + 1) in 10.
     function pct(c) { return '<b>' + c + '</b> <span class="ih-dim">(' + (c + 1) * 10 + '%)</span>'; }
     function hexHtml(hexId, v) {
-      var enemyHere = activeGermans().some(function (g) { return g.hexId === hexId; });
+      var enemyHere = M1.activeGermans().some(function (g) { return g.hexId === hexId; });
       var terrain = LOS_TERRAIN[hexId] || REAL_TERRAIN[hexId];
       var label = TERRAIN_LABELS[terrain] || TERRAIN_LABELS[REAL_TERRAIN[hexId]] || terrain || 'unknown';
       var html = '<div class="ih-head"><b>' + hexId + '</b> &middot; ' + label + ' <span class="ih-cov ' + coverClass(hexId) + '">' + coverLabel(hexId) + '</span></div>';
@@ -153,10 +153,10 @@
       return html + watchersHtml(hexId, stance);
     }
     function watchersHtml(hexId, stance) {
-      var watchers = activeGermans().filter(function (g) { return g.hexId && g.hexId !== hexId && losClear(g.hexId, hexId, g.stance, stance); });
+      var watchers = M1.activeGermans().filter(function (g) { return g.hexId && g.hexId !== hexId && losClear(g.hexId, hexId, g.stance, stance); });
       return watchers.length
         ? '<div class="ih-warn">Seen by ' + watchers.map(function (g) { return g.name; }).join(', ') + '.</div>'
-        : (activeGermans().length ? '<div class="ih-dim">No German on the map can see it.</div>' : '');
+        : (M1.activeGermans().length ? '<div class="ih-dim">No German on the map can see it.</div>' : '');
     }
     function germanHtml(g, v) {
       var w = weaponById(g.weaponId);
@@ -191,7 +191,7 @@
     function renderPin() {
       if (!pinned) return;
       var v = viewer(), hx = pinned.hex, el = tipEl();
-      var html = activeGermans().filter(function (g) { return g.hexId === hx; }).map(function (g) { return germanHtml(g, v); }).join('<hr>');
+      var html = M1.activeGermans().filter(function (g) { return g.hexId === hx; }).map(function (g) { return germanHtml(g, v); }).join('<hr>');
       el.innerHTML = (html ? html + '<hr>' : '') + hexHtml(hx, v) +
         '<div class="ih-dim ih-close">Right-click again or Esc to close.</div>';
       el.style.display = 'block';
@@ -201,7 +201,7 @@
       el.style.left = Math.max(8, x) + 'px'; el.style.top = Math.max(8, y) + 'px';
     }
     function hexAt(e) {
-      var r = canvas.getBoundingClientRect();
+      var r = M1.canvas.getBoundingClientRect();
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return null;
       return G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id || null;
     }
@@ -243,9 +243,9 @@
       // Only a click on bare map is a walk order. Markers, counters and entry hexes carry their
       // own meaning, and the last entry placement switches the phase inside its own click — that
       // click then bubbled here and marched the soldier off across the map.
-      if (e.target !== canvas && !e.target.classList.contains('map-image')) return;
+      if (e.target !== M1.canvas && !e.target.classList.contains('map-image')) return;
       if (M1.state.phase !== 'movement' || Dialogs.current || !viewer()) return;
-      var r = canvas.getBoundingClientRect();
+      var r = M1.canvas.getBoundingClientRect();
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
       var hx = G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id;
       if (!hx) return;
@@ -311,7 +311,7 @@
       svg.setAttribute('id', 'sight-layer');
       svg.setAttribute('viewBox', '0 0 ' + G.MAP_WIDTH + ' ' + G.MAP_HEIGHT);
       svg.setAttribute('preserveAspectRatio', 'none');
-      canvas.insertBefore(svg, canvas.children[2] || null); // over the hover layer, under the counters
+      M1.canvas.insertBefore(svg, M1.canvas.children[2] || null); // over the hover layer, under the counters
       return svg;
     }
     function node(tag, attrs) {

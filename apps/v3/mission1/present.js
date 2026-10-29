@@ -3,9 +3,9 @@
 //   logHeader, logLine, pad2, rollPopup, speak, stripTags, voiceMuted
 // Uses from M1:
 //   core: state
+//   roster: canvas, currentImgFor, nameFor, pctPos
 // Still global (their files are not wrapped yet):
 //   core: CHART, Dialogs, FC, G
-//   roster: canvas, currentImgFor, nameFor, pctPos
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -166,7 +166,7 @@
   }
   function combatantHtml(s) {
     if (!s) return '';
-    return '<div class="combatant"><img src="' + currentImgFor(s) + '"><div class="cname">' + s.name + '</div>' +
+    return '<div class="combatant"><img src="' + M1.currentImgFor(s) + '"><div class="cname">' + s.name + '</div>' +
       '<div class="cstat">' + soldierStatLine(s) + '</div></div>';
   }
   function actorRowHtml(actor) {
@@ -299,9 +299,9 @@
         // must not cover the target): clear of the actor, his target and any aimed-at hex, on
         // whichever side has room; below in the top half of the map, above in the bottom half.
         var hex = actorHex(opts.actor);
-        var pos = hex ? pctPos(hex) : { left: 50, top: 30 };
+        var pos = hex ? M1.pctPos(hex) : { left: 50, top: 30 };
         var focus = [hex, opts.actor && opts.actor.right && opts.actor.right.hexId, opts.focusHex].filter(Boolean)
-          .map(function (h) { return pctPos(h).left; });
+          .map(function (h) { return M1.pctPos(h).left; });
         if (!focus.length) focus = [pos.left];
         var maxX = Math.max.apply(null, focus), minX = Math.min.apply(null, focus), CARD_W = 27;
         var GAP = 5; // a full hex and a half: clears a scatter into the next hex
@@ -312,7 +312,7 @@
         if (pos.top < 50) { el.style.top = Math.max(1, pos.top - 3) + '%'; } else { el.style.bottom = Math.max(1, 100 - pos.top - 3) + '%'; }
         // v3: the card is drawn at screen size on the zoomable board, scaled from its anchored corner
         el.style.setProperty('--card-origin', (el.style.left ? 'left' : 'right') + ' ' + (el.style.top ? 'top' : 'bottom'));
-        canvas.appendChild(el);
+        M1.canvas.appendChild(el);
         card = { el: el, linesEl: el.querySelector('.res-lines'), actorKey: key, lastTitle: opts.title, open: true, batch: false };
         Cues.cardOpened(key);
       }
@@ -492,11 +492,11 @@
       svg.setAttribute('id', 'fx-layer');
       svg.setAttribute('viewBox', '0 0 100 100');
       svg.setAttribute('preserveAspectRatio', 'none');
-      canvas.appendChild(svg);
+      M1.canvas.appendChild(svg);
       return svg;
     }
     function at(el, hexId, dx, dy) {
-      var p = pctPos(hexId);
+      var p = M1.pctPos(hexId);
       el.style.left = (p.left + (dx || 0)) + '%'; el.style.top = (p.top + (dy || 0)) + '%';
     }
     function later(fn, base) { setTimeout(fn, ms(base)); }
@@ -504,7 +504,7 @@
       later(function () { el.classList.add('fx-gone'); setTimeout(function () { el.remove(); }, 450); }, base);
     }
     function line(fromHex, toHex, cls) {
-      var a = pctPos(fromHex), b = pctPos(toHex);
+      var a = M1.pctPos(fromHex), b = M1.pctPos(toHex);
       var l = document.createElementNS(NS, 'line');
       l.setAttribute('x1', a.left); l.setAttribute('y1', a.top); l.setAttribute('x2', b.left); l.setAttribute('y2', b.top);
       l.setAttribute('class', cls);
@@ -540,7 +540,7 @@
       el.textContent = value;
       at(el, hexId, 1.6, -1.2);
       el.style.animationDuration = ms(1500) + 'ms';
-      canvas.appendChild(el);
+      M1.canvas.appendChild(el);
       setTimeout(function () { el.remove(); }, ms(1500) + 50);
     }
     // Badges stack upward when several land on one hex in quick succession (a grenade's victims).
@@ -551,7 +551,7 @@
       el.className = 'fx-badge fx-' + (tone || 'neutral');
       el.textContent = text;
       at(el, hexId, 0, -2.4 - (n - 1) * 1.7);
-      canvas.appendChild(el);
+      M1.canvas.appendChild(el);
       later(function () {
         el.classList.add('fx-gone');
         setTimeout(function () { el.remove(); badgeCount[hexId] = Math.max(0, (badgeCount[hexId] || 1) - 1); }, 450);
@@ -562,7 +562,7 @@
       var el = document.createElement('div');
       el.className = dud ? 'fx-blast fx-dud' : 'fx-blast';
       at(el, hexId);
-      canvas.appendChild(el);
+      M1.canvas.appendChild(el);
       setTimeout(function () { el.remove(); }, 900);
       sound(dud ? 'dud' : 'blast');
       if (!dud) shake();
@@ -575,17 +575,17 @@
       var el = document.createElement('div');
       el.className = 'fx-flash';
       at(el, hexId);
-      canvas.appendChild(el);
+      M1.canvas.appendChild(el);
       setTimeout(function () { el.remove(); }, 450);
     }
     var shakeTimer = null;
     function shake() {
       if (still()) return;
-      canvas.classList.remove('fx-shake');
-      void canvas.offsetWidth; // restart the animation when hits land back to back
-      canvas.classList.add('fx-shake');
+      M1.canvas.classList.remove('fx-shake');
+      void M1.canvas.offsetWidth; // restart the animation when hits land back to back
+      M1.canvas.classList.add('fx-shake');
       clearTimeout(shakeTimer);
-      shakeTimer = setTimeout(function () { canvas.classList.remove('fx-shake'); }, 420);
+      shakeTimer = setTimeout(function () { M1.canvas.classList.remove('fx-shake'); }, 420);
     }
     // sub: a smaller second line; life: how long it stays (ms, default 2800)
     function stamp(hexId, text, tone, sub, life) {
@@ -596,7 +596,7 @@
       el.textContent = text;
       if (sub) { var sm = document.createElement('small'); sm.textContent = sub; el.appendChild(sm); }
       at(el, hexId, 0, (n - 1) * 1.4);
-      canvas.appendChild(el);
+      M1.canvas.appendChild(el);
       later(function () {
         el.classList.add('fx-gone');
         setTimeout(function () { el.remove(); badgeCount[hexId] = Math.max(0, (badgeCount[hexId] || 1) - 1); }, 450);
@@ -606,7 +606,7 @@
     // camera is the stage's zoom/pan view, AmbushStage.view, not v2's vertical scroll).
     function ensureVisible(hexes, instant) {
       if (!window.AmbushStage) return;
-      var pts = hexes.filter(Boolean).map(function (h) { var p = pctPos(h); return { x: p.left / 100 * G.MAP_WIDTH, y: p.top / 100 * G.MAP_HEIGHT }; });
+      var pts = hexes.filter(Boolean).map(function (h) { var p = M1.pctPos(h); return { x: p.left / 100 * G.MAP_WIDTH, y: p.top / 100 * G.MAP_HEIGHT }; });
       if (!pts.length) return;
       // Instant when the player is about to click (a gliding map moves the hex out from under
       // the cursor mid-click); smooth when it is following the action.
@@ -620,7 +620,7 @@
       if (s.status === 'killed' || s.status === 'incapacitated') sound('kia');
       // v3 Phase 4b: a US soldier killed is a notable moment for the other side
       if (s.status === 'killed' && M1.state.usSoldiers.indexOf(s) >= 0) {
-        Cues.kranz('cheerful', '<b>Ein Amerikaner weniger.</b> ' + nameFor(s.id) + ' is killed at ' + s.hexId + '. His squad-mates cannot bring him back.');
+        Cues.kranz('cheerful', '<b>Ein Amerikaner weniger.</b> ' + M1.nameFor(s.id) + ' is killed at ' + s.hexId + '. His squad-mates cannot bring him back.');
       }
     }
     return { tracer: tracer, trail: trail, floatDie: floatDie, badge: badge, blast: blast, ensureVisible: ensureVisible, status: status,

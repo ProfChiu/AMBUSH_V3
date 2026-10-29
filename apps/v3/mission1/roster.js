@@ -1,13 +1,34 @@
-'use strict';
 // mission1/roster.js (4 of 13) — map rendering, counters, game state vars, finders, kit and tokens, roster/VP render. Stage A cut of mission1.js lines 1306-1581 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (25): activeGermans, activeUS, addGroundItem, allGermans, boxesFor, canvas, counterEls,
+//   currentImgFor, destEls, entryEls, equipmentName, eventMarkerEls, findSoldier, highlightActor, kitHtml,
+//   makeCounter, nameFor, pctPos, placeEl, placeEventMarkerEl, renderRoster, renderVP, scrollMapTo, shownVP,
+//   updateCounterVisual
+// Uses from M1:
+//   core: state
+//   present: FX, Resolve, fmtSigned
+// Still global (their files are not wrapped yet):
+//   core: D, EQ, FloatDialogs, G, SQCHART, V, WEAPONS_REQUIRING_PREPARATION, img, vpRequirement, vpTargetNote,
+//   weaponById
+//   operations: selectSoldier
+//   contact: showSoldierInspector
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.activeGermans = activeGermans; M1.activeUS = activeUS; M1.addGroundItem = addGroundItem;
+  M1.allGermans = allGermans; M1.boxesFor = boxesFor; M1.currentImgFor = currentImgFor;
+  M1.equipmentName = equipmentName; M1.findSoldier = findSoldier; M1.highlightActor = highlightActor;
+  M1.kitHtml = kitHtml; M1.makeCounter = makeCounter; M1.nameFor = nameFor; M1.pctPos = pctPos;
+  M1.placeEl = placeEl; M1.placeEventMarkerEl = placeEventMarkerEl; M1.renderRoster = renderRoster;
+  M1.renderVP = renderVP; M1.scrollMapTo = scrollMapTo; M1.updateCounterVisual = updateCounterVisual;
   // ---------------------------------------------------------------------
   // Map rendering
   // ---------------------------------------------------------------------
-  var canvas = document.getElementById('world');
-  var counterEls = {};
-  var destEls = {};
-  var entryEls = {};
-  var eventMarkerEls = {};
+  var canvas = M1.canvas = document.getElementById('world');
+  M1.counterEls = {};
+  M1.destEls = {};
+  M1.entryEls = {};
+  M1.eventMarkerEls = {};
 
   function pctPos(hexId) {
     var p = G.parseId(hexId);
@@ -38,13 +59,13 @@
     // then yields null, and placing it threw on parseId(null).colIdx — an uncaught page error,
     // four times in a single automated playthrough. A marker with no hex simply is not placed.
     if (!hexId) return;
-    if (eventMarkerEls[hexId]) return; // already marked
+    if (M1.eventMarkerEls[hexId]) return; // already marked
     var el = document.createElement('div');
     el.className = 'event-marker';
     placeEl(el, hexId);
     el.title = 'Event marker — ' + hexId;
     canvas.appendChild(el);
-    eventMarkerEls[hexId] = el;
+    M1.eventMarkerEls[hexId] = el;
   }
   // #map-viewport only scrolls vertically (overflow-x is hidden — the canvas is always full
   // width), so this centers the target hex in the visible vertical band.
@@ -72,18 +93,18 @@
     var el = AmbushCounters.make(s, counterClick);
     placeEl(el, hexId);
     canvas.appendChild(el);
-    counterEls[s.id] = el;
+    M1.counterEls[s.id] = el;
     return el;
   }
   // Phase 5: a rustle when a living soldier changes stance on screen
   function stanceRustle() { M1.FX.sound('rustle'); }
   function updateCounterVisual(s) {
-    var el = counterEls[s.id];
+    var el = M1.counterEls[s.id];
     if (!el) return;
     AmbushCounters.update(el, s, stanceRustle);
   }
   function highlightActor(id) {
-    Object.keys(counterEls).forEach(function (k) { counterEls[k].classList.toggle('active-actor', k === id); });
+    Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].classList.toggle('active-actor', k === id); });
   }
 
   // ---------------------------------------------------------------------
@@ -248,10 +269,10 @@
   }
   // What the VP panel last showed — __mission1Debug.board() reports this, not a fresh computation,
   // so automation sees exactly what the player sees.
-  var shownVP = { gained: 0, lost: 0, total: 0, need: 0 };
+  M1.shownVP = { gained: 0, lost: 0, total: 0, need: 0 };
   function renderVP() {
     var totals = V.computeVPTotal(M1.state.vpState);
-    shownVP = { gained: totals.gained, lost: totals.lost, total: totals.total, need: vpRequirement() };
+    M1.shownVP = { gained: totals.gained, lost: totals.lost, total: totals.total, need: vpRequirement() };
     document.getElementById('vp-gained').textContent = totals.gained;
     document.getElementById('vp-lost').textContent = totals.lost;
     document.getElementById('vp-total').textContent = totals.total;
@@ -273,4 +294,4 @@
       '<h4>Ending 1 — Hold the Ground</h4><p>Occupy the T8 building, K13, and L13, plus a SE-heights hex with line of sight to every road, with no active Germans remaining. Awards a further +4 VP.</p>' +
       '<h4>Ending 2 — Withdraw</h4><p>Every active soldier exits the map via the north edge (A1&ndash;J1).</p>';
   }
-
+})();

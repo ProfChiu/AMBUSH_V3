@@ -145,7 +145,7 @@
       title: 'Equipment', bodyHtml: 'Spent ' + bought.spentWP + '/' + wp + ' Weapon Points: ' +
         Object.keys(bought.equipment).map(function (id) { return bought.equipment[id] + '&times; ' + id; }).join(', ') + '.',
     }, function () {
-      renderRoster();
+      M1.renderRoster();
       startEntryPlacement();
     });
   }
@@ -161,11 +161,11 @@
     ENTRY_HEXES.forEach(function (hexId) {
       var el = document.createElement('div');
       el.className = 'entry-hex';
-      placeEl(el, hexId);
+      M1.placeEl(el, hexId);
       el.title = hexId;
       el.addEventListener('click', function (e) { e.stopPropagation(); placeNextSoldier(hexId); });
-      canvas.appendChild(el);
-      entryEls[hexId] = el;
+      M1.canvas.appendChild(el);
+      M1.entryEls[hexId] = el;
     });
     promptPlaceSoldier();
   }
@@ -181,12 +181,12 @@
     if (M1.state.entryIndex >= M1.state.usSoldiers.length) return;
     var s = M1.state.usSoldiers[M1.state.entryIndex];
     s.hexId = hexId;
-    makeCounter(s, hexId);
-    updateCounterVisual(s);
+    M1.makeCounter(s, hexId);
+    M1.updateCounterVisual(s);
     M1.logLine(s.name + ' enters the map at ' + hexId + '.');
     M1.state.entryIndex++;
     if (M1.state.entryIndex >= M1.state.usSoldiers.length) {
-      Object.keys(entryEls).forEach(function (id) { entryEls[id].remove(); });
+      Object.keys(M1.entryEls).forEach(function (id) { M1.entryEls[id].remove(); });
       startOperations();
     } else {
       promptPlaceSoldier();

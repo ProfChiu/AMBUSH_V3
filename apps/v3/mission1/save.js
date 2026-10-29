@@ -83,10 +83,10 @@
     Dialogs.reset();
     // Bug 13: the chains Dialogs.reset() just stopped leave their state behind; drop it too.
     resetOperationsFlow(); resetContactFlow(); resetRoundFlow();
-    Object.keys(counterEls).forEach(function (k) { counterEls[k].remove(); }); counterEls = {};
+    Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].remove(); }); M1.counterEls = {};
     clearDestMarks();
-    Object.keys(entryEls).forEach(function (k) { entryEls[k].remove(); }); entryEls = {};
-    Object.keys(eventMarkerEls).forEach(function (k) { eventMarkerEls[k].remove(); }); eventMarkerEls = {};
+    Object.keys(M1.entryEls).forEach(function (k) { M1.entryEls[k].remove(); }); M1.entryEls = {};
+    Object.keys(M1.eventMarkerEls).forEach(function (k) { M1.eventMarkerEls[k].remove(); }); M1.eventMarkerEls = {};
 
     M1.state.usSoldiers = data.usSoldiers; M1.state.germans = data.germans; M1.state.phase = data.phase;
     // `aware` (§6/5) postdates this field's introduction — a save written before it has none, so
@@ -112,18 +112,18 @@
 
     M1.state.usSoldiers.forEach(function (s) {
       if (s.exited || !s.hexId) return;
-      makeCounter(s, s.hexId);
-      updateCounterVisual(s);
+      M1.makeCounter(s, s.hexId);
+      M1.updateCounterVisual(s);
     });
     Object.keys(M1.state.germans).forEach(function (cardId) {
       var g = M1.state.germans[cardId];
-      makeCounter(g, g.hexId);
-      updateCounterVisual(g);
+      M1.makeCounter(g, g.hexId);
+      M1.updateCounterVisual(g);
     });
-    Object.keys(M1.state.opsState.eventMarkers || {}).forEach(function (hexId) { placeEventMarkerEl(hexId); });
+    Object.keys(M1.state.opsState.eventMarkers || {}).forEach(function (hexId) { M1.placeEventMarkerEl(hexId); });
 
-    renderRoster();
-    renderVP();
+    M1.renderRoster();
+    M1.renderVP();
 
     document.getElementById('roster-sec').style.display = '';
     document.getElementById('movement-sec').style.display = 'none';
@@ -137,17 +137,17 @@
       ENTRY_HEXES.forEach(function (hexId) {
         var el = document.createElement('div');
         el.className = 'entry-hex';
-        placeEl(el, hexId);
+        M1.placeEl(el, hexId);
         el.title = hexId;
         el.addEventListener('click', function (e) { e.stopPropagation(); placeNextSoldier(hexId); });
-        canvas.appendChild(el);
-        entryEls[hexId] = el;
+        M1.canvas.appendChild(el);
+        M1.entryEls[hexId] = el;
       });
       promptPlaceSoldier();
     } else if (M1.state.phase === 'movement') {
       document.getElementById('tb-phase').textContent = 'Operations';
       document.getElementById('movement-sec').style.display = '';
-      if (activeUS().length) selectSoldier(M1.state.selectedId && findSoldier(M1.state.selectedId) ? M1.state.selectedId : activeUS()[0].id);
+      if (M1.activeUS().length) selectSoldier(M1.state.selectedId && M1.findSoldier(M1.state.selectedId) ? M1.state.selectedId : M1.activeUS()[0].id);
     } else if (M1.state.phase === 'round') {
       document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum;
       document.getElementById('track-sec').style.display = '';

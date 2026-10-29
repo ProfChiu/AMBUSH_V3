@@ -199,7 +199,7 @@
     function step2() {
       var award = V.germanActivationVP(card.VP);
       M1.state.vpState.germanActivations.push({ cardId: g.id, vpText: card.VP || '' });
-      renderVP();
+      M1.renderVP();
       var totals = V.computeVPTotal(M1.state.vpState);
       var conditional = V.parseGermanVP(card.VP || '').conditional;
       M1.infoPopup({
@@ -215,8 +215,8 @@
     // Paragraph to show where the Soldier is." Scrolls there too: an activation hex can be far
     // from the squad, and a counter placed off-screen reads as nothing having happened.
     function step3() {
-      makeCounter(g, g.hexId);
-      scrollMapTo(g.hexId);
+      M1.makeCounter(g, g.hexId);
+      M1.scrollMapTo(g.hexId);
       M1.infoPopup({
         actor: g, title: 'Counter Placed',
         bodyHtml: 'Counter <b>' + (g.letter || '?') + '</b> is placed in hex <b>' + g.hexId + '</b>, ' + g.stance + '. The map has scrolled to show him.',
@@ -332,7 +332,7 @@
   // same "key facts + explanatory notes" shape. Answers a direct user request: "I need more
   // information to make decisions" after finding the game's combat unforgiving.
   function showSoldierInspector(id) {
-    var s = findSoldier(id);
+    var s = M1.findSoldier(id);
     if (!s) return;
     var isGerman = s.side === 'german';
     var terrainRow = CHART.FIRE_MODS_TERRAIN[terrainRowFor(s.hexId)];
@@ -356,7 +356,7 @@
       'How exposed he is to enemy fire in each stance, right here (higher = easier to hit; his current stance is highlighted).' +
       '<div class="stance-table">' + stanceHtml + '</div></div>';
 
-    var equipNotes = '<div class="gcard-notes"><span>Carrying</span>' + kitHtml(s) + '</div>';
+    var equipNotes = '<div class="gcard-notes"><span>Carrying</span>' + M1.kitHtml(s) + '</div>';
 
     // solo: a fresh card each time, so clicking him again never stacks a second copy (Wan, 2026-10-25)
     M1.infoPopup({

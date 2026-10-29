@@ -242,7 +242,7 @@
   // crouching, and not already excluded by the two-soldiers-per-Round cap.
   function crewMates(s) {
     if (!isCrewWeapon(s.weaponId)) return [];
-    var side = s.side === 'german' ? activeGermans() : activeUS();
+    var side = s.side === 'german' ? M1.activeGermans() : M1.activeUS();
     return side.filter(function (o) {
       return o.id !== s.id && o.hexId === s.hexId && CW.canFireCrewWeapon(o.stance)
         && CW.canSoldierJoinCrewWeaponRound(crewFiredThisRound(s), o.id);
@@ -376,7 +376,7 @@
     vpTarget = V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(M1.state.difficulty));
     var badge = document.getElementById('tb-difficulty');
     if (badge) badge.textContent = D.label(M1.state.difficulty);
-    renderVP();
+    M1.renderVP();
   }
   function vpRequirement() { return vpTarget.requirement; }
   // One sentence explaining the scaled number wherever it's shown, or '' when nothing was scaled.

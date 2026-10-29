@@ -3,13 +3,13 @@
   // ---------------------------------------------------------------------
   // Operations phase — real movement + real Paragraph Check (operationsloop.js) per hex entered.
   // ---------------------------------------------------------------------
-  function selectedSoldier() { return findSoldier(M1.state.selectedId); }
+  function selectedSoldier() { return M1.findSoldier(M1.state.selectedId); }
   // §5/3/§7/1 Group Movement (Task #67, docs/42_GROUP_MOVEMENT.md): "any number of soldiers in
   // the same hex in the same stance can move into an adjacent hex together" — the group that a
   // selected soldier could optionally move together with, including himself.
   function groupAt(s) {
     if (!s) return [];
-    return activeUS().filter(function (t) { return t.hexId === s.hexId && t.stance === s.stance; });
+    return M1.activeUS().filter(function (t) { return t.hexId === s.hexId && t.stance === s.stance; });
   }
   // §5/1: "If a group of soldiers enters the same hex, only one Paragraph Check is made. Any
   // Perception Checks required by the paragraph are made by the soldier with the highest PC
@@ -40,14 +40,14 @@
     if (M1.state.phase !== 'movement') return;
     var id = M1.state.selectedId;
     M1.Resolve.awaitDone(function () { if (M1.state.phase === 'movement' && M1.state.selectedId === id && !walking) deselect(id); });
-    if (id) document.getElementById('status-banner').textContent = nameFor(id) + '’s move is done. Choose who moves next.';
+    if (id) document.getElementById('status-banner').textContent = M1.nameFor(id) + '’s move is done. Choose who moves next.';
   }
   function selectSoldier(id) {
     if (walking && walking.id !== id) walking = null; // selecting someone else ends the walk
     M1.state.selectedId = id;
     if (id) lastSelectedId = id;
     if (M1.state.phase === 'movement') document.getElementById('movement-sec').style.display = id ? '' : 'none';
-    Object.keys(counterEls).forEach(function (k) { counterEls[k].classList.toggle('selected', k === id); });
+    Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].classList.toggle('selected', k === id); });
     renderHud();
     renderGroupMoveRow();
     renderBringPrisonerRow();
@@ -55,18 +55,18 @@
     M1.Info.refresh();
     renderStatusBanner();
   }
-  function clearDestMarks() { Object.keys(destEls).forEach(function (k) { destEls[k].remove(); }); destEls = {}; destPicks = {}; }
+  function clearDestMarks() { Object.keys(M1.destEls).forEach(function (k) { M1.destEls[k].remove(); }); M1.destEls = {}; destPicks = {}; }
   // Every destination marker goes through here, so its pick handler is recorded next to the
   // element: a map click and __mission1Debug.clickHex() run the same function.
   var destPicks = {};
   function addDestMark(hexId, className, title, onPick) {
     var el = document.createElement('div');
     el.className = className;
-    placeEl(el, hexId);
+    M1.placeEl(el, hexId);
     el.title = title;
     el.addEventListener('click', function (e) { e.stopPropagation(); onPick(); });
-    canvas.appendChild(el);
-    destEls[hexId] = el;
+    M1.canvas.appendChild(el);
+    M1.destEls[hexId] = el;
     destPicks[hexId] = onPick;
   }
   function destCostClass(cost) { return 'dest-mark ' + (cost <= 1 ? 'cost-1' : cost === 2 ? 'cost-2' : 'cost-3plus'); }
@@ -129,7 +129,7 @@
   }
   function legalDestinationsWithBudget(s, mpaBudget) {
     if (!s || mpaBudget <= 0) return {};
-    var occupiedByEnemy = activeGermans().map(function (g) { return g.hexId; });
+    var occupiedByEnemy = M1.activeGermans().map(function (g) { return g.hexId; });
     if (s.stance !== 'prone') {
       return M.legalDestinations({ startHexId: s.hexId, mpa: mpaBudget, stance: s.stance, terrainByHexId: REAL_TERRAIN, occupiedByEnemy: occupiedByEnemy, edgeFeatures: edgeFeatures });
     }
@@ -304,14 +304,14 @@
   }
   function stopWalk(why) {
     if (!walking) return;
-    var s = findSoldier(walking.id);
+    var s = M1.findSoldier(walking.id);
     if (why && s) M1.logLine(s.name + ' stops at ' + s.hexId + ' &mdash; ' + why + '.');
     walking = null;
     if (M1.state.phase === 'movement') { renderDestinations(); renderStatusBanner(); M1.Info.refresh(); }
   }
   function stepWalk() {
     if (!walking) return;
-    var s = findSoldier(walking.id);
+    var s = M1.findSoldier(walking.id);
     if (M1.state.phase !== 'movement') { walking = null; return; }          // Rounds began, or the mission ended
     if (!s || !s.isActive || s.exited) { stopWalk('he can no longer move'); return; }
     if (M1.state.selectedId !== walking.id) { stopWalk('another soldier was selected'); return; }
@@ -339,7 +339,7 @@
   // Group Move's opt-in checkbox — defaulting off, since leaving him behind (§11/2's "voluntary
   // release") is a legitimate, common choice, not an oversight to guard against.
   function capturedGermansAt(hexId) {
-    return allGermans().filter(function (g) { return g.status === 'captured' && g.hexId === hexId; });
+    return M1.allGermans().filter(function (g) { return g.status === 'captured' && g.hexId === hexId; });
   }
   function renderBringPrisonerRow() {
     var s = selectedSoldier();
@@ -358,11 +358,11 @@
     var prisoners = bringPrisoners ? capturedGermansAt(fromHexId) : [];
     group.forEach(function (t) {
       t.hexId = hexId;
-      placeEl(counterEls[t.id], hexId);
+      M1.placeEl(M1.counterEls[t.id], hexId);
     });
     prisoners.forEach(function (g) {
       g.hexId = hexId;
-      var el = counterEls[g.id]; if (el) placeEl(el, hexId);
+      var el = M1.counterEls[g.id]; if (el) M1.placeEl(el, hexId);
     });
     renderHud();
     var mover = group.length > 1 ? highestPcOf(group) : s;
@@ -396,9 +396,9 @@
   function renderHud() {
     var s = selectedSoldier();
     if (!s) return;
-    document.getElementById('mc-img').src = currentImgFor(s);
+    document.getElementById('mc-img').src = M1.currentImgFor(s);
     document.getElementById('mc-name').textContent = s.name;
-    document.getElementById('mc-stats').innerHTML = 'IN:' + s.IN + ' PC:' + s.PC + ' WS:' + M1.fmtSigned(s.WS) + ' \u00b7 at ' + s.hexId + ' \u00b7 ' + s.stance + kitHtml(s, true);
+    document.getElementById('mc-stats').innerHTML = 'IN:' + s.IN + ' PC:' + s.PC + ' WS:' + M1.fmtSigned(s.WS) + ' \u00b7 at ' + s.hexId + ' \u00b7 ' + s.stance + M1.kitHtml(s, true);
     document.getElementById('mc-mp').innerHTML = '<span style="color:var(--text-label);">MPA</span> <b>' + s.mpa + '</b> <span style="color:var(--text-label);font-size:10px;">(Rounds only — Operations tracks no MP, &sect;5/3)</span>';
     ['standing', 'crouching', 'prone'].forEach(function (st) { document.getElementById('stance-' + st).classList.toggle('active', s.stance === st); });
     var exitBtn = document.getElementById('exitMapBtn');
@@ -428,7 +428,7 @@
       if (!s || s.stance === st) return;
       s.stance = st;
       M1.logLine(s.name + ' changes stance to ' + st + '.');
-      updateCounterVisual(s);
+      M1.updateCounterVisual(s);
       renderHud(); renderGroupMoveRow(); renderDestinations(); renderStatusBanner();
       stanceBeat(s);
     });
@@ -477,7 +477,7 @@
       // paragraphHex: the incoming id comes straight from a paragraph's `hex` field, so it is
       // hyphenated ("T-8") and must be normalised before it reaches the LOS database.
       // {id, pc}: each soldier in sight rolls his own PC check (Phase 8c; it was the mover's PC).
-      soldiersWhoCanSee: function (hexId) { var h = paragraphHex(hexId); return activeUS().filter(function (s) { return losClear(s.hexId, h, s.stance); }).map(function (s) { return { id: s.id, pc: s.PC }; }); },
+      soldiersWhoCanSee: function (hexId) { var h = paragraphHex(hexId); return M1.activeUS().filter(function (s) { return losClear(s.hexId, h, s.stance); }).map(function (s) { return { id: s.id, pc: s.PC }; }); },
       isGermanRemovedOnce: function (numericId) { var g = M1.state.germans[germanInstanceId(numericId)]; return !!(g && !g.isActive); },
       onEnterHex: function (hexId) { currentHex = hexId; currentParagraph = null; },
       onEnterParagraph: function (num) { currentParagraph = num; },
@@ -542,15 +542,15 @@
     M1.Cues.banner('condition', 'Condition ' + to, 'The Germans are more alert', 'alert');
     M1.Cues.kranz('stern', '<b>Alarm!</b> Condition ' + to + '. Unless something closer forces his hand, every one of my men now reads the <b>Condition ' + to +
       '</b> column of his card (' + (M1.state.phase === 'round' ? '&sect;6/11' : '&sect;5/5') + ').');
-    var pcSoldier = activeUS()[0];
+    var pcSoldier = M1.activeUS()[0];
     if (!pcSoldier) { onFinish(); return; }
     pendingSteps = []; currentHex = null; currentParagraph = null;
     var ctx = buildOpsCtx(pcSoldier);
-    var occupiedHexIds = activeUS().map(function (s) { return s.hexId; });
+    var occupiedHexIds = M1.activeUS().map(function (s) { return s.hexId; });
     // Both §5/5 and §6/11 clear all Event markers when the Condition changes — the on-map
     // markers follow.
-    Object.keys(eventMarkerEls).forEach(function (id) { eventMarkerEls[id].remove(); });
-    eventMarkerEls = {};
+    Object.keys(M1.eventMarkerEls).forEach(function (id) { M1.eventMarkerEls[id].remove(); });
+    M1.eventMarkerEls = {};
     var result = Ops.conditionChange({ to: to, occupiedHexIds: occupiedHexIds, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS, programs: PROGRAMS, state: M1.state.opsState, ctx: ctx, stopOnActivation: stopOnActivation });
 
     var entries = result.log; // every hex's outcome, not just ones with a paragraph chain — a
@@ -559,7 +559,7 @@
     function showNextEntry() {
       if (i >= entries.length) { onFinish(); return; }
       var entry = entries[i]; i++;
-      var mover = activeUS().filter(function (s) { return s.hexId === entry.hexId; })[0] || pcSoldier;
+      var mover = M1.activeUS().filter(function (s) { return s.hexId === entry.hexId; })[0] || pcSoldier;
       presentParagraphChain(mover, entry.chain, entry.hexId, showNextEntry);
     }
     showNextEntry();
@@ -569,7 +569,7 @@
   // 'movement'), so a resulting activation starts a fresh Round 1.
   function runConditionChange(to, next) {
     runConditionChangeScan(to, true, function () {
-      if (activeGermans().length && M1.state.phase === 'movement') { startActionRound(1); return; }
+      if (M1.activeGermans().length && M1.state.phase === 'movement') { startActionRound(1); return; }
       next();
     });
   }
@@ -635,7 +635,7 @@
   function presentStep(mover, step, cb) {
     if (step.type === 'check') {
       var label = step.kind === 'activation' ? 'Activation Check' : 'Perception Check';
-      var roller = (step.soldierId && findSoldier(step.soldierId)) || mover;
+      var roller = (step.soldierId && M1.findSoldier(step.soldierId)) || mover;
       var rating = step.kind === 'activation' ? MISSION.activation_by_condition[String(M1.state.opsState.condition)] : roller.PC;
       if (step.soldierId) label += ' — ' + roller.name;
       M1.rollPopup({
@@ -664,7 +664,7 @@
         M1.infoPopup({ actor: mover, title: 'Event Marker', maxReadMs: EVENT_READ_MS, bodyHtml: 'This paragraph calls for an Event marker, but it was reached by the Round&rsquo;s own Event Check rather than by entering a hex (&sect;6/1) &mdash; there is no hex to mark, so none is placed.' }, cb);
         return;
       }
-      placeEventMarkerEl(step.hexId);
+      M1.placeEventMarkerEl(step.hexId);
       M1.infoPopup({ actor: mover, title: 'Event Marker', maxReadMs: EVENT_READ_MS, bodyHtml: 'An Event marker is placed at ' + step.hexId + '. No further Paragraph or Event Checks are made there until the Condition changes.' }, cb);
       return;
     }
@@ -680,7 +680,7 @@
     }
     if (step.type === 'award_vp') {
       M1.state.vpState.awards.push({ amount: step.amount, note: step.note || 'paragraph award' });
-      renderVP();
+      M1.renderVP();
       M1.infoPopup({ actor: mover, title: 'Victory Points', bodyHtml: 'This paragraph awards <b>+' + step.amount + ' VP</b>' + (step.note ? ' (' + step.note + ')' : '') + '.' }, cb);
       return;
     }

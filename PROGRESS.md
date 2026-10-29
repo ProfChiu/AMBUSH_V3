@@ -2,13 +2,37 @@
 
 > New here? Read `CLAUDE.md`, then `docs/00_V3_BRIEF.md`. v2 is frozen in `../AMBUSH_V2/`.
 
+## 2026-10-29 (rule change: no more one-task-at-a-time)
+- Accomplished: global `__SCAD/_CLAUDE/CLAUDE.md` "Session scope" rewritten: a request for several tasks/phases/items runs them all
+  in one go, verifying each, no stop between them; AMBUSH_V3 and AMBUSH_V2 punch-list rules changed to match.
+- Decisions (Wan): permanent for every project; replaces the 2026-10-02 one-phase-per-session rule and the auto-run exception.
+- Next: unchanged: Wan approves R1-R7, then the refactor sessions (now runnable back to back).
+
+## 2026-10-28 (code review Phase 7: write-up)
+- Accomplished: "Ambush v3 Refactor Plan", https://claude.ai/artifact/9Af9q8R2LXkY8WRjt8ARBa (source `docs/refactor_writeup.html`):
+  a decision page for approving R1-R7: the ask, the to-scale before/after file strip, 13-file table, findings (bugs 12, 13, 15,
+  dead code, duplication, DOM legality), stages A/B/C, the session track with risk per step, T1/T2 proof and the stop rules.
+- Decisions (Wan): audience is Wan approving R1-R7, as a visual page; REFACTOR_MAP.md stays the source of record.
+- Next: Wan reads the page and approves (or amends) R1-R7; then R1 (Step 0: compare.py, T2 baseline, seed-7000 traces, live
+  repro of bugs 12 and 13) in a fresh session.
+
+## 2026-10-28 (git snapshot, console check)
+- Accomplished: .gitignore added (.DS_Store, local Claude settings, __pycache__); everything committed as 80af2ba (amended from 7870346 to author ProfChiu), the pre-refactor
+  snapshot on master. Console checked: p1-p2 signed off, p3-p8c built and awaiting sign-off, p8d (Chapter 6) and p9 planned.
+- Decisions: 8d waits for the refactor (after R3), so the console's "next" is not the real next step; refactor sessions not yet
+  added to the console (needs Wan's go-ahead to write its database).
+- Open: this entry and the
+  Phase 6 note are uncommitted.
+- Next: code review Phase 7 (artifact of REFACTOR_MAP.md), then R1 (Step 0: compare.py, T2 baseline, seed-7000 traces, live repro
+  of bugs 12 and 13) in a fresh session.
+
 ## 2026-10-25 (code review Phase 6: step order and proof)
 - Accomplished: docs/REFACTOR_MAP.md Phase 6: proof tiers (T1 quick ~4 min: checks, suites, 6-seed parity, trace diff; T2 full
   ~20 min: 30/30 both difficulties + five live drives), 12 steps (0 baseline + compare.py, 1 dead code, 2 helpers, 3 the cut,
   4 counters, 5 toHitCard, 6 state object, 7 save fixes + live_save.py, 8 save key, 9 namespace, 10 verbs with reasons, 11 tidy)
   in 7 sessions R1-R7, with stop rules (any diff: roll back, don't patch forward).
 - Found: AMBUSH_V3 has no git, so a rollback needs git init (recommended) or folder snapshots; there is no compare script for parity.
-- Next: Phase 7 (write-up: artifact of the map), then R1 (Step 0 baseline) in a fresh session; Wan chose git (git init done 2026-10-25; first commit in Step 0).
+- Next: Phase 7 (write-up: artifact of the map), then R1 (Step 0 baseline) in a fresh session; Wan chose git: repo initialised and first commit 7870346 (pre-refactor snapshot) made 2026-10-25.
 
 ## 2026-10-25 (code review Phase 5: split plan)
 - Accomplished: docs/REFACTOR_MAP.md Phase 5: mission1.js into 13 files under apps/v3/mission1/ (core, present, info, roster, setup,

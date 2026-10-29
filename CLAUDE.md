@@ -22,5 +22,6 @@ still apply, except where noted here.
 - `assets/data/grenade_scatter.js` loads before `grenaderules.js`.
 - **Canvas override:** the map fills the window and the HUD floats over it (Wan, 2026-10-20). The
   folder's fixed 1920x1080 rule does not apply here.
-- Interview with `AskUserQuestion` before a phase; no file edits without the go-ahead. Punch lists
-  one item at a time.
+- Interview only when scope is genuinely unclear or a decision is Wan's and not yet made (Wan, 2026-10-29).
+  A request to run a phase, or a plan already approved (e.g. REFACTOR_MAP R1-R7), is the go-ahead to
+  edit files and commit per step; don't re-ask. Punch lists run all items in one go (global rule).

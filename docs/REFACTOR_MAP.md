@@ -4,7 +4,8 @@ Scope: `apps/v3/` only (presentation). The 19 rules modules in `apps/game/` stay
 is used only to run the checks. Phases (agreed 2026-10-25): 0 baseline · 1 inventory · 2 seams ·
 3 shared state · 4 duplication and dead code · 5 split plan · 6 step order and proof · 7 write-up.
 
-Status: Phases 1-6 done (2026-10-25). Phase 0 (baseline run) not yet run.
+Status: Phases 1-6 done (2026-10-25). Phase 7 write-up done (2026-10-28): `docs/refactor_writeup.html`,
+published at https://claude.ai/artifact/9Af9q8R2LXkY8WRjt8ARBa (updated again in R7). Phase 0 (baseline run) not yet run.
 
 ---
 

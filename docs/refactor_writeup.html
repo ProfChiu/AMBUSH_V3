@@ -1,0 +1,368 @@
+<title>Ambush v3 Refactor Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column like a field-manual annex; full-width strips for the file diagram and the session track. */
+:root {
+  --bg: #eef0ea;
+  --panel: #f8f9f5;
+  --ink: #1f241b;
+  --muted: #5d6556;
+  --rule: #c9cec0;
+  --olive: #56662a;
+  --olive-soft: #dfe5cc;
+  --low: #3f7a4a;
+  --med: #a0761c;
+  --high: #a83a2c;
+  --seg-a: #6f7f3c;
+  --seg-b: #8e9a63;
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171a14; --panel: #1f231b; --ink: #e4e8dc; --muted: #9da690; --rule: #363c2f;
+    --olive: #b3c46f; --olive-soft: #2c3320; --low: #79b884; --med: #d8a94a; --high: #e2786a;
+    --seg-a: #7d8f43; --seg-b: #56622e; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171a14; --panel: #1f231b; --ink: #e4e8dc; --muted: #9da690; --rule: #363c2f;
+  --olive: #b3c46f; --olive-soft: #2c3320; --low: #79b884; --med: #d8a94a; --high: #e2786a;
+  --seg-a: #7d8f43; --seg-b: #56622e; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+}
+main { max-width: 980px; margin: 0 auto; display: grid; gap: 48px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; letter-spacing: .01em; text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); text-transform: uppercase; }
+h2 { font-size: 1.75rem; text-transform: uppercase; }
+h3 { font-size: 1.2rem; }
+p { margin: 0; max-width: 68ch; }
+code, .mono { font-family: var(--mono); font-size: .86em; }
+.eyebrow { font-family: var(--mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--olive); }
+section { display: grid; gap: 18px; min-width: 0; }
+.lede { font-size: 1.08rem; color: var(--ink); }
+.muted { color: var(--muted); }
+
+header.top { display: grid; gap: 14px; border-bottom: 3px solid var(--ink); padding-bottom: 22px; }
+.stamp { display: inline-block; justify-self: start; font-family: var(--display); font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; border: 2px solid var(--olive); color: var(--olive); padding: 2px 10px; transform: rotate(-1.5deg); }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 28px; font-family: var(--mono); font-size: .82rem; color: var(--muted); }
+.facts b { color: var(--ink); font-weight: 500; }
+
+/* The ask */
+.ask { background: var(--olive-soft); border: 1px solid var(--olive); padding: 20px 22px; display: grid; gap: 12px; }
+.ask ol { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; max-width: 72ch; }
+
+/* File strip */
+.strip-wrap { overflow-x: auto; }
+.strip { display: grid; gap: 10px; min-width: 640px; }
+.bar { display: flex; height: 58px; border: 1px solid var(--rule); background: var(--panel); }
+.bar > div { display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 5px; min-width: 0; overflow: hidden;
+  font-family: var(--mono); font-size: .68rem; line-height: 1.2; color: #f4f6ee; border-right: 1px solid var(--bg); }
+.bar > div:nth-child(odd) { background: var(--seg-a); }
+.bar > div:nth-child(even) { background: var(--seg-b); }
+.bar > div span { white-space: nowrap; }
+.bar .whole { background: var(--high) !important; justify-content: center; font-size: .85rem; padding-left: 12px; }
+.bar .dead { background: repeating-linear-gradient(45deg, var(--muted) 0 4px, transparent 4px 8px) !important; color: var(--ink); }
+.bar-label { font-family: var(--mono); font-size: .75rem; color: var(--muted); display: flex; justify-content: space-between; }
+
+/* Tables */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--mono); font-weight: 500; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+td.n { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--mono); font-size: .85rem; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+
+/* Findings */
+.find { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+.find article { border-top: 3px solid var(--ink); padding-top: 10px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.find article.bug { border-top-color: var(--high); }
+.tag { font-family: var(--mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bug .tag { color: var(--high); }
+
+/* Stages */
+.stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0; border: 1px solid var(--rule); background: var(--panel); }
+.stages > div { padding: 16px 18px; display: grid; gap: 8px; align-content: start; border-right: 1px solid var(--rule); min-width: 0; }
+.stages > div:last-child { border-right: 0; }
+.stages .letter { font-family: var(--display); font-size: 2.4rem; font-weight: 700; color: var(--olive); line-height: 1; }
+
+/* Session track */
+.track { display: grid; gap: 0; border-left: 3px solid var(--ink); }
+.sess { display: grid; grid-template-columns: 74px 1fr; gap: 16px; padding: 14px 0 14px 18px; border-bottom: 1px dashed var(--rule); position: relative; }
+.sess::before { content: ""; position: absolute; left: -9px; top: 20px; width: 15px; height: 15px; background: var(--bg); border: 3px solid var(--ink); border-radius: 50%; }
+.sess.core::before { background: var(--olive); border-color: var(--olive); }
+.sess .id { font-family: var(--display); font-size: 1.9rem; font-weight: 700; line-height: 1; }
+.sess .body { display: grid; gap: 6px; min-width: 0; }
+.steps { display: grid; gap: 6px; }
+.step { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.step .num { font-family: var(--mono); font-size: .78rem; color: var(--muted); min-width: 4.5em; }
+.step .what { font-weight: 600; }
+.risk { font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; padding: 1px 7px; border: 1px solid currentColor; }
+.risk.none, .risk.low { color: var(--low); }
+.risk.med { color: var(--med); }
+.risk.high { color: var(--high); }
+.ends { font-family: var(--mono); font-size: .78rem; color: var(--muted); }
+.gate { font-family: var(--mono); font-size: .72rem; color: var(--olive); letter-spacing: .06em; text-transform: uppercase; padding: 8px 0 8px 18px; }
+
+/* Proof + rules */
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.box { border: 1px solid var(--rule); background: var(--panel); padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.box ul { margin: 0; padding-left: 1.1em; display: grid; gap: 5px; }
+.big { font-family: var(--display); font-size: 2rem; font-weight: 700; line-height: 1; }
+footer { font-family: var(--mono); font-size: .75rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 14px; }
+a { color: var(--olive); }
+:focus-visible { outline: 2px solid var(--olive); outline-offset: 2px; }
+</style>
+
+<main>
+  <header class="top">
+    <span class="stamp">For approval · R1–R7</span>
+    <div class="eyebrow">Ambush! Digital v3 · code review, Phase 7 write-up</div>
+    <h1>Split mission1.js into thirteen files, without changing a single roll</h1>
+    <p class="lede">The Mission 1 controller is one 6,176-line closure that holds the visuals, the game flow and the bot seam together. The plan cuts it into 13 files by section in seven sessions. Every step is proven by bot parity against today's baselines, and the engine's 19 rules modules are not touched. Along the way it fixes two save/load bugs and gives v3 its own save list.</p>
+    <div class="facts">
+      <span>Source <b>docs/REFACTOR_MAP.md</b> (Phases 1–6)</span>
+      <span>Snapshot <b>80af2ba</b> on master</span>
+      <span>Scope <b>apps/v3/</b> only</span>
+      <span>Written <b>2026-10-28</b></span>
+    </div>
+  </header>
+
+  <section class="ask">
+    <h2>What you are approving</h2>
+    <ol>
+      <li><b>The seven refactor sessions, R1 to R7</b>, in the order below, one per session, each ending on a full proof run.</li>
+      <li><b>The stop rule:</b> any difference in a quick proof run means roll back with git and redo the step. Nothing is patched forward.</li>
+      <li><b>Three intended behaviour changes</b>, each listed again before its step: ground items survive save and load (Step 7), v3 saves move to their own key with a one-time import (Step 8), and any wording change in refusal reasons (Step 10).</li>
+      <li><b>Chapter 6 (Phase 8d) waits until after R3</b>, so its lesson code lands in the new files.</li>
+    </ol>
+    <p class="muted">Already decided on 2026-10-25 and not reopened here: split by section into about 12 files, <code>counters.js</code> becomes the one counter builder, saves get key <code>ambush.v3.saves</code>, bug 12 is fixed by the refactor, git as the safety net.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Before and after</div>
+    <h2>One file becomes thirteen</h2>
+    <p>Widths are to scale by line count. About 290 lines of dead code go first; the rest moves byte for byte, in its original line order, so nothing is retyped.</p>
+    <div class="strip-wrap">
+      <div class="strip">
+        <div class="bar-label"><span>Today: apps/v3/mission1.js</span><span>6,176 lines</span></div>
+        <div class="bar">
+          <div class="whole" style="flex: 5886"><span>mission1.js, one IIFE, 351 top-level names</span></div>
+          <div class="dead" style="flex: 290"><span>dead</span></div>
+        </div>
+        <div class="bar-label"><span>After R3: apps/v3/mission1/</span><span>~5,885 lines in 13 files, none over ~700</span></div>
+        <div class="bar">
+          <div style="flex:370"><span>core</span><span>370</span></div>
+          <div style="flex:590"><span>present</span><span>590</span></div>
+          <div style="flex:325"><span>info</span><span>325</span></div>
+          <div style="flex:275"><span>roster</span><span>275</span></div>
+          <div style="flex:215"><span>setup</span><span>215</span></div>
+          <div style="flex:705"><span>operations</span><span>705</span></div>
+          <div style="flex:380"><span>contact</span><span>380</span></div>
+          <div style="flex:590"><span>rounds</span><span>590</span></div>
+          <div style="flex:675"><span>verbs</span><span>675</span></div>
+          <div style="flex:590"><span>german</span><span>590</span></div>
+          <div style="flex:590"><span>combat</span><span>590</span></div>
+          <div style="flex:290"><span>save</span><span>290</span></div>
+          <div style="flex:290"><span>seams</span><span>290</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>File</th><th>Holds</th><th style="text-align:right">~Lines</th><th style="text-align:right">Names out / in</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><code>core.js</code></td><td>engine and data aliases, terrain and LOS tables, weapon rules, VP, difficulty, <code>M1.state</code></td><td class="n">370</td><td class="n">70 / 3</td></tr>
+          <tr><td>2</td><td><code>present.js</code></td><td>dice and strips, voice, log, pop-up helpers, <code>Resolve</code>, <code>FX</code></td><td class="n">590</td><td class="n">20 / 14</td></tr>
+          <tr><td>3</td><td><code>info.js</code></td><td><code>Info</code> (the map as information surface), <code>Sight</code></td><td class="n">325</td><td class="n">2 / 32</td></tr>
+          <tr><td>4</td><td><code>roster.js</code></td><td>map rendering, counters via <code>counters.js</code>, finders, kit and token strip, roster and VP</td><td class="n">275</td><td class="n">35 / 15</td></tr>
+          <tr><td>5</td><td><code>setup.js</code></td><td>§4 squad generation, entry placement</td><td class="n">215</td><td class="n">4 / 25</td></tr>
+          <tr><td>6</td><td><code>operations.js</code></td><td>selection, destinations, combo moves, walking, HUD, Paragraph Check, Condition Change</td><td class="n">705</td><td class="n">33 / 73</td></tr>
+          <tr><td>7</td><td><code>contact.js</code></td><td>contact, German activation and card, tooltips, hit breakdown, inspector</td><td class="n">380</td><td class="n">8 / 43</td></tr>
+          <tr><td>8</td><td><code>rounds.js</code></td><td>Action Round start, events, awareness, initiative, track, action panel</td><td class="n">590</td><td class="n">16 / 96</td></tr>
+          <tr><td>9</td><td><code>verbs.js</code></td><td>the player's verbs: grenade, drag, pick up, command, stance, prepare, fire, assault, clear jam</td><td class="n">675</td><td class="n">28 / 64</td></tr>
+          <tr><td>10</td><td><code>german.js</code></td><td>German turn, German actions, movement by reference</td><td class="n">590</td><td class="n">3 / 60</td></tr>
+          <tr><td>11</td><td><code>combat.js</code></td><td>fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory</td><td class="n">590</td><td class="n">12 / 61</td></tr>
+          <tr><td>12</td><td><code>save.js</code></td><td>save and load (new key and import), start screen, game flow</td><td class="n">290</td><td class="n">6 / 48</td></tr>
+          <tr><td>13</td><td><code>seams.js</code></td><td><code>VERBS</code>, <code>verbsOffered</code>, automation, <code>__mission1Debug</code> (live members), <code>AmbushMission</code></td><td class="n">290</td><td class="n">0 / 96</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">236 of the 351 names cross a file edge. That is why the cut keeps one shared scope at first (Stage A) and namespaces later (Stage C). Two checks make it safe: no load-time code calls forward, and none of the 351 names collides with a browser or engine global.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Why bother</div>
+    <h2>What the review found</h2>
+    <div class="find">
+      <article class="bug">
+        <span class="tag">Bug 12 · fixed in Step 7</span>
+        <h3>Ground items vanish on save and load</h3>
+        <p><code>groundItems</code> is not in the save and is neither restored nor cleared on load. A weapon dropped by a wound is gone after a reload, and a later load or lesson keeps the previous game's items.</p>
+      </article>
+      <article class="bug">
+        <span class="tag">Bug 13 · fixed in Step 7</span>
+        <h3>In-flight state survives a load</h3>
+        <p><code>pendingContact</code>, <code>pendingSteps</code>, <code>walking</code> and four others keep their values across a load. The first to test live is a load right after a contact.</p>
+      </article>
+      <article class="bug">
+        <span class="tag">Finding 15 · fixed in Step 8</span>
+        <h3>v2 and v3 share one save list</h3>
+        <p>Under <code>file://</code> both read <code>ambush-mission1-saves-v1</code>, so a v3 save can be loaded into v2 and the other way round.</p>
+      </article>
+      <article>
+        <span class="tag">Dead code · Step 1</span>
+        <h3>About 290 lines nothing reaches</h3>
+        <p>43 unused debug hooks, the one-entry presentation chooser with its 16 guards, v1's dice tray, an empty path layer, two dead aliases, four dead CSS classes.</p>
+      </article>
+      <article>
+        <span class="tag">Duplication · Steps 2, 4, 5</span>
+        <h3>The to-hit card is written five times</h3>
+        <p>Five chains repeat the hit test 17 times and the landing effect 13 times. Counters are built in four places. One <code>toHitCard</code> and one counter builder replace them.</p>
+      </article>
+      <article>
+        <span class="tag">Seam · Step 10</span>
+        <h3>Legality is read back from the DOM</h3>
+        <p>The bot and the stack panel read button <code>disabled</code>, and refusal reasons are written apart from the tests, so they can disagree. One <code>verbs(s) → {ok, why, cite}</code> feeds them all.</p>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Method</div>
+    <h2>Three stages, each proven by parity</h2>
+    <div class="stages">
+      <div><span class="letter">A</span><h3>Cut, no renames</h3><p>Code moves byte for byte into 13 plain scripts in the original order. Only the IIFE's first and last lines go. A script checks that the 13 files joined equal the old body.</p><span class="tag">Step 3 · session R3</span></div>
+      <div><span class="letter">B</span><h3>State onto one object</h3><p>13 variables move to <code>M1.state</code>, exactly what the save writes. That fixes bug 12 by construction; a <code>reset()</code> per chain fixes bug 13. Old saves still load.</p><span class="tag">Steps 6–7 · session R5</span></div>
+      <div><span class="letter">C</span><h3>Namespace, file by file</h3><p>Each file wraps in an IIFE and exports through <code>AmbushM1</code>, leaf files first. At the end <code>window</code> holds three globals from these files.</p><span class="tag">Step 9 · session R6</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Order of work</div>
+    <h2>Twelve steps in seven sessions</h2>
+    <p>Steps 1–3 are the core: after R3 the file is split and proven. Every later step leaves the game complete, so the work can pause after any session.</p>
+    <div class="track">
+      <div class="sess">
+        <div class="id">R1</div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><span class="num">Step 0</span><span class="what">Baseline</span><span class="risk none">no code change</span></div>
+          </div>
+          <p class="muted">Write <code>tools/bot/compare.py</code>, run the full proof on today's code against the <code>v3_*</code> baselines, record seed-7000 traces on both difficulties, and reproduce bugs 12 and 13 live.</p>
+          <span class="ends">Ends with T2 on current code</span>
+        </div>
+      </div>
+      <div class="sess core">
+        <div class="id">R2</div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><span class="num">Step 1</span><span class="what">Remove dead code</span><span class="risk low">low</span></div>
+            <div class="step"><span class="num">Step 2</span><span class="what"><code>upright</code>, <code>isOut</code>, finders</span><span class="risk low">low</span></div>
+          </div>
+          <span class="ends">Ends with T2</span>
+        </div>
+      </div>
+      <div class="sess core">
+        <div class="id">R3</div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><span class="num">Step 3</span><span class="what">Stage A: the cut into 13 files</span><span class="risk med">medium: load order</span></div>
+          </div>
+          <span class="ends">Ends with T2 + concatenation check</span>
+        </div>
+      </div>
+      <div class="gate">Split done · Chapter 6 (Phase 8d) may start here</div>
+      <div class="sess">
+        <div class="id">R4</div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><span class="num">Step 4</span><span class="what"><code>counters.js</code> as the one builder</span><span class="risk low">low-medium</span></div>
+            <div class="step"><span class="num">Step 5</span><span class="what"><code>toHitCard</code>, one chain at a time</span><span class="risk med">medium: wording, timing</span></div>
+          </div>
+          <span class="ends">Ends with T2 + counter screenshot</span>
+        </div>
+      </div>
+      <div class="sess">
+        <div class="id">R5</div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><span class="num">Step 6</span><span class="what">Stage B: <code>M1.state</code></span><span class="risk high">medium-high: missed rename</span></div>
+            <div class="step"><span class="num">Step 7</span><span class="what">Save fixes, bugs 12 and 13</span><span class="risk med">medium · behaviour change</span></div>
+            <div class="step"><span class="num">Step 8</span><span class="what">Save key <code>ambush.v3.saves</code></span><span class="risk low">low · behaviour change</span></div>
+          </div>
+          <span class="ends">Ends with T2 + new live_save.py</span>
+        </div>
+      </div>
+      <div class="sess">
+        <div class="id">R6</div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><span class="num">Step 9</span><span class="what">Stage C: namespace, 13 files</span><span class="risk med">medium per file</span></div>
+          </div>
+          <span class="ends">Ends with T2 + three-globals check</span>
+        </div>
+      </div>
+      <div class="sess">
+        <div class="id">R7</div>
+        <div class="body">
+          <div class="steps">
+            <div class="step"><span class="num">Step 10</span><span class="what"><code>verbs()</code> with reasons</span><span class="risk high">high: bot seam</span></div>
+            <div class="step"><span class="num">Step 11</span><span class="what">Tidy: CSS split, file headers, handoff</span><span class="risk low">low</span></div>
+          </div>
+          <span class="ends">Ends with T2 + verb probe; this write-up updated</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Proof</div>
+    <h2>How each step is checked</h2>
+    <div class="two">
+      <div class="box">
+        <span class="tag">T1 quick · after every step and sub-step</span>
+        <span class="big">~4 min</span>
+        <ul>
+          <li><code>node --check</code> on each changed file</li>
+          <li>the 17 engine suites (guard against an accidental engine edit)</li>
+          <li>bot parity, seeds 7000–7005, Normal and Easy</li>
+          <li>trace diff of seed 7000, both difficulties</li>
+        </ul>
+      </div>
+      <div class="box">
+        <span class="tag">T2 full · end of each session</span>
+        <span class="big">~20 min</span>
+        <ul>
+          <li>everything in T1</li>
+          <li>bot parity 30/30 Normal and 30/30 Easy</li>
+          <li>the five <code>live_*.py</code> drives, zero console errors</li>
+          <li><code>cmp</code> of the 19 rules modules against v2</li>
+        </ul>
+      </div>
+    </div>
+    <p>"Identical" means every field of each run record matches except <code>seconds</code>: outcome, VP, rounds, activations, casualties, exits, console errors and, most telling, <code>steps</code>, the number of decisions the bot made. The trace diff catches a game that drifts mid-way and still ends on the same totals.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Stop rules</div>
+    <h2>When to stop</h2>
+    <div class="two">
+      <div class="box"><h3>Any difference: roll back</h3><p>A T1 difference stops the step. Roll back with git, find the cause, redo the step. Never patch forward.</p></div>
+      <div class="box"><h3>Behaviour changes are approved first</h3><p>Steps 7, 8 and any wording in Step 10 are listed before they run and approved by Wan. Afterwards only the baselines they change are re-recorded.</p></div>
+      <div class="box"><h3>The engine stays byte-identical</h3><p>No step edits the 19 rules modules or <code>ambushdialogs.js</code>. T2 checks this with <code>cmp</code>.</p></div>
+      <div class="box"><h3>Done means</h3><p><code>mission1.js</code> gone; 13 files; three globals; one <code>d10</code>; <code>AmbushMission</code>, the bot, lessons and live checks unchanged; bugs 12 and 13 fixed and covered by a live check.</p></div>
+    </div>
+  </section>
+
+  <footer>Ambush! Digital v3 · AMBUSH_V3/docs/REFACTOR_MAP.md is the source of record; this page summarises it for approval. Line numbers and counts are from the review of 2026-10-25.</footer>
+</main>

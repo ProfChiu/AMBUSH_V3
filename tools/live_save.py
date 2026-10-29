@@ -1,4 +1,4 @@
-"""Live save/load checks for Mission 1 (docs/REFACTOR_MAP.md 6.3 Step 7; bugs 12 and 13).
+"""Live save/load checks for Mission 1 (docs/REFACTOR_MAP.md 6.3 Steps 7-8; bugs 12, 13 and item 15).
 Grew from tools/repro_save.py (R1), whose checks it flips from "bug present" to "fixed".
 
   python3 tools/live_save.py [--seed 7000] [--headed]
@@ -19,6 +19,9 @@ Bug 12, ground items (Step 7): a soldier wounded in a Round drops a Port Box ite
 Bug 13, in-flight state (Step 7): load the last Operations save while a contact paragraph's Round 1
   pop-up is open, then start a fresh Round 1 with no contact paragraph: none of the abandoned
   paragraph's terms are applied to it.
+Save key (Step 8): saves live in `ambush.v3.saves`. With that key absent and a save in v2's
+  `ambush-mission1-saves-v1`, opening the page copies it in once; v2's key is left byte for byte;
+  a second open does not import again.
 Every part asserts 0 console errors. Prints "  ok ..." / "  FAIL ..." lines; exit 0 when all pass.
 """
 import argparse
@@ -33,7 +36,8 @@ os.environ.setdefault('AMBUSH_PAGE', 'v3')
 from game import Session  # noqa: E402
 from policy import Policy  # noqa: E402
 
-SAVE_KEY = 'ambush-mission1-saves-v1'
+V3_KEY = 'ambush.v3.saves'
+V2_KEY = 'ambush-mission1-saves-v1'
 fails = []
 
 
@@ -116,6 +120,8 @@ def part_ground(seed, headed):
         post = saves[-1]
         check(post.get('version') == 2, 'the save is version 2 (got %r)' % post.get('version'))
         check(ground_count(post.get('groundItems') or {}, item) == 1, 'the save holds the item on the ground')
+        check(dbg(s, 'localStorage.getItem(a)', V3_KEY) is not None and dbg(s, 'localStorage.getItem(a)', V2_KEY) is None,
+              'saves are written to ' + V3_KEY + ', not to v2\'s key')
 
         # same page: load the pre-drop save
         dbg(s, 'D.loadSaveAtIndex(0)')
@@ -145,7 +151,7 @@ def part_ground(seed, headed):
         v1.pop('groundItems', None)
         v1['version'] = 1
         v1['savedAt'] = post['savedAt'] + 1
-        dbg(s, 'localStorage.setItem(a.k, JSON.stringify(a.list))', {'k': SAVE_KEY, 'list': saves + [v1]})
+        dbg(s, 'localStorage.setItem(a.k, JSON.stringify(a.list))', {'k': V3_KEY, 'list': saves + [v1]})
         dbg(s, 'D.loadSaveAtIndex(a)', len(saves))
         s._page.page.wait_for_timeout(300)
         g = dbg(s, 'D.groundItemsForTesting()')
@@ -219,17 +225,54 @@ def part_contact(seeds, headed):
     check(False, 'bug 13 part: no seed reached a contact with an auto-aware soldier')
 
 
+def part_key(seed, headed):
+    print('== Save key: one-time import of v2\'s saves')
+    with Session(seed, headless=not headed, max_steps=2000, max_seconds=300) as s:
+        pg = s._page.page
+        ls = lambda k: pg.evaluate('(k) => localStorage.getItem(k)', k)  # noqa: E731
+        # a save in the old shape: write one with the page, then move it to v2's key
+        pol = Policy('normal')
+        b = play_until(s, pol, lambda b: b['phase'] == 'movement' and dbg(s, 'D.isSafeToSave()'))
+        check(bool(b), 'reached a quiet Operations point')
+        if not b:
+            return
+        check(dbg(s, 'D.saveGame()'), 'a save to copy')
+        one = json.loads(ls(V3_KEY))[-1]
+        old = json.dumps([one])
+        pg.evaluate('(a) => { localStorage.clear(); localStorage.setItem(a.k, a.v); }', {'k': V2_KEY, 'v': old})
+        reload(s)
+        v3 = json.loads(ls(V3_KEY) or 'null')
+        check(isinstance(v3, list) and len(v3) == 1 and v3[0]['savedAt'] == one['savedAt'],
+              'first open: the old-key save appears once in ' + V3_KEY)
+        check(len(dbg(s, 'D.listSaves()')) == 1, 'first open: the Load list shows it once')
+        check(ls(V2_KEY) == old, "first open: v2's key is unchanged")
+        # a new v3 save, then a second open: no second import
+        reload(s)
+        check(len(json.loads(ls(V3_KEY))) == 1, 'second open: no second import')
+        b = play_until(s, pol, lambda b: b['phase'] == 'movement' and dbg(s, 'D.isSafeToSave()'))
+        dbg(s, 'D.saveGame()')
+        reload(s)
+        check(len(json.loads(ls(V3_KEY))) == 2 and ls(V2_KEY) == old,
+              "a v3 save then another open: 2 saves, v2's key still unchanged")
+        dbg(s, 'D.loadSaveAtIndex(0)')
+        pg.wait_for_timeout(300)
+        check(dbg(s, 'D.state()')['phase'] == 'movement', 'the imported save loads')
+        check(not s.errors, 'save key part: zero console errors' + ('' if not s.errors else ': ' + ' | '.join(s.errors[:3])))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--seed', type=int, default=7000)
     ap.add_argument('--seeds13', default='7000,7001,7002,7003,7004,7005,7006,7007')
     ap.add_argument('--headed', action='store_true')
-    ap.add_argument('--only', choices=['ground', 'contact'])
+    ap.add_argument('--only', choices=['ground', 'contact', 'key'])
     a = ap.parse_args()
     if a.only in (None, 'ground'):
         part_ground(a.seed, a.headed)
     if a.only in (None, 'contact'):
         part_contact([int(x) for x in a.seeds13.split(',')], a.headed)
+    if a.only in (None, 'key'):
+        part_key(a.seed, a.headed)
     print('%d failed' % len(fails) if fails else 'all checks passed')
     return 1 if fails else 0
 

@@ -734,3 +734,52 @@ assault), and the commit carrying this entry (5e clear jam).
   `makeCounter`, so a save-format change there touches no DOM code. `check_counters.py` exercises save/load of 10 saves
   per difficulty and will show any counter difference the save fixes cause (bug 12 will add `groundItems`; counters
   should stay identical). Its save key is hard-coded `ambush-mission1-saves-v1`: update it with Step 8's `ambush.v3.saves`.
+
+**R5 results (2026-10-29): Steps 6-8. T2 green after each** (Step 6 1,078 s, Step 7 1,085 s, Step 8 1,095 s; every run:
+T1 PASS; parity 30/30 Normal + 30/30 Easy identical; traces identical; live chapters 55, drills 55, germans 36, lesson
+39, map 47 ok, 0 fail; engine 19/19 match the manifest). Commits: `119cd34` (Step 6), `ee88cde` (Step 7), and the
+commit carrying this entry (Step 8). The earlier, stopped R5 attempt stays in `git stash@{0}`, unused.
+- **Step 6, Stage B.** `var M1 = window.AmbushM1 = { state: {…} }` sits in `core.js` right after the engine aliases
+  (`difficulty: D.NORMAL` needs `D`), with the 13 vars and their old initial values. The declarations went (roster.js's
+  block, now one comment line; `operations.js` `selectedId`; `setup.js` `entryIndex`; `core.js` `difficulty`) and
+  **327** reads/writes became `M1.state.x` (phase 81, currentActorId 44, track 41, usSoldiers 28, opsState 27, vpState
+  23, difficulty 19, selectedId 18, germans 16, roundNum 12, groundItems 8, entryIndex 7, currentGermanIds 3).
+  `tools/rename_state.py` does it token by token (skips strings, comments, regexes, `x.name`, object keys) and **refuses**
+  if any `var`, function name, parameter or `catch` binds a moved name: there were none, so no local shadows one.
+  `--check` re-proves the tree: 0 bindings, 0 bare references. Nothing outside `mission1/` read these names (tools,
+  lesson, director, stack, ring, shell, board, cues: no bare name, `window.x` or `typeof x`; `audio.js`'s `track` is
+  its own IIFE local). `check_globals.py` allows `AmbushM1` (339 names after Step 6).
+- **Step 7, bugs 12 and 13.** Saves are `version: 2` and carry `groundItems`; `applySavedState` sets
+  `M1.state.groundItems = data.groundItems || {}` (a version-1 save loads with an empty ground). Right after
+  `Dialogs.reset()` it calls `resetOperationsFlow()` (operations.js: pendingConditionChange, pendingSteps, currentHex,
+  currentParagraph, lastCheckQuiet, walking, pendingCancelAction, destPicks, stanceBeatTimer + the `stance-beat`
+  class), `resetContactFlow()` (contact.js: pendingContact) and `resetRoundFlow()` (rounds.js: picking, and a new
+  `germanTurnTimer` holding `beginTurn`'s 500 ms `setTimeout(germanAutoTurn)`, which a load mid-delay would otherwise
+  run on the loaded position next to `applySavedState`'s own `driveNext()`). Group C's real owners: `pendingCancelAction`
+  is declared in operations.js (the map put it with the AR panel); `lastSelectedId`/`shownVP` (group B, view-ish) are
+  not reset. **Not covered:** `Resolve`'s card/hold timers and `FX` timers; a load mid-card can still let a pending
+  `Resolve` continuation fire (no repro, none seen).
+- **`tools/live_save.py`** (replaces `repro_save.py`; t2.sh runs every `live_*.py`, now 6) — 30 checks, 0 console errors
+  per part. Ground (seed 7000, Pvt. Mercer drops his BAR in I2): the save is v2 and holds it; written to
+  `ambush.v3.saves`, not v2's key; the pre-drop save in the same page leaves the ground empty and the BAR in his Port
+  Boxes only; reload + post-drop save puts it on the ground in I2 and not in his boxes; a v1 copy of that save loads
+  with an empty ground. Contact: load the last Operations save with paragraph 312's pop-up open, start a Round 1 with
+  no paragraph: Initiative rolls, no "(paragraph …)" term is applied. Key: see Step 8. The Step 7 version (20 checks)
+  run on `6511fcb` failed 7 (both bugs), so it proves the fix. Trap: BAR ammo shares the id `bar` in the Ammo Boxes;
+  "in his kit" means the Port Boxes.
+- **Step 8, keys.** Saves `ambush.v3.saves`, speed `ambush.v3.speed`. `save.js` runs `importOldSaves()` at load: if
+  the v3 key is absent it copies `ambush-mission1-saves-v1` in (or writes `[]`), so writing the key marks the import
+  done and later v2 saves are never pulled in; the old key is never written. live_save: a save seeded under the old
+  key appears once in the v3 list and the Load list; v2's key byte-identical; a second open does not re-import; a new v3
+  save then another open gives 2; the imported save loads. Speed has no import (a fresh v3 starts at Normal).
+  `check_counters.py` reads/writes `ambush.v3.saves`.
+- **check_counters.py**, seed 7000 Normal, after Steps 7 and 8 against a baseline recorded on `6511fcb` (a worktree):
+  identical (239 snapshots, 4,083 events, 993 log lines; 10 v1 baseline saves loaded in fresh pages).
+  `check_globals.py` PASS, 345 names + AmbushM1 (adds resetOperationsFlow, resetContactFlow, resetRoundFlow,
+  germanTurnTimer, OLD_SAVE_LIST_KEY, importOldSaves).
+- **For R6 (Stage C).** `M1` is a top-level `var` in `core.js`, loaded first; once each file is an IIFE it should read
+  `var M1 = window.AmbushM1;` at its top (core.js creates it, so core must stay first in load order even though it is
+  wrapped last). `save.js` calls the three `reset…Flow()` functions across files: export them on `M1`. `importOldSaves()`
+  runs at script load. `M1.state` must stay one object whose fields are replaced, never the object itself (`seams.js`
+  hands out `M1.state.groundItems` by reference). `tools/rename_state.py --check` stays a valid guard until the files
+  are wrapped (it only knows the 13 names).

@@ -86,7 +86,7 @@ def main():
             time.sleep(0.02)
         events = page.evaluate("() => window.__events")
         log = page.evaluate("() => Array.from(document.querySelectorAll('#combatlog .log-line')).map(e => e.innerHTML)")
-        saves_raw = page.evaluate("() => localStorage.getItem('ambush-mission1-saves-v1')")
+        saves_raw = page.evaluate("() => localStorage.getItem('ambush.v3.saves')")
         errors = list(s.errors)
     # The saves a game writes depend on when the page was quiet, so the load half replays the
     # baseline's saves (--against) when given: each in a fresh page, loaded at once.
@@ -96,7 +96,7 @@ def main():
     for i in range(n):
         with Session(a.seed) as s:
             page = s._page.page
-            page.evaluate("(v) => localStorage.setItem('ambush-mission1-saves-v1', v)", saves_raw)
+            page.evaluate("(v) => localStorage.setItem('ambush.v3.saves', v)", saves_raw)
             page.evaluate("(i) => window.__mission1Debug.loadSaveAtIndex(i)", i)
             time.sleep(0.5)
             snaps.append({'load': i, **snap(page)})

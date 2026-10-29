@@ -20,7 +20,20 @@
   // Multiple slots, most-recent-last, capped at MAX_SAVES — saveGame() evicts the oldest (index 0)
   // once the cap is exceeded. Each entry IS a serializeState() snapshot (it already carries its
   // own savedAt/version), so there's no separate metadata wrapper to keep in sync.
-  var SAVE_LIST_KEY = 'ambush-mission1-saves-v1';
+  // v3's own key (R5 Step 8, docs/REFACTOR_MAP.md 4.4 item 15). Under file:// every local page
+  // shares one origin, so v2 and v3 shared 'ambush-mission1-saves-v1' and could load each other's
+  // saves. On the first open of v3 (its key absent), the old list is copied in once; the old key
+  // is left exactly as it is for v2. Writing the key (even an empty list) marks the import done.
+  var SAVE_LIST_KEY = 'ambush.v3.saves';
+  var OLD_SAVE_LIST_KEY = 'ambush-mission1-saves-v1';
+  function importOldSaves() {
+    try {
+      if (localStorage.getItem(SAVE_LIST_KEY) !== null) return;
+      var old = localStorage.getItem(OLD_SAVE_LIST_KEY);
+      localStorage.setItem(SAVE_LIST_KEY, old !== null ? old : '[]');
+    } catch (e) { /* storage blocked: no saves either way */ }
+  }
+  importOldSaves();
   var MAX_SAVES = 10;
   // Any queue item, modal or a resolution-card line: mid-chain is never a safe save point.
   function popupOpen() { return !!Dialogs.current; }

@@ -183,7 +183,7 @@
   // map to run to the next decision (Gate 0 answer 3). Speed never changes an outcome.
   // ---------------------------------------------------------------------
   var Resolve = (function () {
-    var SPEED_KEY = 'ambush.v2.speed';
+    var SPEED_KEY = 'ambush.v3.speed'; // v3's own (R5 Step 8); v2 keeps ambush.v2.speed
     var SPEEDS = { slow: 1.7, normal: 1, fast: 0.4 };
     function stored(key, fallback) { try { return window.localStorage.getItem(key) || fallback; } catch (e) { return fallback; } }
     function store(key, v) { try { window.localStorage.setItem(key, v); } catch (e) { /* private window: per-visit only */ } }

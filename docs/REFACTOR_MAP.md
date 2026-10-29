@@ -577,4 +577,63 @@ Phase 8d (chapter 6) waits until R3 at least. After R3 its lesson code lands in 
 - If a step's T1 shows any difference, stop. Don't patch forward: roll back (6.2), find the cause, redo the step.
 - An intended behaviour change (Steps 7, 8 and any wording in 10) is listed before the step and approved by Wan. After
   it, re-record the baselines it changes, and only those.
-- No engine file (the 19 rules modules) changes in any step. A `cmp` against v2's `apps/game/` is part of T2.
+- No engine file (the 19 rules modules) changes in any step. T2 checks them against the Step 0 sha256 manifest (6.6; three differ from v2 since Phase 8c).
+
+### 6.6 Step 0 results (R1, 2026-10-29)
+
+On commit `2ce0ebe`, no game code changed. **T2 green.**
+
+| Check | Result | Time |
+|---|---|---:|
+| `node --check` apps/v3/*.js (12 files) | pass | <1 s |
+| 17 engine suites | 17/17, 3,099 checks, 0 failed | 5 s |
+| Parity Normal, seeds 7000-7029 | IDENTICAL to `v3_normal_seeds_7000-7029.jsonl` (30/30, 0 console errors) | 269 s |
+| Parity Easy, seeds 7000-7029 | IDENTICAL to `v3_easy_seeds_7000-7029.jsonl` (30/30, 0 console errors) | 305 s |
+| Seed-7000 traces, both difficulties | recorded twice, identical (Normal 282 entries, Easy 408) | 40 s |
+| Five `live_*.py` | chapters 55, drills 55, germans 36, lesson 39, map 47 checks ok; 0 fail; 0 console errors | ~6 min (derived) |
+| Engine | 19/19 match `tools/bot/baselines/refactor/engine.sha256`; 16/19 byte-identical to v2 | <1 s |
+| **`tools/t1.sh`** | PASS | **186 s** |
+| **`tools/t2.sh`** (T1 + 30/30 + 30/30 + live + engine) | PASS | **1,112 s (18.5 min)** |
+
+**Two corrections to 6.1 and 6.5, found here.**
+- **`steps` is not a game field.** It counts the harness's polling loops and jitters run to run on unchanged code
+  (`tools/bot/baselines/README.md` already said so). Against the baselines all 30 seeds differed in `steps` only
+  (Normal +4..+80, Easy -6..+66), and two simultaneous trace runs of seed 7000 diverge in `step` at entry 17 with the
+  same decision. So `compare.py` ignores `seconds` and `steps` (`--with-steps` to include it), and "the bot made the
+  same decisions" is proven by the **trace diff** instead: every `act` / `choose` / `dialog` entry in order, with `t` and
+  `step` ignored. Every game field matched 30/30 on both difficulties, so the v3 baselines were not re-recorded.
+- **The engine is not byte-identical to v2.** Phase 8c changed `arscheduler.js`, `paragraphinterpreter.js` and
+  `operationsloop.js` by design (PROGRESS 2026-10-25). T2's engine check is therefore a sha256 manifest of the 19
+  modules taken at Step 0, plus `cmp` against v2 for the other 16.
+
+**Bug 12 reproduced live** (`tools/repro_save.py`, seed 7000). In Round 1, `applyWoundForTesting(us0)` wounds Pvt. Mercer
+in I2 and he drops his BAR (§13/2): `groundItems = {I2: [bar]}`, his Port Boxes `[null, null]`. Then:
+- The save written after the drop has no `groundItems` key (keys: currentActorId, currentGermanIdsThisRound,
+  difficulty, entryIndex, germans, opsState, phase, roundNum, savedAt, selectedId, track, usSoldiers, version, vpState).
+- **Leak / duplicate:** loading the save made *before* the drop, in the same page, leaves the BAR on the ground in I2
+  *and* back in his Port Boxes. Two BARs.
+- **Lost:** reload the page, load the post-drop save: ground `{}`, his Port Boxes `[null, null]`. The BAR is gone.
+- 0 console errors. Side note: `applyWoundForTesting` throws in Operations (`renderTrack` → `Sched.isRoundComplete` on
+  a null `track`); a hook limitation (no real wound happens outside a Round), so the repro wounds inside a Round.
+
+**Bug 13 reproduced live** (seed 7000). The bot saves at each quiet Operations point. Contact paragraph 312 ("US
+advantage. The US soldier who just made his PC check is automatically aware") sets `pendingContact`; the play log shows
+"Pvt. Mercer made the PC check and is automatically aware (paragraph 312)". At that moment, with the "US Awareness
+Check" pop-up open and no Initiative rolled yet, the last Operations save is loaded (`loadSaveAtIndex`, which runs
+`applySavedState`, the same as a Load-dialog row). Phase is back to Operations, Round 0, no active Germans. Then German 9
+is activated at K5 with no paragraph (`spawnGermanForTesting`, the production `activateGermansSequentially`), which
+starts a fresh Round 1. Its log:
+
+    German activated: German (GE 9/R, Soldier) at K5.
+    Pvt. Mercer made the PC check and is automatically aware (paragraph 312).
+    Round 1 Initiative: US 4, German 7 → advantage US (set by paragraph 312).
+    Pvt. Mercer receives 2 turns this Round, no roll (paragraph 312).
+
+The abandoned paragraph's three terms (auto-aware, fixed advantage against a German 7, 2 turns without a roll) are
+applied to a Round it never started. 0 console errors. In ordinary play a later contact paragraph *with* terms overwrites
+`pendingContact` and hides the bug; a Round 1 started any other way (a chain without a `contact` op, an Event marker)
+shows it. Not tested: whether the Load *button* is reachable while a pop-up is open (the repro calls the hook).
+
+**Files added in Step 0.** `tools/bot/compare.py`; `tools/t1.sh`, `tools/t2.sh`; `tools/repro_save.py` (becomes
+`live_save.py` in Step 7, its checks flipping from "present" to "fixed"); `tools/bot/baselines/refactor/`
+(`trace_{normal,easy}_7000.json` + their run records, `engine.sha256`).

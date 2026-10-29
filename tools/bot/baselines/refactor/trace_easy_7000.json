@@ -1,0 +1,2697 @@
+[
+ {
+  "step": 2,
+  "t": 2.6,
+  "kind": "dialog",
+  "detail": {
+   "title": "Ambush! Digital \u2014 Mission 1",
+   "press": "easy"
+  }
+ },
+ {
+  "step": 3,
+  "t": 3.1,
+  "kind": "act",
+  "detail": "place -> G1"
+ },
+ {
+  "step": 5,
+  "t": 3.1,
+  "kind": "act",
+  "detail": "place -> H1"
+ },
+ {
+  "step": 7,
+  "t": 3.1,
+  "kind": "act",
+  "detail": "place -> I1"
+ },
+ {
+  "step": 9,
+  "t": 3.2,
+  "kind": "act",
+  "detail": "place -> J1"
+ },
+ {
+  "step": 11,
+  "t": 3.2,
+  "kind": "act",
+  "detail": "place -> F1"
+ },
+ {
+  "step": 13,
+  "t": 3.2,
+  "kind": "act",
+  "detail": "place -> E1"
+ },
+ {
+  "step": 15,
+  "t": 3.3,
+  "kind": "act",
+  "detail": "place -> D1"
+ },
+ {
+  "step": 17,
+  "t": 3.4,
+  "kind": "act",
+  "detail": "place -> C1"
+ },
+ {
+  "step": 19,
+  "t": 3.4,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 21,
+  "t": 3.5,
+  "kind": "act",
+  "detail": "us0 G1->H1 (goal Y13, routed)"
+ },
+ {
+  "step": 23,
+  "t": 3.5,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 25,
+  "t": 3.6,
+  "kind": "act",
+  "detail": "us0 H1->I2 (goal K13, routed)"
+ },
+ {
+  "step": 29,
+  "t": 4.2,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 33,
+  "t": 5.0,
+  "kind": "act",
+  "detail": "us6 fireAimed"
+ },
+ {
+  "step": 35,
+  "t": 5.1,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 25/N, Sniper) M7 \u00b7 Woods \u00b7 prone \u00b7 10 hexes"
+   ]
+  }
+ },
+ {
+  "step": 36,
+  "t": 5.2,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 38,
+  "t": 5.6,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 40,
+  "t": 5.7,
+  "kind": "act",
+  "detail": "us0 move"
+ },
+ {
+  "step": 42,
+  "t": 5.7,
+  "kind": "act",
+  "detail": "us0 round-move -> I5"
+ },
+ {
+  "step": 44,
+  "t": 6.0,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 46,
+  "t": 6.0,
+  "kind": "act",
+  "detail": "us1 move"
+ },
+ {
+  "step": 48,
+  "t": 6.1,
+  "kind": "act",
+  "detail": "us1 round-move -> I4"
+ },
+ {
+  "step": 50,
+  "t": 6.1,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 52,
+  "t": 6.1,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 54,
+  "t": 6.2,
+  "kind": "act",
+  "detail": "us2 round-move -> L2"
+ },
+ {
+  "step": 56,
+  "t": 6.4,
+  "kind": "act",
+  "detail": "us5 fireAimed"
+ },
+ {
+  "step": 58,
+  "t": 6.5,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 25/N, Sniper) M7 \u00b7 Woods \u00b7 prone \u00b7 10 hexes"
+   ]
+  }
+ },
+ {
+  "step": 59,
+  "t": 7.1,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 61,
+  "t": 7.2,
+  "kind": "act",
+  "detail": "us3 fireAimed"
+ },
+ {
+  "step": 63,
+  "t": 7.2,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 53/S, Soldier) O4 \u00b7 Woods \u00b7 crouching \u00b7 5 hexes"
+   ]
+  }
+ },
+ {
+  "step": 64,
+  "t": 7.5,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 66,
+  "t": 7.6,
+  "kind": "act",
+  "detail": "us0 fireAimed"
+ },
+ {
+  "step": 68,
+  "t": 7.6,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 25/N, Sniper) M7 \u00b7 Woods \u00b7 prone \u00b7 4 hexes"
+   ]
+  }
+ },
+ {
+  "step": 69,
+  "t": 7.9,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 71,
+  "t": 7.9,
+  "kind": "act",
+  "detail": "us1 move"
+ },
+ {
+  "step": 73,
+  "t": 8.0,
+  "kind": "act",
+  "detail": "us1 round-move -> K7"
+ },
+ {
+  "step": 75,
+  "t": 8.0,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 77,
+  "t": 8.1,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 79,
+  "t": 8.6,
+  "kind": "act",
+  "detail": "us2 round-move -> K4"
+ },
+ {
+  "step": 81,
+  "t": 8.7,
+  "kind": "act",
+  "detail": "us5 move"
+ },
+ {
+  "step": 83,
+  "t": 8.8,
+  "kind": "act",
+  "detail": "us5 round-move -> H3"
+ },
+ {
+  "step": 85,
+  "t": 8.9,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 87,
+  "t": 9.4,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 89,
+  "t": 9.4,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 91,
+  "t": 9.5,
+  "kind": "act",
+  "detail": "us2 round-move -> K6"
+ },
+ {
+  "step": 93,
+  "t": 9.6,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 95,
+  "t": 9.6,
+  "kind": "act",
+  "detail": "us5 move"
+ },
+ {
+  "step": 97,
+  "t": 9.7,
+  "kind": "act",
+  "detail": "us5 round-move -> J6"
+ },
+ {
+  "step": 99,
+  "t": 9.7,
+  "kind": "act",
+  "detail": "us7 move"
+ },
+ {
+  "step": 101,
+  "t": 9.8,
+  "kind": "act",
+  "detail": "us7 round-move -> C5"
+ },
+ {
+  "step": 103,
+  "t": 9.9,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 105,
+  "t": 10.0,
+  "kind": "act",
+  "detail": "us1 grenade"
+ },
+ {
+  "step": 107,
+  "t": 10.0,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 6 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 108,
+  "t": 10.2,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 110,
+  "t": 10.3,
+  "kind": "act",
+  "detail": "us3 move"
+ },
+ {
+  "step": 112,
+  "t": 10.4,
+  "kind": "act",
+  "detail": "us3 round-move -> K3"
+ },
+ {
+  "step": 114,
+  "t": 10.5,
+  "kind": "act",
+  "detail": "pick -> us6"
+ },
+ {
+  "step": 116,
+  "t": 10.5,
+  "kind": "act",
+  "detail": "us6 move"
+ },
+ {
+  "step": 118,
+  "t": 10.6,
+  "kind": "act",
+  "detail": "us6 round-move -> H2"
+ },
+ {
+  "step": 120,
+  "t": 10.6,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 122,
+  "t": 10.6,
+  "kind": "act",
+  "detail": "us2 fireAimed"
+ },
+ {
+  "step": 124,
+  "t": 10.7,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 crouching \u00b7 2 hexes"
+   ]
+  }
+ },
+ {
+  "step": 125,
+  "t": 10.8,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 127,
+  "t": 10.8,
+  "kind": "act",
+  "detail": "us5 fireAimed"
+ },
+ {
+  "step": 129,
+  "t": 10.9,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 crouching \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 130,
+  "t": 11.0,
+  "kind": "act",
+  "detail": "us7 move"
+ },
+ {
+  "step": 132,
+  "t": 11.1,
+  "kind": "act",
+  "detail": "us7 round-move -> F6"
+ },
+ {
+  "step": 134,
+  "t": 11.1,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 142,
+  "t": 12.1,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 144,
+  "t": 12.1,
+  "kind": "act",
+  "detail": "us1 fireAimed"
+ },
+ {
+  "step": 146,
+  "t": 12.2,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 147,
+  "t": 12.3,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 149,
+  "t": 12.3,
+  "kind": "act",
+  "detail": "us3 grenade"
+ },
+ {
+  "step": 151,
+  "t": 12.4,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 3 hexes Not i"
+   ]
+  }
+ },
+ {
+  "step": 152,
+  "t": 12.6,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 154,
+  "t": 12.7,
+  "kind": "act",
+  "detail": "us5 fireAimed"
+ },
+ {
+  "step": 156,
+  "t": 12.7,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 157,
+  "t": 12.9,
+  "kind": "act",
+  "detail": "us7 fireAimed"
+ },
+ {
+  "step": 159,
+  "t": 12.9,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 7 hexes"
+   ]
+  }
+ },
+ {
+  "step": 160,
+  "t": 13.0,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 162,
+  "t": 13.5,
+  "kind": "act",
+  "detail": "us0 grenade"
+ },
+ {
+  "step": 164,
+  "t": 13.5,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 4 hexes Not i"
+   ]
+  }
+ },
+ {
+  "step": 165,
+  "t": 13.7,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 167,
+  "t": 13.8,
+  "kind": "act",
+  "detail": "us1 fireAimed"
+ },
+ {
+  "step": 169,
+  "t": 13.8,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 170,
+  "t": 13.8,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 172,
+  "t": 13.9,
+  "kind": "act",
+  "detail": "us2 fireAimed"
+ },
+ {
+  "step": 174,
+  "t": 13.9,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 2 hexes"
+   ]
+  }
+ },
+ {
+  "step": 175,
+  "t": 14.0,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 177,
+  "t": 14.1,
+  "kind": "act",
+  "detail": "us3 grenade"
+ },
+ {
+  "step": 179,
+  "t": 14.1,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 3 hexes Not i"
+   ]
+  }
+ },
+ {
+  "step": 180,
+  "t": 14.2,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 182,
+  "t": 14.3,
+  "kind": "act",
+  "detail": "us5 fireAimed"
+ },
+ {
+  "step": 184,
+  "t": 14.3,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 185,
+  "t": 14.6,
+  "kind": "act",
+  "detail": "pick -> us7"
+ },
+ {
+  "step": 187,
+  "t": 14.6,
+  "kind": "act",
+  "detail": "us7 clear jam"
+ },
+ {
+  "step": 189,
+  "t": 14.7,
+  "kind": "act",
+  "detail": "us0 grenade"
+ },
+ {
+  "step": 191,
+  "t": 14.7,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 4 hexes Not i"
+   ]
+  }
+ },
+ {
+  "step": 194,
+  "t": 15.0,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 196,
+  "t": 15.5,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 198,
+  "t": 15.6,
+  "kind": "act",
+  "detail": "us2 fireAimed"
+ },
+ {
+  "step": 200,
+  "t": 15.6,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 34/X, Officer) M5 \u00b7 Woods \u00b7 prone \u00b7 2 hexes"
+   ]
+  }
+ },
+ {
+  "step": 201,
+  "t": 15.8,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 203,
+  "t": 15.8,
+  "kind": "act",
+  "detail": "us5 move"
+ },
+ {
+  "step": 205,
+  "t": 15.8,
+  "kind": "act",
+  "detail": "us5 round-move -> K9"
+ },
+ {
+  "step": 207,
+  "t": 15.9,
+  "kind": "act",
+  "detail": "pick -> us6"
+ },
+ {
+  "step": 209,
+  "t": 16.0,
+  "kind": "act",
+  "detail": "us6 move"
+ },
+ {
+  "step": 211,
+  "t": 16.0,
+  "kind": "act",
+  "detail": "us6 round-move -> J5"
+ },
+ {
+  "step": 213,
+  "t": 16.1,
+  "kind": "act",
+  "detail": "us7 move"
+ },
+ {
+  "step": 215,
+  "t": 16.2,
+  "kind": "act",
+  "detail": "us7 round-move -> J8"
+ },
+ {
+  "step": 217,
+  "t": 16.3,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 219,
+  "t": 16.3,
+  "kind": "act",
+  "detail": "us0 move"
+ },
+ {
+  "step": 221,
+  "t": 16.4,
+  "kind": "act",
+  "detail": "us0 round-move -> K8"
+ },
+ {
+  "step": 223,
+  "t": 16.4,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 225,
+  "t": 16.4,
+  "kind": "act",
+  "detail": "us3 move"
+ },
+ {
+  "step": 227,
+  "t": 16.5,
+  "kind": "act",
+  "detail": "us3 round-move -> K5"
+ },
+ {
+  "step": 229,
+  "t": 16.5,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 231,
+  "t": 16.5,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 233,
+  "t": 16.6,
+  "kind": "act",
+  "detail": "us2 round-move -> L8"
+ },
+ {
+  "step": 235,
+  "t": 16.6,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 237,
+  "t": 16.7,
+  "kind": "act",
+  "detail": "us5 grenade"
+ },
+ {
+  "step": 239,
+  "t": 16.7,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 4 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 240,
+  "t": 16.9,
+  "kind": "act",
+  "detail": "pick -> us6"
+ },
+ {
+  "step": 242,
+  "t": 17.0,
+  "kind": "act",
+  "detail": "us6 move"
+ },
+ {
+  "step": 244,
+  "t": 17.1,
+  "kind": "act",
+  "detail": "us6 round-move -> K9"
+ },
+ {
+  "step": 246,
+  "t": 17.1,
+  "kind": "act",
+  "detail": "us7 grenade"
+ },
+ {
+  "step": 248,
+  "t": 17.2,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 5 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 251,
+  "t": 17.5,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 253,
+  "t": 18.0,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 255,
+  "t": 18.1,
+  "kind": "act",
+  "detail": "us0 move"
+ },
+ {
+  "step": 257,
+  "t": 18.1,
+  "kind": "act",
+  "detail": "us0 round-move -> K11"
+ },
+ {
+  "step": 259,
+  "t": 18.1,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 261,
+  "t": 18.2,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 263,
+  "t": 18.2,
+  "kind": "act",
+  "detail": "us2 round-move -> K10"
+ },
+ {
+  "step": 265,
+  "t": 18.3,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 267,
+  "t": 18.3,
+  "kind": "act",
+  "detail": "us3 move"
+ },
+ {
+  "step": 269,
+  "t": 18.4,
+  "kind": "act",
+  "detail": "us3 round-move -> K9"
+ },
+ {
+  "step": 271,
+  "t": 18.4,
+  "kind": "act",
+  "detail": "us5 grenade"
+ },
+ {
+  "step": 273,
+  "t": 18.5,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 4 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 274,
+  "t": 18.7,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 276,
+  "t": 18.7,
+  "kind": "act",
+  "detail": "us1 grenade"
+ },
+ {
+  "step": 278,
+  "t": 18.7,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 6 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 279,
+  "t": 18.9,
+  "kind": "act",
+  "detail": "pick -> us6"
+ },
+ {
+  "step": 281,
+  "t": 18.9,
+  "kind": "act",
+  "detail": "us6 grenade"
+ },
+ {
+  "step": 283,
+  "t": 18.9,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 4 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 284,
+  "t": 19.1,
+  "kind": "act",
+  "detail": "pick -> us7"
+ },
+ {
+  "step": 286,
+  "t": 19.1,
+  "kind": "act",
+  "detail": "us7 grenade"
+ },
+ {
+  "step": 288,
+  "t": 19.2,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 5 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 289,
+  "t": 19.3,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 291,
+  "t": 19.4,
+  "kind": "act",
+  "detail": "us0 move"
+ },
+ {
+  "step": 293,
+  "t": 19.4,
+  "kind": "act",
+  "detail": "us0 round-move -> K12"
+ },
+ {
+  "step": 295,
+  "t": 19.5,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 297,
+  "t": 19.5,
+  "kind": "act",
+  "detail": "us2 grenade"
+ },
+ {
+  "step": 299,
+  "t": 19.5,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Throw Grenade",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 3 hexes No"
+   ]
+  }
+ },
+ {
+  "step": 300,
+  "t": 19.7,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 302,
+  "t": 19.7,
+  "kind": "act",
+  "detail": "us3 move"
+ },
+ {
+  "step": 304,
+  "t": 19.7,
+  "kind": "act",
+  "detail": "us3 round-move -> L11"
+ },
+ {
+  "step": 306,
+  "t": 19.8,
+  "kind": "act",
+  "detail": "us5 move"
+ },
+ {
+  "step": 308,
+  "t": 19.8,
+  "kind": "act",
+  "detail": "us5 round-move -> K12"
+ },
+ {
+  "step": 312,
+  "t": 20.0,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 314,
+  "t": 21.0,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 316,
+  "t": 21.1,
+  "kind": "act",
+  "detail": "us3 fireAimed"
+ },
+ {
+  "step": 318,
+  "t": 21.1,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 1/Q, Soldier) M10 \u00b7 Woods \u00b7 standing \u00b7 2 hexes",
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 standing \u00b7 2 hexes"
+   ]
+  }
+ },
+ {
+  "step": 319,
+  "t": 21.4,
+  "kind": "act",
+  "detail": "us7 fireAimed"
+ },
+ {
+  "step": 321,
+  "t": 21.4,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 1,
+   "of": [
+    "German (GE 1/Q, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 3 hexes",
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 standing \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 324,
+  "t": 21.8,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 326,
+  "t": 21.9,
+  "kind": "act",
+  "detail": "us0 fireAimed"
+ },
+ {
+  "step": 328,
+  "t": 21.9,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 1/Q, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 3 hexes",
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 329,
+  "t": 22.0,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 331,
+  "t": 22.1,
+  "kind": "act",
+  "detail": "us2 fireAimed"
+ },
+ {
+  "step": 333,
+  "t": 22.1,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 1/Q, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 2 hexes",
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 2 hexes"
+   ]
+  }
+ },
+ {
+  "step": 334,
+  "t": 22.3,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 336,
+  "t": 22.3,
+  "kind": "act",
+  "detail": "us5 fireAimed"
+ },
+ {
+  "step": 338,
+  "t": 22.3,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 1/Q, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 3 hexes",
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 339,
+  "t": 22.5,
+  "kind": "act",
+  "detail": "pick -> us6"
+ },
+ {
+  "step": 341,
+  "t": 22.6,
+  "kind": "act",
+  "detail": "us6 fireAimed"
+ },
+ {
+  "step": 343,
+  "t": 22.6,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 1/Q, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 2 hexes",
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 2 hexes"
+   ]
+  }
+ },
+ {
+  "step": 344,
+  "t": 22.7,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 346,
+  "t": 22.7,
+  "kind": "act",
+  "detail": "us3 fireAimed"
+ },
+ {
+  "step": 348,
+  "t": 22.8,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 1/Q, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 2 hexes",
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 2 hexes"
+   ]
+  }
+ },
+ {
+  "step": 349,
+  "t": 23.0,
+  "kind": "act",
+  "detail": "us7 fireAimed"
+ },
+ {
+  "step": 351,
+  "t": 23.0,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 81/P, Soldier) M10 \u00b7 Woods \u00b7 prone \u00b7 3 hexes"
+   ]
+  }
+ },
+ {
+  "step": 352,
+  "t": 23.2,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 354,
+  "t": 23.8,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 356,
+  "t": 23.8,
+  "kind": "act",
+  "detail": "us0 assault"
+ },
+ {
+  "step": 358,
+  "t": 23.8,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Assault",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 1 hex Char",
+    "German (GE 15/L, Sniper) K13 \u00b7 Interior \u00b7 prone \u00b7 1 hex Char"
+   ]
+  }
+ },
+ {
+  "step": 359,
+  "t": 23.8,
+  "kind": "dialog",
+  "detail": {
+   "title": "Capture or Kill?",
+   "press": "kill"
+  }
+ },
+ {
+  "step": 360,
+  "t": 23.9,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 362,
+  "t": 24.0,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 364,
+  "t": 24.0,
+  "kind": "act",
+  "detail": "us2 round-move -> L12"
+ },
+ {
+  "step": 366,
+  "t": 24.1,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 368,
+  "t": 24.1,
+  "kind": "act",
+  "detail": "us3 move"
+ },
+ {
+  "step": 370,
+  "t": 24.2,
+  "kind": "act",
+  "detail": "us3 round-move -> K13"
+ },
+ {
+  "step": 372,
+  "t": 24.2,
+  "kind": "act",
+  "detail": "us5 assault"
+ },
+ {
+  "step": 374,
+  "t": 24.3,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Assault",
+   "pick": 0,
+   "of": [
+    "German (GE 9/R, Soldier) K13 \u00b7 Interior \u00b7 prone \u00b7 1 hex Char",
+    "German (GE 15/L, Sniper) K13 \u00b7 Interior \u00b7 prone \u00b7 1 hex Char"
+   ]
+  }
+ },
+ {
+  "step": 375,
+  "t": 24.3,
+  "kind": "dialog",
+  "detail": {
+   "title": "Capture or Kill?",
+   "press": "kill"
+  }
+ },
+ {
+  "step": 376,
+  "t": 24.5,
+  "kind": "act",
+  "detail": "start next round"
+ },
+ {
+  "step": 378,
+  "t": 25.0,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 380,
+  "t": 25.2,
+  "kind": "act",
+  "detail": "us1 clear jam"
+ },
+ {
+  "step": 382,
+  "t": 25.2,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 384,
+  "t": 25.3,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 386,
+  "t": 25.4,
+  "kind": "act",
+  "detail": "us2 round-move -> L13"
+ },
+ {
+  "step": 388,
+  "t": 25.4,
+  "kind": "choose",
+  "detail": {
+   "title": "Combo Action",
+   "pick": 0,
+   "of": [
+    "Fire \u2014 Snap (again)",
+    "End Turn"
+   ]
+  }
+ },
+ {
+  "step": 389,
+  "t": 25.4,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Snap Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 15/L, Sniper) K13 \u00b7 Interior \u00b7 standing \u00b7 1 hex"
+   ]
+  }
+ },
+ {
+  "step": 390,
+  "t": 25.6,
+  "kind": "act",
+  "detail": "us6 move"
+ },
+ {
+  "step": 392,
+  "t": 25.8,
+  "kind": "act",
+  "detail": "us6 round-move -> K12"
+ },
+ {
+  "step": 394,
+  "t": 25.8,
+  "kind": "act",
+  "detail": "pick -> us0"
+ },
+ {
+  "step": 396,
+  "t": 25.8,
+  "kind": "act",
+  "detail": "us0 fireAimed"
+ },
+ {
+  "step": 398,
+  "t": 25.9,
+  "kind": "choose",
+  "detail": {
+   "title": "Select Target \u2014 Aimed Fire",
+   "pick": 0,
+   "of": [
+    "German (GE 15/L, Sniper) K13 \u00b7 Interior \u00b7 standing \u00b7 same he"
+   ]
+  }
+ },
+ {
+  "step": 399,
+  "t": 26.1,
+  "kind": "act",
+  "detail": "pick -> us3"
+ },
+ {
+  "step": 401,
+  "t": 26.1,
+  "kind": "act",
+  "detail": "us3 move"
+ },
+ {
+  "step": 403,
+  "t": 26.2,
+  "kind": "act",
+  "detail": "us3 round-move -> M12"
+ },
+ {
+  "step": 405,
+  "t": 26.3,
+  "kind": "act",
+  "detail": "pick -> us5"
+ },
+ {
+  "step": 407,
+  "t": 26.3,
+  "kind": "act",
+  "detail": "us5 move"
+ },
+ {
+  "step": 409,
+  "t": 26.4,
+  "kind": "act",
+  "detail": "us5 round-move -> M12"
+ },
+ {
+  "step": 411,
+  "t": 26.5,
+  "kind": "act",
+  "detail": "pick -> us7"
+ },
+ {
+  "step": 413,
+  "t": 26.5,
+  "kind": "act",
+  "detail": "us7 move"
+ },
+ {
+  "step": 415,
+  "t": 26.6,
+  "kind": "act",
+  "detail": "us7 round-move -> L9"
+ },
+ {
+  "step": 417,
+  "t": 26.6,
+  "kind": "act",
+  "detail": "pick -> us1"
+ },
+ {
+  "step": 419,
+  "t": 26.6,
+  "kind": "act",
+  "detail": "us1 move"
+ },
+ {
+  "step": 421,
+  "t": 26.7,
+  "kind": "act",
+  "detail": "us1 round-move -> J9"
+ },
+ {
+  "step": 423,
+  "t": 26.7,
+  "kind": "act",
+  "detail": "pick -> us2"
+ },
+ {
+  "step": 425,
+  "t": 26.8,
+  "kind": "act",
+  "detail": "us2 move"
+ },
+ {
+  "step": 427,
+  "t": 26.8,
+  "kind": "act",
+  "detail": "us2 round-move -> N12"
+ },
+ {
+  "step": 429,
+  "t": 26.9,
+  "kind": "act",
+  "detail": "us6 move"
+ },
+ {
+  "step": 431,
+  "t": 26.9,
+  "kind": "act",
+  "detail": "us6 round-move -> N11"
+ },
+ {
+  "step": 433,
+  "t": 27.0,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 435,
+  "t": 27.0,
+  "kind": "act",
+  "detail": "us0 K13->J13 (goal F1, routed)"
+ },
+ {
+  "step": 437,
+  "t": 27.1,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 439,
+  "t": 27.1,
+  "kind": "act",
+  "detail": "us0 J13->J12 (goal F1, routed)"
+ },
+ {
+  "step": 441,
+  "t": 27.2,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 443,
+  "t": 27.2,
+  "kind": "act",
+  "detail": "us0 J12->J11 (goal F1, routed)"
+ },
+ {
+  "step": 445,
+  "t": 27.3,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 447,
+  "t": 27.4,
+  "kind": "act",
+  "detail": "us0 J11->J10 (goal F1, routed)"
+ },
+ {
+  "step": 449,
+  "t": 27.4,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 451,
+  "t": 27.6,
+  "kind": "act",
+  "detail": "us0 J10->J9 (goal F1, routed)"
+ },
+ {
+  "step": 453,
+  "t": 27.6,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 455,
+  "t": 27.6,
+  "kind": "act",
+  "detail": "us0 J9->J8 (goal F1, routed)"
+ },
+ {
+  "step": 457,
+  "t": 27.7,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 459,
+  "t": 27.7,
+  "kind": "act",
+  "detail": "us0 J8->J7 (goal F1, routed)"
+ },
+ {
+  "step": 461,
+  "t": 27.8,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 463,
+  "t": 27.9,
+  "kind": "act",
+  "detail": "us0 J7->J6 (goal F1, routed)"
+ },
+ {
+  "step": 465,
+  "t": 27.9,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 467,
+  "t": 28.0,
+  "kind": "act",
+  "detail": "us0 J6->J5 (goal F1, routed)"
+ },
+ {
+  "step": 469,
+  "t": 28.2,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 471,
+  "t": 28.5,
+  "kind": "act",
+  "detail": "us0 J5->J4 (goal F1, routed)"
+ },
+ {
+  "step": 473,
+  "t": 28.5,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 475,
+  "t": 28.6,
+  "kind": "act",
+  "detail": "us0 J4->J3 (goal F1, routed)"
+ },
+ {
+  "step": 477,
+  "t": 28.6,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 479,
+  "t": 28.7,
+  "kind": "act",
+  "detail": "us0 J3->I3 (goal F1, routed)"
+ },
+ {
+  "step": 481,
+  "t": 28.7,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 483,
+  "t": 28.8,
+  "kind": "act",
+  "detail": "us0 I3->H2 (goal F1, routed)"
+ },
+ {
+  "step": 485,
+  "t": 28.8,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 487,
+  "t": 28.9,
+  "kind": "act",
+  "detail": "us0 H2->G2 (goal F1, routed)"
+ },
+ {
+  "step": 489,
+  "t": 28.9,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 491,
+  "t": 29.0,
+  "kind": "act",
+  "detail": "us0 G2->F1 (goal F1, routed)"
+ },
+ {
+  "step": 493,
+  "t": 29.0,
+  "kind": "act",
+  "detail": "select us0"
+ },
+ {
+  "step": 495,
+  "t": 29.1,
+  "kind": "act",
+  "detail": "exit us0 at F1"
+ },
+ {
+  "step": 497,
+  "t": 29.1,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 499,
+  "t": 29.1,
+  "kind": "act",
+  "detail": "us1 J9->J8 (goal F1, routed)"
+ },
+ {
+  "step": 501,
+  "t": 29.2,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 503,
+  "t": 29.2,
+  "kind": "act",
+  "detail": "us1 J8->J7 (goal F1, routed)"
+ },
+ {
+  "step": 505,
+  "t": 29.3,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 507,
+  "t": 29.3,
+  "kind": "act",
+  "detail": "us1 J7->J6 (goal F1, routed)"
+ },
+ {
+  "step": 509,
+  "t": 29.4,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 511,
+  "t": 29.4,
+  "kind": "act",
+  "detail": "us1 J6->J5 (goal F1, routed)"
+ },
+ {
+  "step": 513,
+  "t": 29.5,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 515,
+  "t": 29.5,
+  "kind": "act",
+  "detail": "us1 J5->J4 (goal F1, routed)"
+ },
+ {
+  "step": 517,
+  "t": 29.6,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 519,
+  "t": 29.6,
+  "kind": "act",
+  "detail": "us1 J4->J3 (goal F1, routed)"
+ },
+ {
+  "step": 521,
+  "t": 29.7,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 523,
+  "t": 29.7,
+  "kind": "act",
+  "detail": "us1 J3->I3 (goal F1, routed)"
+ },
+ {
+  "step": 525,
+  "t": 29.8,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 527,
+  "t": 29.9,
+  "kind": "act",
+  "detail": "us1 I3->H2 (goal F1, routed)"
+ },
+ {
+  "step": 529,
+  "t": 29.9,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 531,
+  "t": 30.0,
+  "kind": "act",
+  "detail": "us1 H2->G2 (goal F1, routed)"
+ },
+ {
+  "step": 533,
+  "t": 30.0,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 535,
+  "t": 30.2,
+  "kind": "act",
+  "detail": "us1 G2->F1 (goal F1, routed)"
+ },
+ {
+  "step": 537,
+  "t": 30.2,
+  "kind": "act",
+  "detail": "select us1"
+ },
+ {
+  "step": 539,
+  "t": 30.3,
+  "kind": "act",
+  "detail": "exit us1 at F1"
+ },
+ {
+  "step": 541,
+  "t": 30.4,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 543,
+  "t": 30.5,
+  "kind": "act",
+  "detail": "us3 M12->M11 (goal J1, routed)"
+ },
+ {
+  "step": 545,
+  "t": 30.5,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 547,
+  "t": 30.6,
+  "kind": "act",
+  "detail": "us3 M11->M10 (goal J1, routed)"
+ },
+ {
+  "step": 549,
+  "t": 30.6,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 551,
+  "t": 30.7,
+  "kind": "act",
+  "detail": "us3 M10->M9 (goal J1, routed)"
+ },
+ {
+  "step": 553,
+  "t": 30.7,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 555,
+  "t": 30.8,
+  "kind": "act",
+  "detail": "us3 M9->M8 (goal J1, routed)"
+ },
+ {
+  "step": 557,
+  "t": 30.8,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 559,
+  "t": 30.8,
+  "kind": "act",
+  "detail": "us3 M8->M7 (goal J1, routed)"
+ },
+ {
+  "step": 561,
+  "t": 30.9,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 563,
+  "t": 30.9,
+  "kind": "act",
+  "detail": "us3 M7->M6 (goal J1, routed)"
+ },
+ {
+  "step": 565,
+  "t": 31.0,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 567,
+  "t": 31.1,
+  "kind": "act",
+  "detail": "us3 M6->M5 (goal J1, routed)"
+ },
+ {
+  "step": 569,
+  "t": 31.1,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 571,
+  "t": 31.1,
+  "kind": "act",
+  "detail": "us3 M5->M4 (goal J1, routed)"
+ },
+ {
+  "step": 573,
+  "t": 31.3,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 575,
+  "t": 31.3,
+  "kind": "act",
+  "detail": "us3 M4->M3 (goal J1, routed)"
+ },
+ {
+  "step": 577,
+  "t": 31.4,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 579,
+  "t": 31.5,
+  "kind": "act",
+  "detail": "us3 M3->L2 (goal J1, routed)"
+ },
+ {
+  "step": 581,
+  "t": 31.5,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 583,
+  "t": 31.6,
+  "kind": "act",
+  "detail": "us3 L2->K2 (goal J1, routed)"
+ },
+ {
+  "step": 585,
+  "t": 31.6,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 587,
+  "t": 31.7,
+  "kind": "act",
+  "detail": "us3 K2->J1 (goal J1, routed)"
+ },
+ {
+  "step": 589,
+  "t": 31.7,
+  "kind": "act",
+  "detail": "select us3"
+ },
+ {
+  "step": 591,
+  "t": 31.7,
+  "kind": "act",
+  "detail": "exit us3 at J1"
+ },
+ {
+  "step": 593,
+  "t": 31.8,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 595,
+  "t": 31.8,
+  "kind": "act",
+  "detail": "us5 M12->M11 (goal J1, routed)"
+ },
+ {
+  "step": 597,
+  "t": 31.9,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 599,
+  "t": 31.9,
+  "kind": "act",
+  "detail": "us5 M11->M10 (goal J1, routed)"
+ },
+ {
+  "step": 601,
+  "t": 31.9,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 603,
+  "t": 32.0,
+  "kind": "act",
+  "detail": "us5 M10->M9 (goal J1, routed)"
+ },
+ {
+  "step": 605,
+  "t": 32.0,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 607,
+  "t": 32.0,
+  "kind": "act",
+  "detail": "us5 M9->M8 (goal J1, routed)"
+ },
+ {
+  "step": 609,
+  "t": 32.1,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 611,
+  "t": 32.1,
+  "kind": "act",
+  "detail": "us5 M8->M7 (goal J1, routed)"
+ },
+ {
+  "step": 613,
+  "t": 32.2,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 615,
+  "t": 32.2,
+  "kind": "act",
+  "detail": "us5 M7->M6 (goal J1, routed)"
+ },
+ {
+  "step": 617,
+  "t": 32.3,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 619,
+  "t": 32.3,
+  "kind": "act",
+  "detail": "us5 M6->M5 (goal J1, routed)"
+ },
+ {
+  "step": 621,
+  "t": 32.4,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 623,
+  "t": 32.4,
+  "kind": "act",
+  "detail": "us5 M5->M4 (goal J1, routed)"
+ },
+ {
+  "step": 625,
+  "t": 32.4,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 627,
+  "t": 32.5,
+  "kind": "act",
+  "detail": "us5 M4->M3 (goal J1, routed)"
+ },
+ {
+  "step": 629,
+  "t": 32.5,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 631,
+  "t": 32.6,
+  "kind": "act",
+  "detail": "us5 M3->L2 (goal J1, routed)"
+ },
+ {
+  "step": 633,
+  "t": 32.7,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 635,
+  "t": 32.7,
+  "kind": "act",
+  "detail": "us5 L2->K2 (goal J1, routed)"
+ },
+ {
+  "step": 637,
+  "t": 32.8,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 639,
+  "t": 32.8,
+  "kind": "act",
+  "detail": "us5 K2->J1 (goal J1, routed)"
+ },
+ {
+  "step": 641,
+  "t": 33.0,
+  "kind": "act",
+  "detail": "select us5"
+ },
+ {
+  "step": 643,
+  "t": 33.1,
+  "kind": "act",
+  "detail": "exit us5 at J1"
+ },
+ {
+  "step": 645,
+  "t": 33.1,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 647,
+  "t": 33.3,
+  "kind": "act",
+  "detail": "us6 N11->N10 (goal J1, routed)"
+ },
+ {
+  "step": 649,
+  "t": 33.3,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 651,
+  "t": 33.4,
+  "kind": "act",
+  "detail": "us6 N10->N9 (goal J1, routed)"
+ },
+ {
+  "step": 653,
+  "t": 33.5,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 655,
+  "t": 33.9,
+  "kind": "act",
+  "detail": "us6 N9->N8 (goal J1, routed)"
+ },
+ {
+  "step": 657,
+  "t": 33.9,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 659,
+  "t": 33.9,
+  "kind": "act",
+  "detail": "us6 N8->N7 (goal J1, routed)"
+ },
+ {
+  "step": 661,
+  "t": 34.1,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 663,
+  "t": 34.2,
+  "kind": "act",
+  "detail": "us6 N7->N6 (goal J1, routed)"
+ },
+ {
+  "step": 665,
+  "t": 34.3,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 667,
+  "t": 34.4,
+  "kind": "act",
+  "detail": "us6 N6->N5 (goal J1, routed)"
+ },
+ {
+  "step": 669,
+  "t": 34.4,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 671,
+  "t": 34.5,
+  "kind": "act",
+  "detail": "us6 N5->N4 (goal J1, routed)"
+ },
+ {
+  "step": 673,
+  "t": 34.6,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 675,
+  "t": 34.7,
+  "kind": "act",
+  "detail": "us6 N4->N3 (goal J1, routed)"
+ },
+ {
+  "step": 677,
+  "t": 34.7,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 679,
+  "t": 34.9,
+  "kind": "act",
+  "detail": "us6 N3->M3 (goal J1, routed)"
+ },
+ {
+  "step": 681,
+  "t": 34.9,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 683,
+  "t": 35.0,
+  "kind": "act",
+  "detail": "us6 M3->L2 (goal J1, routed)"
+ },
+ {
+  "step": 685,
+  "t": 35.1,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 687,
+  "t": 35.2,
+  "kind": "act",
+  "detail": "us6 L2->K2 (goal J1, routed)"
+ },
+ {
+  "step": 689,
+  "t": 35.3,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 691,
+  "t": 35.4,
+  "kind": "act",
+  "detail": "us6 K2->J1 (goal J1, routed)"
+ },
+ {
+  "step": 693,
+  "t": 35.5,
+  "kind": "act",
+  "detail": "select us6"
+ },
+ {
+  "step": 695,
+  "t": 35.5,
+  "kind": "act",
+  "detail": "exit us6 at J1"
+ },
+ {
+  "step": 697,
+  "t": 35.6,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 699,
+  "t": 35.6,
+  "kind": "act",
+  "detail": "us7 L9->L8 (goal J1, routed)"
+ },
+ {
+  "step": 701,
+  "t": 35.7,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 703,
+  "t": 35.9,
+  "kind": "act",
+  "detail": "us7 L8->L7 (goal J1, routed)"
+ },
+ {
+  "step": 705,
+  "t": 36.0,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 707,
+  "t": 36.1,
+  "kind": "act",
+  "detail": "us7 L7->L6 (goal J1, routed)"
+ },
+ {
+  "step": 709,
+  "t": 36.2,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 711,
+  "t": 36.4,
+  "kind": "act",
+  "detail": "us7 L6->L5 (goal J1, routed)"
+ },
+ {
+  "step": 713,
+  "t": 36.7,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 715,
+  "t": 36.9,
+  "kind": "act",
+  "detail": "us7 L5->L4 (goal J1, routed)"
+ },
+ {
+  "step": 717,
+  "t": 36.9,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 719,
+  "t": 37.1,
+  "kind": "act",
+  "detail": "us7 L4->L3 (goal J1, routed)"
+ },
+ {
+  "step": 721,
+  "t": 37.2,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 723,
+  "t": 37.3,
+  "kind": "act",
+  "detail": "us7 L3->L2 (goal J1, routed)"
+ },
+ {
+  "step": 725,
+  "t": 37.3,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 727,
+  "t": 37.5,
+  "kind": "act",
+  "detail": "us7 L2->K2 (goal J1, routed)"
+ },
+ {
+  "step": 729,
+  "t": 37.5,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 731,
+  "t": 37.6,
+  "kind": "act",
+  "detail": "us7 K2->J1 (goal J1, routed)"
+ },
+ {
+  "step": 733,
+  "t": 37.6,
+  "kind": "act",
+  "detail": "select us7"
+ },
+ {
+  "step": 735,
+  "t": 37.7,
+  "kind": "act",
+  "detail": "exit us7 at J1"
+ },
+ {
+  "step": 737,
+  "t": 37.7,
+  "kind": "act",
+  "detail": "select prone us2"
+ },
+ {
+  "step": 739,
+  "t": 37.8,
+  "kind": "act",
+  "detail": "us2 stands up from prone"
+ },
+ {
+  "step": 741,
+  "t": 37.9,
+  "kind": "act",
+  "detail": "us2 N12->N11 (goal J1, routed)"
+ },
+ {
+  "step": 743,
+  "t": 38.0,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 745,
+  "t": 38.0,
+  "kind": "act",
+  "detail": "us2 N11->N10 (goal J1, routed)"
+ },
+ {
+  "step": 747,
+  "t": 38.1,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 749,
+  "t": 38.2,
+  "kind": "act",
+  "detail": "us2 N10->N9 (goal J1, routed)"
+ },
+ {
+  "step": 751,
+  "t": 38.2,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 753,
+  "t": 38.3,
+  "kind": "act",
+  "detail": "us2 N9->N8 (goal J1, routed)"
+ },
+ {
+  "step": 755,
+  "t": 38.3,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 757,
+  "t": 38.4,
+  "kind": "act",
+  "detail": "us2 N8->N7 (goal J1, routed)"
+ },
+ {
+  "step": 759,
+  "t": 38.4,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 761,
+  "t": 38.5,
+  "kind": "act",
+  "detail": "us2 N7->N6 (goal J1, routed)"
+ },
+ {
+  "step": 763,
+  "t": 38.5,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 765,
+  "t": 38.6,
+  "kind": "act",
+  "detail": "us2 N6->N5 (goal J1, routed)"
+ },
+ {
+  "step": 767,
+  "t": 38.6,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 769,
+  "t": 38.6,
+  "kind": "act",
+  "detail": "us2 N5->N4 (goal J1, routed)"
+ },
+ {
+  "step": 771,
+  "t": 38.7,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 773,
+  "t": 38.7,
+  "kind": "act",
+  "detail": "us2 N4->N3 (goal J1, routed)"
+ },
+ {
+  "step": 775,
+  "t": 38.7,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 777,
+  "t": 38.8,
+  "kind": "act",
+  "detail": "us2 N3->M3 (goal J1, routed)"
+ },
+ {
+  "step": 779,
+  "t": 38.8,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 781,
+  "t": 38.9,
+  "kind": "act",
+  "detail": "us2 M3->L2 (goal J1, routed)"
+ },
+ {
+  "step": 783,
+  "t": 38.9,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 785,
+  "t": 38.9,
+  "kind": "act",
+  "detail": "us2 L2->K2 (goal J1, routed)"
+ },
+ {
+  "step": 787,
+  "t": 39.0,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 789,
+  "t": 39.0,
+  "kind": "act",
+  "detail": "us2 K2->J1 (goal J1, routed)"
+ },
+ {
+  "step": 791,
+  "t": 39.0,
+  "kind": "act",
+  "detail": "select us2"
+ },
+ {
+  "step": 793,
+  "t": 39.1,
+  "kind": "act",
+  "detail": "exit us2 at J1"
+ }
+]

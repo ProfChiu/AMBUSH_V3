@@ -1,5 +1,22 @@
-'use strict';
 // mission1/save.js (12 of 13) — save/load, start screen, game flow. Stage A cut of mission1.js lines 5324-5603 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (5): applySavedState, isSafeToSave, loadSaveList, saveGame, startGameFlow
+// Uses from M1:
+//   core: state
+//   present: logHeader
+//   roster: activeUS, canvas, counterEls, entryEls, eventMarkerEls, findSoldier, makeCounter, placeEl,
+//   placeEventMarkerEl, renderRoster, renderVP, updateCounterVisual
+//   setup: placeNextSoldier, promptPlaceSoldier, startSquadGeneration
+//   contact: resetContactFlow
+// Still global (their files are not wrapped yet):
+//   core: D, Dialogs, ENTRY_HEXES, Sched, Toasts, V, VP_REQUIREMENT_RULEBOOK, setDifficulty, vpReachable
+//   operations: clearDestMarks, resetOperationsFlow, selectSoldier
+//   rounds: driveNext, renderTrack, resetRoundFlow
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.applySavedState = applySavedState; M1.isSafeToSave = isSafeToSave; M1.loadSaveList = loadSaveList;
+  M1.saveGame = saveGame; M1.startGameFlow = startGameFlow;
   // ---------------------------------------------------------------------
   // Save / Load — localStorage for a quick same-browser save, plus export/import to a JSON
   // file for portability (same "no server, client-side file only" constraint as Download Log).
@@ -275,3 +292,4 @@
     URL.revokeObjectURL(url);
   });
   document.getElementById('resetBtn').addEventListener('click', function () { location.reload(); });
+})();

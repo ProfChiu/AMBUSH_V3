@@ -139,10 +139,10 @@
     spawnGermanForTesting: function (cardId, hexId) {
       M1.activateGermansSequentially([{ ids: [cardId.replace(/^GE /, '').replace(/\/.*/, '')], hex: hexId, stance: 'crouching' }], 0, function () {});
     },
-    saveGame: saveGame,
-    listSaves: loadSaveList,
-    loadSaveAtIndex: function (i) { var list = loadSaveList(); if (list[i] !== undefined) applySavedState(list[i]); },
-    isSafeToSave: isSafeToSave,
+    saveGame: M1.saveGame,
+    listSaves: M1.loadSaveList,
+    loadSaveAtIndex: function (i) { var list = M1.loadSaveList(); if (list[i] !== undefined) M1.applySavedState(list[i]); },
+    isSafeToSave: M1.isSafeToSave,
     // Console-only verification hook for §13/2's Port Box loss on wound (task 61) — drives the
     // real applyDamage('W') path directly, since reaching a specific soldier's wound naturally
     // depends on random fire-combat outcomes.
@@ -220,13 +220,13 @@
     },
     // v2's own start dialog (Normal / Easy / Load): index.html?play=ask, so the bot picks the level
     // exactly as it does on v2's page
-    ask: function () { startGameFlow(); },
+    ask: function () { M1.startGameFlow(); },
     // v3 Phase 6 (lesson.js): a lesson opens on a saved position (a fixture, the same shape a save
     // has) and rolls from its own seeded stream; the bot's seam reads the board while it runs.
     lesson: {
       load: function (data, rng) {
         M1.lessonRng = rng || null;
-        applySavedState(JSON.parse(JSON.stringify(data)));
+        M1.applySavedState(JSON.parse(JSON.stringify(data)));
         // v3 opens Operations with nobody selected (punch list 3); a load selects the first soldier
         if (M1.state.phase === 'movement') deselect();
       },

@@ -23,7 +23,7 @@
     el.style.left = left; el.style.top = top;
   }
   function glideEl(el) {
-    var d = Resolve.T(420);
+    var d = M1.Resolve.T(420);
     clearTimeout(el._glide);
     if (!d || document.body.classList.contains('still')) { el.style.transition = ''; el.classList.remove('moving'); return; }
     el.style.transition = 'left ' + d + 'ms ease-in-out, top ' + d + 'ms ease-in-out, filter .2s, opacity .2s';
@@ -49,7 +49,7 @@
   // #map-viewport only scrolls vertically (overflow-x is hidden — the canvas is always full
   // width), so this centers the target hex in the visible vertical band.
   // Follow only when off-screen (task 4); v1's always-re-centre behaviour left with Classic.
-  function scrollMapTo(hexId) { FX.ensureVisible([hexId]); }
+  function scrollMapTo(hexId) { M1.FX.ensureVisible([hexId]); }
   // The scan, the star, the tints and the counter itself come from counters.js (AmbushCounters).
   function currentImgFor(s) { return AmbushCounters.srcFor(s); }
   // A click on a counter: a German opens the inspector; a US soldier is selected in Operations
@@ -76,7 +76,7 @@
     return el;
   }
   // Phase 5: a rustle when a living soldier changes stance on screen
-  function stanceRustle() { FX.sound('rustle'); }
+  function stanceRustle() { M1.FX.sound('rustle'); }
   function updateCounterVisual(s) {
     var el = counterEls[s.id];
     if (!el) return;
@@ -241,7 +241,7 @@
       return '<div class="roster-slot' + (s.isActive ? '' : ' dead') + '"><span class="letter">' + s.letter + '</span>' +
         '<img src="' + currentImgFor(s) + '"><div class="roster-main"><div class="roster-name">' + s.name +
         (s.isCommander ? ' <i class="kit-state ok">Commander</i>' : '') + (state ? ' <i class="kit-state warn">' + state + '</i>' : '') +
-        '<span class="roster-stats">IN ' + s.IN + ' · PC ' + s.PC + ' · WS ' + fmtSigned(s.WS) + ' · ' + s.stance + (s.hexId ? ' at ' + s.hexId : '') + '</span></div>' +
+        '<span class="roster-stats">IN ' + s.IN + ' · PC ' + s.PC + ' · WS ' + M1.fmtSigned(s.WS) + ' · ' + s.stance + (s.hexId ? ' at ' + s.hexId : '') + '</span></div>' +
         kitHtml(s) + '</div></div>';
     }).join('');
     document.getElementById('roster-list').innerHTML = html;

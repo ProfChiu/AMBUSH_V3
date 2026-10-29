@@ -67,7 +67,7 @@
     },
     press: function (id) {
       if (Dialogs.current) return Dialogs.press(id);
-      if (id === 'resultDone') return Resolve.pressDone();
+      if (id === 'resultDone') return M1.Resolve.pressDone();
       var v = VERBS[id];
       if (!v) throw new Error('press(' + id + '): no dialog is open and that is not a verb');
       var btn = document.getElementById(v[1]);
@@ -202,7 +202,7 @@
             current: t.id === M1.state.currentActorId, selected: t.id === M1.state.selectedId };
         }),
         ground: (M1.state.groundItems[hexId] || []).map(function (it) { return equipmentName(it.id); }),
-        offers: offers.map(function (o, i) { return { idx: i, from: o.from, item: o.item, label: stripTags(o.label) }; }),
+        offers: offers.map(function (o, i) { return { idx: i, from: o.from, item: o.item, label: M1.stripTags(o.label) }; }),
       };
     },
     hexOf: function (id) { var t = findSoldier(id); return t ? t.hexId : null; },
@@ -225,7 +225,7 @@
     // has) and rolls from its own seeded stream; the bot's seam reads the board while it runs.
     lesson: {
       load: function (data, rng) {
-        lessonRng = rng || null;
+        M1.lessonRng = rng || null;
         applySavedState(JSON.parse(JSON.stringify(data)));
         // v3 opens Operations with nobody selected (punch list 3); a load selects the first soldier
         if (M1.state.phase === 'movement') deselect();

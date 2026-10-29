@@ -2,10 +2,10 @@
 // Exports to M1 (2): Info, Sight
 // Uses from M1:
 //   core: state
+//   present: FX, fmtSigned
 // Still global (their files are not wrapped yet):
 //   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
 //   edgeFeatures, losClear, terrainRowFor, weaponById, weaponUsable
-//   present: FX, fmtSigned
 //   roster: activeGermans, canvas, findSoldier
 //   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute
 //   contact: estimateHitChanceBreakdown
@@ -84,7 +84,7 @@
       // see and click. Only when he (or his hex) changes — re-scrolling under a poised cursor is
       // how a click ends up on the wrong hex — and instantly, for the same reason.
       var key = v.id + '@' + v.hexId;
-      if (key !== lastEnsured) { lastEnsured = key; FX.ensureVisible([v.hexId], true); }
+      if (key !== lastEnsured) { lastEnsured = key; M1.FX.ensureVisible([v.hexId], true); }
       var reach = [];
       if (M1.state.phase === 'movement') reach = legalAdjacentHexIds(v);
       else if (document.getElementById('action-sec').style.display !== 'none') {
@@ -128,7 +128,7 @@
       var stance = v ? v.stance : 'standing', row = terrainRowFor(hexId);
       if (FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, stance)) {
         var mod = FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, stance);
-        html += '<div>Shots at a ' + stance + ' soldier here: <b>' + fmtSigned(mod) + '</b> to hit (terrain row ' + row + ').</div>';
+        html += '<div>Shots at a ' + stance + ' soldier here: <b>' + M1.fmtSigned(mod) + '</b> to hit (terrain row ' + row + ').</div>';
       } else {
         html += '<div>A ' + stance + ' soldier here cannot be fired at except through his aperture.</div>';
       }

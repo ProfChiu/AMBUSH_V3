@@ -86,7 +86,7 @@
       if (r.rule === 'special_reaction') return ' [Special Reaction ' + r.letter + ' over ' + r.overrides + ']';
       return res.fallbackTo ? '' : ' [Condition ' + r.condition + ']'; // the fallback note says it
     }
-    rollPopup({
+    M1.rollPopup({
       actor: g, title: 'German Action Number', kind: 'single',
       contextHtml: g.name + ' rolls for his Action Number.',
       explain: function (roll) {
@@ -102,8 +102,8 @@
         var res = lookup(roll), r = res && res.reason;
         if (!r || (r.rule !== 'self_preservation' && r.rule !== 'special_reaction')) return;
         var why = columnReasonHtml(res).replace(/^<br>/, '');
-        if (r.rule === 'self_preservation') Cues.kranz('alarmed', '<b>Zu nah!</b> ' + g.name + ' reads paragraph ' + res.paragraph + '. ' + why, g.id);
-        else Cues.kranz('confident', '<b>Jawohl.</b> ' + g.name + ' reads paragraph ' + res.paragraph + '. ' + why, g.id);
+        if (r.rule === 'self_preservation') M1.Cues.kranz('alarmed', '<b>Zu nah!</b> ' + g.name + ' reads paragraph ' + res.paragraph + '. ' + why, g.id);
+        else M1.Cues.kranz('confident', '<b>Jawohl.</b> ' + g.name + ' reads paragraph ' + res.paragraph + '. ' + why, g.id);
       },
       logText: function (roll) {
         var res = lookup(roll);
@@ -113,7 +113,7 @@
     }, function (roll) {
       var res = lookup(roll);
       if (!res) {
-        infoPopup({ actor: g, title: 'No Orders', bodyHtml: g.name + '’s card has no Action column covering the current Condition, so he has no instructions this turn and holds position.' }, function () { finishGermanTurn(g); });
+        M1.infoPopup({ actor: g, title: 'No Orders', bodyHtml: g.name + '’s card has no Action column covering the current Condition, so he has no instructions this turn and holds position.' }, function () { finishGermanTurn(g); });
         return;
       }
       runGermanParagraph(g, res.paragraph);
@@ -198,7 +198,7 @@
     if (!(resolved.actions || []).some(function (a) { return a.action === 'grenade'; })) return;
     if (!(g.inventory && EQ.hasGrenade(g.inventory))) return;
     var d = (resolved.decisions || []).filter(function (x) { return x.option !== null && x.because; }).pop();
-    Cues.kranz('smug', '<b>Granate!</b> ' + g.name + ' throws. ' + (d
+    M1.Cues.kranz('smug', '<b>Granate!</b> ' + g.name + ' throws. ' + (d
       ? 'Paragraph ' + d.paragraph + ', option ' + d.option + ' of ' + d.of + ': ' + d.because + '.'
       : 'Paragraph ' + paragraphNum + ' tells him to.'), g.id);
   }
@@ -208,7 +208,7 @@
     var picked = decisionsText(resolved);
     M1.Info.noteReason(g, 'paragraph ' + paragraphNum + (picked ? ' &mdash; ' + picked : ''));
     var fullHtml = (text || '(no text on file)').replace(/¥/g, '&bull;').replace(/_x000B_/g, '<br>') + decisionsHtml(resolved);
-    infoPopup({
+    M1.infoPopup({
       actor: g, title: 'Paragraph ' + paragraphNum, variant: 'wide', bodyIsParagraph: true,
       bodyHtml: fullHtml,
       // Resolution cards (Gate 0 answer 1): one line on the card and in the radio log, the
@@ -232,8 +232,8 @@
       if (g.stance === a.to) { next(); return; }
       g.stance = a.to;
       updateCounterVisual(g);
-      infoPopup({ actor: g, title: 'Stance', bodyHtml: g.name + ' goes <b>' + a.to + '</b>.',
-        fx: function () { FX.badge(g.hexId, a.to.toUpperCase(), 'neutral'); } }, next);
+      M1.infoPopup({ actor: g, title: 'Stance', bodyHtml: g.name + ' goes <b>' + a.to + '</b>.',
+        fx: function () { M1.FX.badge(g.hexId, a.to.toUpperCase(), 'neutral'); } }, next);
       return;
     }
     if (a.action === 'fire') {
@@ -251,7 +251,7 @@
           var wasJammed = g.weaponJammed, brokenWeapon = weaponById(g.weaponId);
           g.weaponId = second;
           g.weaponJammed = false; g.weaponBroken = false; g.weaponPrepared = true;
-          infoPopup({
+          M1.infoPopup({
             actor: g, title: 'Second Weapon',
             bodyHtml: g.name + '\u2019s ' + brokenWeapon.name + ' is ' + (wasJammed ? 'jammed' : 'broken') +
               ', so he draws his ' + equipmentName(second) + ' &mdash; \u00a79/4: "a German with a jammed weapon will use his second weapon, if he has one".',
@@ -265,7 +265,7 @@
         if (g.weaponJammed && !g.weaponBroken) {
           // "...he attempts to unjam his weapon instead" — the same procedure the player uses,
           // so it goes through the same resolver rather than a German-only copy of it.
-          infoPopup({
+          M1.infoPopup({
             actor: g, title: 'Unjam Instead of Fire',
             bodyHtml: g.name + ' is ordered to fire, but his ' + weaponById(g.weaponId).name +
               ' is jammed and he has no second weapon. &sect;9/4: he attempts to unjam it instead.',
@@ -277,7 +277,7 @@
         // German or inactive US soldier in his hex" is the remaining unmodelled branch, and it
         // needs the German-side Pick Up/Exchange action that does not exist. Still a loud stub,
         // but now only for the case that actually has no rule implemented.
-        infoPopup({
+        M1.infoPopup({
           actor: g, title: 'No Usable Weapon',
           bodyHtml: g.name + ' would fire, but his weapon is broken and he has no second weapon. &sect;9/4 would have him acquire one from another German or an inactive US soldier in his hex &mdash; the German-side Pick Up/Exchange action is not modelled. Skipped.',
           logHtml: g.name + ': skipped fire &mdash; weapon broken, no second weapon (&sect;9/4 pick-up not modelled).',
@@ -286,7 +286,7 @@
       }
       var targets = visibleEnemyTargets(g);
       if (!targets.length) {
-        infoPopup({ actor: g, title: 'No Target', bodyHtml: g.name + ' has no line of sight to any US soldier from ' + g.hexId + ' &mdash; cannot fire.' }, next);
+        M1.infoPopup({ actor: g, title: 'No Target', bodyHtml: g.name + ' has no line of sight to any US soldier from ' + g.hexId + ' &mdash; cannot fire.' }, next);
         return;
       }
       // §9/7 (Task A1). A German crewing a machinegun is bound by the same rules a US soldier is:
@@ -294,7 +294,7 @@
       // aimed fire, so this can downgrade it — deliberately, and it says so rather than silently
       // firing the mode the paragraph named.
       if (isCrewWeapon(g.weaponId) && !crewWeaponStanceOk(g)) {
-        infoPopup({
+        M1.infoPopup({
           actor: g, title: 'Cannot Fire',
           bodyHtml: g.name + ' is ' + g.stance + ', and a crew weapon can only be fired crouching (&sect;9/7). He holds his fire.',
           logHtml: g.name + ': no fire &mdash; must be crouching to fire the ' + equipmentName(g.weaponId) + ' (&sect;9/7).',
@@ -319,10 +319,10 @@
             Sched.completeAction(M1.state.track, mate.id);
             renderTrack();
             var actualFirer = firerId === mate.id ? mate : g;
-            infoPopup({
+            M1.infoPopup({
               actor: actualFirer, title: 'Crew Weapon',
               bodyHtml: g.name + ' and ' + mate.name + ' crew the ' + equipmentName(g.weaponId) + ' together, which is what allows aimed fire (&sect;9/7). ' +
-                actualFirer.name + ' is the firer &mdash; the higher Weapon Skill of the two (' + fmtSigned(actualFirer.WS) + ').',
+                actualFirer.name + ' is the firer &mdash; the higher Weapon Skill of the two (' + M1.fmtSigned(actualFirer.WS) + ').',
               logHtml: g.name + ' + ' + mate.name + ' crew the ' + equipmentName(g.weaponId) + '; ' + actualFirer.name + ' fires (higher WS, &sect;9/7).',
             }, function () { fireChain(actualFirer, target, fireType, next); });
             return;
@@ -337,12 +337,12 @@
       // condition already gates most paragraph branches into this action, but a paragraph can
       // still call it unconditionally, so the same "does he actually have one" check applies here.
       if (!(g.inventory && EQ.hasGrenade(g.inventory))) {
-        infoPopup({ actor: g, title: 'No Grenade', bodyHtml: g.name + ' would throw a grenade, but has none left.' }, next);
+        M1.infoPopup({ actor: g, title: 'No Grenade', bodyHtml: g.name + ' would throw a grenade, but has none left.' }, next);
         return;
       }
       var gTargets = grenadeCandidates(g);
       if (!gTargets.length) {
-        infoPopup({ actor: g, title: 'No Target', bodyHtml: g.name + ' has no US soldier within grenade range from ' + g.hexId + '.' }, next);
+        M1.infoPopup({ actor: g, title: 'No Target', bodyHtml: g.name + ' has no US soldier within grenade range from ' + g.hexId + '.' }, next);
         return;
       }
       germanPickTarget(g, gTargets, a.target, function (target) { grenadeChain(g, target.hexId, next); });
@@ -364,7 +364,7 @@
         placeEl(counterEls[g.id], g.hexId);
         updateCounterVisual(g);
         unprepareWeaponOnMove(g);
-        infoPopup({
+        M1.infoPopup({
           actor: g, title: 'Charge Assault',
           bodyHtml: g.name + ' charges from ' + fromHex + ' into ' + victim.hexId + ' and assaults ' +
             victim.name + ' (&sect;11/3 &mdash; movement first, then the assault, at &minus;3 to hit).',
@@ -375,7 +375,7 @@
       if (!inHex.length) { next(); return; }
       // §11/1: "A German soldier must assault the US soldier in the most disadvantageous stance."
       var pick = Asl.resolveGermanAssaultTarget
-        ? Asl.resolveGermanAssaultTarget(inHex.map(function (s) { return { id: s.id, stance: s.stance, wounded: s.status === 'wounded' }; }), d10)
+        ? Asl.resolveGermanAssaultTarget(inHex.map(function (s) { return { id: s.id, stance: s.stance, wounded: s.status === 'wounded' }; }), M1.d10)
         : { id: inHex[0].id };
       var defender = inHex.filter(function (s) { return s.id === pick.id; })[0] || inHex[0];
       if (g.stance !== 'standing') { g.stance = 'standing'; updateCounterVisual(g); }
@@ -383,13 +383,13 @@
       return;
     }
     if (a.action === 'surrender') {
-      infoPopup({ actor: g, title: 'Surrender', bodyHtml: '<b>' + g.name + ' surrenders</b> and is taken prisoner (&sect;11/2).' }, function () {
+      M1.infoPopup({ actor: g, title: 'Surrender', bodyHtml: '<b>' + g.name + ' surrenders</b> and is taken prisoner (&sect;11/2).' }, function () {
         applyCapture(g); next();
       });
       return;
     }
     if (a.action === 'remove_from_map') {
-      infoPopup({ actor: g, title: 'Withdraws', bodyHtml: g.name + ' is ' + (a.reason || 'out of contact') + ' and leaves the map (&sect;6/8).' },
+      M1.infoPopup({ actor: g, title: 'Withdraws', bodyHtml: g.name + ' is ' + (a.reason || 'out of contact') + ' and leaves the map (&sect;6/8).' },
         function () { germanLeavesMap(g, next); });
       return;
     }
@@ -399,7 +399,7 @@
       if (counterEls[g.id]) placeEl(counterEls[g.id], a.toHex);
       scrollMapTo(a.toHex);
       unprepareWeaponOnMove(g); // Task #69 (docs/43_PREPARE_WEAPON.md)
-      infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' ' + (a.style === 'crawl' ? 'crawls' : 'moves') + ' ' + fromHexId + ' &rarr; <b>' + a.toHex + '</b>.' }, next);
+      M1.infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' ' + (a.style === 'crawl' ? 'crawls' : 'moves') + ' ' + fromHexId + ' &rarr; <b>' + a.toHex + '</b>.' }, next);
       return;
     }
     if (a.action === 'move_by_reference') {
@@ -408,13 +408,13 @@
       return;
     }
     if (a.action === 'set_condition') {
-      infoPopup({ actor: g, title: 'Condition Change', bodyHtml: 'Paragraph ' + a.paragraph + ' puts <b>Condition ' + a.to + '</b> into effect.' }, function () {
+      M1.infoPopup({ actor: g, title: 'Condition Change', bodyHtml: 'Paragraph ' + a.paragraph + ' puts <b>Condition ' + a.to + '</b> into effect.' }, function () {
         pendingConditionChange = a.to; next();
       });
       return;
     }
     if (a.action === 'reroll_action_number') {
-      infoPopup({ actor: g, title: 'New Action Number', bodyHtml: 'Paragraph ' + a.paragraph + ': ignore the Self-Preservation reaction and roll a new Action Number (&sect;6/8).' }, function () {
+      M1.infoPopup({ actor: g, title: 'New Action Number', bodyHtml: 'Paragraph ' + a.paragraph + ': ignore the Self-Preservation reaction and roll a new Action Number (&sect;6/8).' }, function () {
         germanAutoTurn({ ignoreSelfPreservation: !!a.ignoreSelfPreservation }); // re-enters the whole turn with a fresh roll
       });
       return;
@@ -430,7 +430,7 @@
     // from any German action paragraph, not just an activation one. `a.letter` of `null`
     // rescinds it (falls back to the normal Condition column).
     if (a.action === 'set_special_reaction') {
-      infoPopup({
+      M1.infoPopup({
         actor: g, title: a.letter ? 'Special Reaction' : 'Special Reaction Rescinded',
         bodyHtml: a.letter
           ? 'Paragraph ' + a.paragraph + ' puts <b>Special Reaction ' + a.letter + '</b> into effect for ' + g.name +
@@ -449,7 +449,7 @@
         : a.action === 'unannotated' ? 'follow paragraph ' + a.paragraph + ', which is outside Mission 1\'s annotated German set'
         : a.action === 'chain_cycle' ? 'follow a paragraph chain that loops'
         : a.note || 'an unmodelled detail';
-      infoPopup({ actor: g, title: 'Not Modelled', bodyHtml: g.name + ' would ' + why + '. Skipped.', logHtml: g.name + ': skipped &mdash; ' + why + '.' }, next);
+      M1.infoPopup({ actor: g, title: 'Not Modelled', bodyHtml: g.name + ' would ' + why + '. Skipped.', logHtml: g.name + ': skipped &mdash; ' + why + '.' }, next);
       return;
     }
     next();
@@ -468,10 +468,10 @@
     }
     var tieRoll = null;
     var picked = rule === 'easiest' ? candidates[0]
-      : FC.resolveClosestTarget(candidates, function () { tieRoll = d10(); return tieRoll; });
+      : FC.resolveClosestTarget(candidates, function () { tieRoll = M1.d10(); return tieRoll; });
     var target = targets.filter(function (s) { return s.id === picked.id; })[0];
     if (tieRoll === null) { cb(target); return; }
-    rollPopup({
+    M1.rollPopup({
       actor: g, title: 'Target Tie-Break', kind: 'single', presetValue: tieRoll,
       contextHtml: 'Equally close/easy targets — choosing at random.',
       explain: function () { return 'Targets <b>' + target.name + '</b>.'; },
@@ -532,20 +532,20 @@
   function resolveGermanMoveByReference(g, mpRemaining, onDone) {
     if (M1.state.phase === 'over') { onDone(); return; }
     if (mpRemaining <= 0) {
-      infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' is out of Movement Points and stops at ' + g.hexId + '.' }, onDone);
+      M1.infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' is out of Movement Points and stops at ' + g.hexId + '.' }, onDone);
       return;
     }
     var kind = GAct.classifyMovementReference(germanMovementRefFor(g.hexId));
 
     if (kind.type === 'none') {
-      infoPopup({
+      M1.infoPopup({
         actor: g, title: 'Move',
         bodyHtml: g.name + ' has no Movement Reference recorded at ' + g.hexId + ' for the current Condition &mdash; he stops here.',
       }, onDone);
       return;
     }
     if (kind.type === 'exit') {
-      infoPopup({ actor: g, title: 'Exit', bodyHtml: g.name + ' exits the map from ' + g.hexId + ' (&sect;6/8).' },
+      M1.infoPopup({ actor: g, title: 'Exit', bodyHtml: g.name + ' exits the map from ' + g.hexId + ' (&sect;6/8).' },
         function () { germanLeavesMap(g, onDone); });
       return;
     }
@@ -557,7 +557,7 @@
       // shown in full so the player can see exactly what's being skipped, same convention as
       // every other documented gap (grenades, Give Turn, unannotated paragraphs).
       var text = PARAGRAPHS[kind.paragraph];
-      infoPopup({
+      M1.infoPopup({
         actor: g, title: 'Movement Reference Paragraph Not Modelled',
         bodyHtml: 'The Movement Reference at ' + g.hexId + ' is paragraph <b>' + kind.paragraph + '</b>, not a hex. ' +
           'Evaluating a movement reference paragraph against live mid-move battlefield state isn\'t modelled yet.' +
@@ -576,7 +576,7 @@
     var open = TERRAIN_ROW[terrain] === 0;
     var cost = open ? M.mpCost(terrain) : mpRemaining;
     if (open && cost > mpRemaining) {
-      infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' lacks the Movement Points to enter ' + destHexId + ' and stops at ' + g.hexId + '.' }, onDone);
+      M1.infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' lacks the Movement Points to enter ' + destHexId + ' and stops at ' + g.hexId + '.' }, onDone);
       return;
     }
     var fromHexId = g.hexId;
@@ -585,9 +585,9 @@
     if (counterEls[g.id]) placeEl(counterEls[g.id], destHexId);
     updateCounterVisual(g);
     scrollMapTo(destHexId);
-    FX.trail(fromHexId, destHexId);
+    M1.FX.trail(fromHexId, destHexId);
     var remaining = mpRemaining - cost;
-    infoPopup({
+    M1.infoPopup({
       actor: g, title: 'Move',
       bodyHtml: g.name + ' ' + (open ? 'runs' : 'crawls') + ' ' + fromHexId + ' &rarr; <b>' + destHexId + '</b> (' + TERRAIN_LABELS[terrain] + ').',
     }, function () {

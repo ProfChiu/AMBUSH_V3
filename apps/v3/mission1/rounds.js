@@ -12,7 +12,7 @@
     M1.state.usSoldiers.forEach(function (s) { s.crewFiredBy = []; });
     allGermans().forEach(function (g) { g.crewFiredBy = []; });
     document.getElementById('tb-phase').textContent = 'Action Round ' + n;
-    if (n === 1) Cues.banner('phase', 'Contact!', 'Action Round 1', 'alert'); else Cues.banner('phase', 'Action Round ' + n);
+    if (n === 1) M1.Cues.banner('phase', 'Contact!', 'Action Round 1', 'alert'); else M1.Cues.banner('phase', 'Action Round ' + n);
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
     document.getElementById('status-banner').className = '';
     document.getElementById('movement-sec').style.display = 'none';
@@ -31,11 +31,11 @@
         var s = findSoldier(id);
         if (!s || !s.isActive) return;
         s.aware = true;
-        logLine(s.name + ' made the PC check and is automatically aware (paragraph ' + pendingContact.paragraph + ').');
+        M1.logLine(s.name + ' made the PC check and is automatically aware (paragraph ' + pendingContact.paragraph + ').');
       });
     }
 
-    infoPopup({ title: 'Round ' + n, bodyHtml: 'Round ' + n + ' begins.' + (n <= 2 ? ' Determining US Awareness.' : '') }, function () {
+    M1.infoPopup({ title: 'Round ' + n, bodyHtml: 'Round ' + n + ' begins.' + (n <= 2 ? ' Determining US Awareness.' : '') }, function () {
       runAwarenessPhase(n, function () { runEventPhase(n, function () { rollInitiativeAdvantage(n); }); });
     });
   }
@@ -61,7 +61,7 @@
       mission: '1', missionCards: MISSION_CARDS, condition: M1.state.opsState.condition, paragraphs: PARAGRAPHS,
       programs: PROGRAMS, state: M1.state.opsState, ctx: ctx,
       rollForEvent: function () {
-        var a = d10(), b = d10();
+        var a = M1.d10(), b = M1.d10();
         pendingSteps.push({ type: 'event_roll', hex: null, paragraph: null, a: a, b: b, sum: a + b });
         return a + b;
       },
@@ -81,7 +81,7 @@
       var awakened = activeUS().filter(function (s) { return !s.aware; });
       awakened.forEach(function (s) { s.aware = true; });
       if (!awakened.length) { next(); return; }
-      infoPopup({
+      M1.infoPopup({
         title: 'US Awareness', bodyHtml: awakened.map(function (s) { return s.name; }).join(', ') +
           (awakened.length > 1 ? ' are' : ' is') + ' automatically aware from Round 3 onward (&sect;6/5).',
       }, next);
@@ -105,7 +105,7 @@
   function runAwarenessChecks(list, i, next) {
     if (i >= list.length) { next(); return; }
     var s = list[i];
-    rollPopup({
+    M1.rollPopup({
       actor: s, title: 'US Awareness Check', kind: 'single',
       contextHtml: s.name + ' (PC ' + s.PC + ') checks for awareness of the German activation (&sect;6/5).',
       explain: function (roll) { return Checks.resolvePerceptionCheck(s.PC, 0, roll) === 'success' ? '<b style="color:var(--clear)">AWARE</b>.' : 'Still <b>unaware</b>.'; },
@@ -126,7 +126,7 @@
     activeUS().filter(function (s) { return s.hexId === hexId && !s.aware; }).forEach(function (s) {
       s.aware = true;
       if (M1.state.phase === 'round') Sched.applyBecomesAware(M1.state.track, s.id);
-      logLine(s.name + ' is now aware (&sect;6/5).');
+      M1.logLine(s.name + ' is now aware (&sect;6/5).');
     });
   }
   function rollInitiativeAdvantage(n) {
@@ -137,7 +137,7 @@
       if (fixed) return fixed.advantage;
       return AR.resolveAdvantage(rolls.a, rolls.b) === 'german' ? 'german' : 'US';
     }
-    rollPopup({
+    M1.rollPopup({
       title: 'Initiative — Round ' + n, kind: 'dual', diceLabels: ['US', 'GERMAN'],
       contextHtml: fixed
         ? 'Paragraph ' + fixed.paragraph + ' gives the <b>' + fixed.advantage.toUpperCase() + '</b> side the advantage this Round. The dice are still rolled (&sect;6/1).'
@@ -183,14 +183,14 @@
     var rollsById = {}, classifyById = {};
     roster.forEach(function (entry) {
       if (entry.placement || entry.receivesTwoTurns) return;
-      var r = d10();
+      var r = M1.d10();
       rollsById[entry.id] = r;
       classifyById[entry.id] = AR.classifyARRoll(window.AMBUSH_AR_TRACK, entry.IN, r);
     });
     M1.state.track = Sched.placeMarkers({ round: n, advantageSide: advantageSide, arTrack: window.AMBUSH_AR_TRACK, roster: roster, rollDie: function (entry) { return rollsById[entry.id]; } });
 
     roster.forEach(function (entry) {
-      if (entry.receivesTwoTurns) logLine(findSoldier(entry.id).name + ' receives ' + (entry.wounded ? 'one turn (wounded)' : '2 turns') + ' this Round, no roll (paragraph ' + contact.paragraph + ').');
+      if (entry.receivesTwoTurns) M1.logLine(findSoldier(entry.id).name + ' receives ' + (entry.wounded ? 'one turn (wounded)' : '2 turns') + ' this Round, no roll (paragraph ' + contact.paragraph + ').');
     });
     var queue = roster.filter(function (entry) { return !entry.placement && !entry.receivesTwoTurns; });
     function nextEntry() {
@@ -198,7 +198,7 @@
       var entry = queue.shift();
       var soldier = findSoldier(entry.id);
       var roll = rollsById[entry.id], cls = classifyById[entry.id];
-      rollPopup({
+      M1.rollPopup({
         actor: soldier, title: 'Initiative Roll', kind: 'single', presetValue: roll,
         contextHtml: soldier.name + ' (IN ' + entry.IN + ') rolls for the AR Track.',
         explain: function () { var slot = M1.state.track.soldiers[entry.id].slot; return 'Rolls <b>' + roll + '</b> &rarr; placed in <b>' + slotLabel(slot) + '</b>.'; },
@@ -242,7 +242,7 @@
     if (M1.state.phase !== 'round') return;
     document.getElementById('action-sec').style.display = 'none';
     highlightActor(null);
-    Resolve.awaitDone(driveNextNow);
+    M1.Resolve.awaitDone(driveNextNow);
   }
   // §6/1: "If more than one US soldier occupies a space, you can have them go in any order you
   // wish." The scheduler takes the player's pick through its chooseUS hook; v2 always took the
@@ -271,7 +271,7 @@
     }).join('');
     document.getElementById('pick-sec').style.display = '';
     document.getElementById('status-banner').textContent = 'Choose who goes next: ' + ids.length + ' soldiers share this space (§6/1).';
-    FX.ensureVisible(ids.map(function (id) { return findSoldier(id).hexId; }), true);
+    M1.FX.ensureVisible(ids.map(function (id) { return findSoldier(id).hexId; }), true);
   }
   function pickActor(id) {
     if (!picking || picking.ids.indexOf(id) === -1) return false;
@@ -360,7 +360,7 @@
     document.getElementById('cancelMoveBtn').style.display = 'none';
     document.getElementById('act-img').src = currentImgFor(s);
     document.getElementById('act-name').textContent = s.name;
-    document.getElementById('act-stats').innerHTML = 'IN:' + s.IN + ' WS:' + fmtSigned(s.WS) + ' \u00b7 ' + s.stance + ' at ' + s.hexId + (s.status !== 'unharmed' ? ' \u00b7 ' + s.status : '') + kitHtml(s, true);
+    document.getElementById('act-stats').innerHTML = 'IN:' + s.IN + ' WS:' + M1.fmtSigned(s.WS) + ' \u00b7 ' + s.stance + ' at ' + s.hexId + (s.status !== 'unharmed' ? ' \u00b7 ' + s.status : '') + kitHtml(s, true);
     var targets = visibleEnemyTargets(s);
     var canFire = weaponUsable(s);
     document.getElementById('moveBtn').disabled = !Object.keys(roundLegalDestinations(s)).length;
@@ -384,12 +384,12 @@
     explainVerbs(s, targets, canFire, crew, crewOk);
     document.getElementById('action-sec').style.display = '';
     M1.Info.refresh(); // task 5: shade this soldier's reachable hexes now that it is his decision
-    if (!targets.length) logLine(nameFor(id) + ' has no line of sight to any German this turn.');
-    else if (!canFire) logLine(nameFor(id) + '\'s weapon is ' + (s.weaponBroken ? 'broken' : s.weaponJammed ? 'jammed' : 'out of ammo') + ' and cannot fire.');
-    else if (crew && !crewWeaponStanceOk(s)) logLine(nameFor(id) + ' must be crouching to fire the ' + equipmentName(s.weaponId) + ' (&sect;9/7).');
-    else if (crew && guardsAPrisoner(s)) logLine(nameFor(id) + ' is guarding a prisoner and so cannot fire a crew weapon (&sect;11/2).');
-    else if (crew && !crew.snap) logLine(nameFor(id) + ' cannot fire the ' + equipmentName(s.weaponId) + ' again this Round &mdash; two soldiers have already crewed it (&sect;9/7).');
-    else if (crew && !crew.aimed) logLine(nameFor(id) + ' crews the ' + equipmentName(s.weaponId) + ' alone, so it can only snap fire (&sect;9/7).');
+    if (!targets.length) M1.logLine(nameFor(id) + ' has no line of sight to any German this turn.');
+    else if (!canFire) M1.logLine(nameFor(id) + '\'s weapon is ' + (s.weaponBroken ? 'broken' : s.weaponJammed ? 'jammed' : 'out of ammo') + ' and cannot fire.');
+    else if (crew && !crewWeaponStanceOk(s)) M1.logLine(nameFor(id) + ' must be crouching to fire the ' + equipmentName(s.weaponId) + ' (&sect;9/7).');
+    else if (crew && guardsAPrisoner(s)) M1.logLine(nameFor(id) + ' is guarding a prisoner and so cannot fire a crew weapon (&sect;11/2).');
+    else if (crew && !crew.snap) M1.logLine(nameFor(id) + ' cannot fire the ' + equipmentName(s.weaponId) + ' again this Round &mdash; two soldiers have already crewed it (&sect;9/7).');
+    else if (crew && !crew.aimed) M1.logLine(nameFor(id) + ' crews the ' + equipmentName(s.weaponId) + ' alone, so it can only snap fire (&sect;9/7).');
   }
   document.getElementById('moveBtn').addEventListener('click', function () {
     var s = findSoldier(M1.state.currentActorId);
@@ -423,7 +423,7 @@
   document.getElementById('pickupBtn').addEventListener('click', function () { doPlayerPickup(); });
   document.getElementById('passTurn').addEventListener('click', function () {
     var actor = findSoldier(M1.state.currentActorId);
-    infoPopup({ actor: actor, title: 'Pass', bodyHtml: actor.name + ' passes.' }, function () { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); });
+    M1.infoPopup({ actor: actor, title: 'Pass', bodyHtml: actor.name + ' passes.' }, function () { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); });
   });
   // §6/7 Move: walk the chosen path one hex at a time, same real Paragraph Check every hex-entry
   // gets in Operations (§5/1's "made during Rounds in this same manner"), except Event Checks are
@@ -449,7 +449,7 @@
       if (free) mover.usedFreeStanceChange = true;
       updateCounterVisual(mover);
       var how = free ? 'using his free stance change' : 'spending 1 MP';
-      infoPopup({
+      M1.infoPopup({
         actor: mover, title: 'Stand Up',
         bodyHtml: mover.name + ' stands up, ' + how + '.' +
           (free ? '' : ' Wounded soldiers never receive a free stance change (&sect;6/7).'),
@@ -474,11 +474,11 @@
       placeEl(counterEls[mover.id], hexId);
       // Task #69 (docs/43_PREPARE_WEAPON.md). No-op for anyone but a crew-weapon carrier.
       var unprepared = unprepareWeaponOnMove(mover);
-      infoPopup({
+      M1.infoPopup({
         actor: mover, title: 'Move',
         bodyHtml: mover.name + ' moves ' + fromHexId + ' &rarr; ' + hexId + ' (' + TERRAIN_LABELS[REAL_TERRAIN[hexId]] + ').' +
           (unprepared ? ' The ' + equipmentName(mover.weaponId) + ' is no longer prepared.' : ''),
-        fx: function () { FX.trail(fromHexId, hexId); FX.ensureVisible([hexId]); },
+        fx: function () { M1.FX.trail(fromHexId, hexId); M1.FX.ensureVisible([hexId]); },
       }, function () { runParagraphCheck(mover, stepNext, { skipEventCheck: true }); });
     }
     standUpThen(stepNext);
@@ -511,7 +511,7 @@
           var note = opts.noteFor ? opts.noteFor(t) : '';
           var odds = opts.hitChanceFor ? opts.hitChanceFor(t) : null;
           var distText = dist === 0 ? 'same hex' : dist + ' hex' + (dist === 1 ? '' : 'es');
-          var oddsNum = odds === null ? null : parseInt(stripTags(String(odds)), 10);
+          var oddsNum = odds === null ? null : parseInt(M1.stripTags(String(odds)), 10);
           // 2026-09-23 (Wan: "this dialog box is formatted badly"): the breakdown used to be a
           // focusable tooltip on the odds box. The dialog focuses its first focusable element, so
           // it opened already showing, and inside the scrolling list it grew both scrollbars. It
@@ -522,7 +522,7 @@
           var oddsHtml = isNaN(oddsNum) || oddsNum === null ? String(odds)
             : Math.max(0, Math.min(100, (oddsNum + 1) * 10)) + '%';
           spec.choices.push({
-            text: stripTags(t.name + ' ' + t.hexId + ' &middot; ' + (TERRAIN_LABELS[REAL_TERRAIN[t.hexId]] || 'unknown') +
+            text: M1.stripTags(t.name + ' ' + t.hexId + ' &middot; ' + (TERRAIN_LABELS[REAL_TERRAIN[t.hexId]] || 'unknown') +
               ' &middot; ' + t.stance + ' &middot; ' + distText + (note ? ' ' + note : '')),
             odds: isNaN(oddsNum) ? null : oddsNum,
             pick: function () { Dialogs.reset(); cb(t); }, // close without firing onClose — a real pick is not a cancel

@@ -25,6 +25,7 @@ from policy import Policy  # noqa: E402
 SNAP_JS = r"""() => {
   if (window.__rustles === undefined) {
     window.__rustles = 0;
+    var FX = window.AmbushM1.FX;  // present.js exports FX and calls speak through M1 (R6), so both can be wrapped here
     var orig = FX.sound;
     FX.sound = function (n) { if (n === 'rustle') window.__rustles++; return orig.apply(this, arguments); };
     // --events: the board effects and spoken card results, in order (R4 Step 5's toHitCard proof)
@@ -33,8 +34,8 @@ SNAP_JS = r"""() => {
       var f = FX[k];
       FX[k] = function () { window.__events.push(k + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); return f.apply(this, arguments); };
     });
-    var sp = window.speak;
-    window.speak = function (h) { window.__events.push('speak ' + h); return sp.apply(this, arguments); };
+    var sp = window.AmbushM1.speak;
+    window.AmbushM1.speak = function (h) { window.__events.push('speak ' + h); return sp.apply(this, arguments); };
   }
   var els = Array.prototype.slice.call(document.querySelectorAll('.counter'));
   if (els.some(function (e) { return e.classList.contains('moving'); })) return null;

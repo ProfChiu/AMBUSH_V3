@@ -46,12 +46,12 @@
   FloatDialogs.create('objectives', { title: 'Objectives', left: '20px', top: '60px' });
   document.getElementById('objectivesBtn').addEventListener('click', function () { FloatDialogs.show('objectives'); });
   document.getElementById('voiceBtn').addEventListener('click', function () {
-    voiceMuted = !voiceMuted;
-    if (voiceMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+    M1.voiceMuted = !M1.voiceMuted;
+    if (M1.voiceMuted && window.speechSynthesis) window.speechSynthesis.cancel();
     var btn = document.getElementById('voiceBtn');
-    btn.innerHTML = voiceMuted ? '&#128263; Voice' : '&#128266; Voice';
-    btn.title = 'Voice-over is ' + (voiceMuted ? 'off' : 'on');
-    btn.classList.toggle('active', !voiceMuted);
+    btn.innerHTML = M1.voiceMuted ? '&#128263; Voice' : '&#128266; Voice';
+    btn.title = 'Voice-over is ' + (M1.voiceMuted ? 'off' : 'on');
+    btn.classList.toggle('active', !M1.voiceMuted);
   });
 
   var G = window.AmbushHexGrid;
@@ -310,7 +310,7 @@
   });
   function resolveGermanCardId(numericId) {
     if (GERMAN_BY_NUMBER[numericId]) return GERMAN_BY_NUMBER[numericId];
-    logLine('<b style="color:#e05a4a;">German card #' + numericId + ' referenced by the paragraph book has no transcribed roster entry — substituting ' + GERMAN_FALLBACK_CARD_ID + ' (judgment call, see file header).</b>', 'event');
+    M1.logLine('<b style="color:#e05a4a;">German card #' + numericId + ' referenced by the paragraph book has no transcribed roster entry — substituting ' + GERMAN_FALLBACK_CARD_ID + ' (judgment call, see file header).</b>', 'event');
     return GERMAN_FALLBACK_CARD_ID;
   }
   // The key a German is actually stored under in `germans`, which is NOT always his card id.

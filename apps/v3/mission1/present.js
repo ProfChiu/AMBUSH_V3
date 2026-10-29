@@ -1,12 +1,25 @@
-'use strict';
 // mission1/present.js (2 of 13) — dice, voice, log, pop-up helpers, Resolve, FX. Stage A cut of mission1.js lines 366-979 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (17): Cues, FX, Resolve, actorRowHtml, d10, damageStrip, fmtSigned, hitStrip, infoPopup, lessonRng,
+//   logHeader, logLine, pad2, rollPopup, speak, stripTags, voiceMuted
+// Uses from M1:
+//   core: state
+// Still global (their files are not wrapped yet):
+//   core: CHART, Dialogs, FC, G
+//   roster: canvas, currentImgFor, nameFor, pctPos
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.actorRowHtml = actorRowHtml; M1.d10 = d10; M1.damageStrip = damageStrip; M1.fmtSigned = fmtSigned;
+  M1.hitStrip = hitStrip; M1.infoPopup = infoPopup; M1.logHeader = logHeader; M1.logLine = logLine;
+  M1.pad2 = pad2; M1.rollPopup = rollPopup; M1.speak = speak; M1.stripTags = stripTags;
   // ---------------------------------------------------------------------
   // Dice
   // ---------------------------------------------------------------------
   // v3 Phase 6: a lesson plays on its own seeded stream (lesson.js), so the dice in Whitaker's
   // words are the dice on the board. Outside a lesson this is null and play is unchanged.
-  var lessonRng = null;
-  function d10() { return Math.floor((lessonRng || Math.random)() * 10); }
+  M1.lessonRng = null;
+  function d10() { return Math.floor((M1.lessonRng || Math.random)() * 10); }
   function d100() { return d10() * 10 + d10(); }
   function pad2(n) { return String(n).padStart(2, '0'); }
   function fmtSigned(n) { return (n >= 0 ? '+' : '') + n; }
@@ -98,14 +111,14 @@
   // topbar toggle flips it. Strips HTML tags via the DOM (no regex) before speaking, and cancels
   // any in-flight utterance first so clicking through popups quickly doesn't queue a backlog.
   // ---------------------------------------------------------------------
-  var voiceMuted = true;
+  M1.voiceMuted = true;
   var stripTagsEl = document.createElement('div');
   function stripTags(html) {
     stripTagsEl.innerHTML = html || '';
     return (stripTagsEl.textContent || '').trim();
   }
   function speak(html) {
-    if (voiceMuted || !window.speechSynthesis) return;
+    if (M1.voiceMuted || !window.speechSynthesis) return;
     var text = stripTags(html);
     if (!text) return;
     window.speechSynthesis.cancel();
@@ -167,7 +180,7 @@
   // the Classic dialogs build, removed 2026-09-21 once Wan no longer needed the comparison. The
   // rules and the order of every d10() are unchanged: Resolve keeps each line in the Dialogs queue.
   // v3 Phase 4b: banners and Major Kranz's cameos (cues.js). Decoration: never a press, never state.
-  var Cues = window.AmbushCues || { banner: function () {}, kranz: function () {}, cardClosed: function () {}, cardOpened: function () {} };
+  var Cues = M1.Cues = window.AmbushCues || { banner: function () {}, kranz: function () {}, cardClosed: function () {}, cardOpened: function () {} };
   function infoPopup(opts, cb) { Resolve.pushInfo(opts, cb); }
   function rollPopup(opts, cb) { Resolve.pushRoll(opts, cb); }
 
@@ -182,7 +195,7 @@
   // Capture/Kill) stay modal. Speed: slow / normal / fast; hold Space or hold the mouse on the
   // map to run to the next decision (Gate 0 answer 3). Speed never changes an outcome.
   // ---------------------------------------------------------------------
-  var Resolve = (function () {
+  var Resolve = M1.Resolve = (function () {
     var SPEED_KEY = 'ambush.v3.speed'; // v3's own (R5 Step 8); v2 keeps ambush.v2.speed
     var SPEEDS = { slow: 1.7, normal: 1, fast: 0.4 };
     function stored(key, fallback) { try { return window.localStorage.getItem(key) || fallback; } catch (e) { return fallback; } }
@@ -342,7 +355,7 @@
           line.innerHTML = '<div class="res-title">' + lineTitle(line, opts) + '</div>' +
             '<div class="res-text' + (opts.bodyIsParagraph && !opts.cardHtml ? ' res-paragraph' : '') + '">' + shown + '</div>';
           radioLog(opts);
-          speak(shown);
+          M1.speak(shown);
           runFx(opts.fx);
           hold(readMs(shown, opts.maxReadMs), function () { ctx.close(); });
         },
@@ -370,7 +383,7 @@
                 var resultHtml = opts.explain(drawn.value);
                 line.querySelector('.res-result').innerHTML = resultHtml;
                 if (opts.logText) logLine(opts.logText(drawn.value));
-                speak(resultHtml);
+                M1.speak(resultHtml);
                 runFx(opts.fxLanded, drawn.value);
                 hold(readMs(resultHtml, opts.maxReadMs), function () { ctx.close(drawn.value); });
               }, T(45), follow);
@@ -467,7 +480,7 @@
   // decoration: nothing here is queued, awaited, or reads a die — every call is fire-and-forget
   // from a card line that has already been decided.
   // ---------------------------------------------------------------------
-  var FX = (function () {
+  var FX = M1.FX = (function () {
     var svg = null, badgeCount = {};
     var NS = 'http://www.w3.org/2000/svg';
     function ms(base) { return Math.max(120, Resolve.T(base)); }
@@ -613,4 +626,4 @@
     return { tracer: tracer, trail: trail, floatDie: floatDie, badge: badge, blast: blast, ensureVisible: ensureVisible, status: status,
       flash: flash, shake: shake, stamp: stamp, sound: sound };
   })();
-
+})();

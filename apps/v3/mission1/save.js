@@ -161,7 +161,7 @@
         driveNext();
       }
     }
-    logHeader('Game loaded' + (data.savedAt ? ' (saved ' + new Date(data.savedAt).toLocaleString() + ')' : '') + '.');
+    M1.logHeader('Game loaded' + (data.savedAt ? ' (saved ' + new Date(data.savedAt).toLocaleString() + ')' : '') + '.');
   }
   // Lets the player pick which of the (up to MAX_SAVES) saved games to resume, newest first,
   // each row showing when it was saved and a short "where you were" descriptor.

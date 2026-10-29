@@ -39,7 +39,7 @@
   function endOpsMove() {
     if (M1.state.phase !== 'movement') return;
     var id = M1.state.selectedId;
-    Resolve.awaitDone(function () { if (M1.state.phase === 'movement' && M1.state.selectedId === id && !walking) deselect(id); });
+    M1.Resolve.awaitDone(function () { if (M1.state.phase === 'movement' && M1.state.selectedId === id && !walking) deselect(id); });
     if (id) document.getElementById('status-banner').textContent = nameFor(id) + '’s move is done. Choose who moves next.';
   }
   function selectSoldier(id) {
@@ -76,7 +76,7 @@
     M1.state.opsState = Ops.createGameState();
     document.getElementById('tb-phase').textContent = 'Operations';
     document.getElementById('movement-sec').style.display = '';
-    Cues.banner('ops', 'Operations', 'Move your squad · no turns until contact');
+    M1.Cues.banner('ops', 'Operations', 'Move your squad · no turns until contact');
     deselect(M1.state.usSoldiers[0].id); // sets the status banner too
   }
 
@@ -298,14 +298,14 @@
     if (!route || !route.length) return false;
     if (route.length === 1) { doMove(route[0], endOpsMove); return true; }
     walking = { id: s.id, route: route, i: 0, goal: goalHexId };
-    logLine(s.name + ' sets off for <b>' + goalHexId + '</b> (' + route.length + ' hexes).');
+    M1.logLine(s.name + ' sets off for <b>' + goalHexId + '</b> (' + route.length + ' hexes).');
     stepWalk();
     return true;
   }
   function stopWalk(why) {
     if (!walking) return;
     var s = findSoldier(walking.id);
-    if (why && s) logLine(s.name + ' stops at ' + s.hexId + ' &mdash; ' + why + '.');
+    if (why && s) M1.logLine(s.name + ' stops at ' + s.hexId + ' &mdash; ' + why + '.');
     walking = null;
     if (M1.state.phase === 'movement') { renderDestinations(); renderStatusBanner(); M1.Info.refresh(); }
   }
@@ -367,7 +367,7 @@
     renderHud();
     var mover = group.length > 1 ? highestPcOf(group) : s;
     var names = group.map(function (t) { return t.name; }).join(', ');
-    infoPopup({
+    M1.infoPopup({
       actor: mover, title: group.length > 1 ? 'Group Move' : 'Move',
       bodyHtml: (group.length > 1
         ? names + ' move together ' + fromHexId + ' &rarr; ' + hexId + ' (' + TERRAIN_LABELS[REAL_TERRAIN[hexId]] + ') &mdash; one Paragraph Check for the group (&sect;5/3).'
@@ -398,7 +398,7 @@
     if (!s) return;
     document.getElementById('mc-img').src = currentImgFor(s);
     document.getElementById('mc-name').textContent = s.name;
-    document.getElementById('mc-stats').innerHTML = 'IN:' + s.IN + ' PC:' + s.PC + ' WS:' + fmtSigned(s.WS) + ' \u00b7 at ' + s.hexId + ' \u00b7 ' + s.stance + kitHtml(s, true);
+    document.getElementById('mc-stats').innerHTML = 'IN:' + s.IN + ' PC:' + s.PC + ' WS:' + M1.fmtSigned(s.WS) + ' \u00b7 at ' + s.hexId + ' \u00b7 ' + s.stance + kitHtml(s, true);
     document.getElementById('mc-mp').innerHTML = '<span style="color:var(--text-label);">MPA</span> <b>' + s.mpa + '</b> <span style="color:var(--text-label);font-size:10px;">(Rounds only — Operations tracks no MP, &sect;5/3)</span>';
     ['standing', 'crouching', 'prone'].forEach(function (st) { document.getElementById('stance-' + st).classList.toggle('active', s.stance === st); });
     var exitBtn = document.getElementById('exitMapBtn');
@@ -414,7 +414,7 @@
   var STANCE_SAYS = { standing: '', crouching: 'crawl 1 hex', prone: 'cannot move' };
   var stanceBeatTimer = null;
   function stanceBeat(s) {
-    FX.stamp(s.hexId, s.stance, 'amber', STANCE_SAYS[s.stance], 1400);
+    M1.FX.stamp(s.hexId, s.stance, 'amber', STANCE_SAYS[s.stance], 1400);
     document.body.classList.add('stance-beat');
     clearTimeout(stanceBeatTimer);
     stanceBeatTimer = setTimeout(function () { document.body.classList.remove('stance-beat'); }, 650);
@@ -427,7 +427,7 @@
       var s = selectedSoldier();
       if (!s || s.stance === st) return;
       s.stance = st;
-      logLine(s.name + ' changes stance to ' + st + '.');
+      M1.logLine(s.name + ' changes stance to ' + st + '.');
       updateCounterVisual(s);
       renderHud(); renderGroupMoveRow(); renderDestinations(); renderStatusBanner();
       stanceBeat(s);
@@ -470,7 +470,7 @@
   // deriving a per-hex PC, documented in docs/31_VICTORY.md.
   function buildOpsCtx(pcSoldier) {
     return Ops.buildContext({
-      rollDie: d10,
+      rollDie: M1.d10,
       activationLevel: MISSION.activation_by_condition[String(M1.state.opsState.condition)],
       defaultPcRating: pcSoldier.PC,
       state: M1.state.opsState,
@@ -515,7 +515,7 @@
       hexId: mover.hexId, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS,
       programs: PROGRAMS, state: M1.state.opsState, ctx: ctx, skipEventCheck: !!opts.skipEventCheck,
       rollForEvent: function () {
-        var a = d10(), b = d10();
+        var a = M1.d10(), b = M1.d10();
         pendingSteps.push({ type: 'event_roll', hex: mover.hexId, paragraph: null, a: a, b: b, sum: a + b });
         return a + b;
       },
@@ -525,7 +525,7 @@
     // v3 Phase 8b: a hex whose sighting has already happened says so (show the machinery); the
     // walk does not stop for it
     if (result.skipped === 'sighting-already-occurred') {
-      logLine(mover.hexId + ': sighting s' + result.sighting + ' has already happened, so its paragraph is crossed off (&sect;5/4).');
+      M1.logLine(mover.hexId + ': sighting s' + result.sighting + ' has already happened, so its paragraph is crossed off (&sect;5/4).');
     }
     if (lastCheckQuiet) { next(); return; }
     presentParagraphChain(mover, result.chain, mover.hexId, next);
@@ -538,9 +538,9 @@
   // mid-Round or not — no separate activation handling needed here). The two callers below differ
   // only in whether the scan stops at the first activation and what happens once it's done.
   function runConditionChangeScan(to, stopOnActivation, onFinish) {
-    logHeader('Condition changes to ' + to + '.');
-    Cues.banner('condition', 'Condition ' + to, 'The Germans are more alert', 'alert');
-    Cues.kranz('stern', '<b>Alarm!</b> Condition ' + to + '. Unless something closer forces his hand, every one of my men now reads the <b>Condition ' + to +
+    M1.logHeader('Condition changes to ' + to + '.');
+    M1.Cues.banner('condition', 'Condition ' + to, 'The Germans are more alert', 'alert');
+    M1.Cues.kranz('stern', '<b>Alarm!</b> Condition ' + to + '. Unless something closer forces his hand, every one of my men now reads the <b>Condition ' + to +
       '</b> column of his card (' + (M1.state.phase === 'round' ? '&sect;6/11' : '&sect;5/5') + ').');
     var pcSoldier = activeUS()[0];
     if (!pcSoldier) { onFinish(); return; }
@@ -602,7 +602,7 @@
   // radio log, like a German's paragraph. The steps it produces still show on the card.
   var EVENT_READ_MS = 4000;
   function eventLine(num, text) {
-    var plain = stripTags(String(text || '').replace(/_x000B_/g, ' ').replace(/¥/g, '')).replace(/\s+/g, ' ').trim();
+    var plain = M1.stripTags(String(text || '').replace(/_x000B_/g, ' ').replace(/¥/g, '')).replace(/\s+/g, ' ').trim();
     var first = (/^.*?[.!?:](?=\s|$)/.exec(plain) || [plain])[0];
     var words = first.split(' ');
     if (words.length > 18) first = words.slice(0, 18).join(' ') + '&hellip;';
@@ -618,7 +618,7 @@
       var step = plan[i]; i++;
       if (step.type === 'paragraph_text') {
         var text = PARAGRAPHS[step.num];
-        infoPopup({
+        M1.infoPopup({
           actor: mover, title: 'Paragraph ' + step.num, variant: 'wide', bodyIsParagraph: true,
           bodyHtml: text || '(no text on file)', logHtml: 'Paragraph <b>' + step.num + '</b> read.',
           cardHtml: fromEvent ? eventLine(step.num, text) : undefined, maxReadMs: fromEvent ? EVENT_READ_MS : undefined,
@@ -638,17 +638,17 @@
       var roller = (step.soldierId && findSoldier(step.soldierId)) || mover;
       var rating = step.kind === 'activation' ? MISSION.activation_by_condition[String(M1.state.opsState.condition)] : roller.PC;
       if (step.soldierId) label += ' — ' + roller.name;
-      rollPopup({
+      M1.rollPopup({
         actor: roller, title: label, kind: 'single', presetValue: step.roll,
-        contextHtml: label + (step.modifier ? ' (' + fmtSigned(step.modifier) + ')' : '') + ' — rating ' + rating + '.',
+        contextHtml: label + (step.modifier ? ' (' + M1.fmtSigned(step.modifier) + ')' : '') + ' — rating ' + rating + '.',
         explain: function () { return 'Rolls <b>' + step.roll + '</b> &rarr; <b>' + step.result.toUpperCase() + '</b>.'; },
         logText: function () { return label + ': <span class="roll">' + step.roll + '</span> &rarr; ' + step.result + '.'; },
       }, cb);
       return;
     }
     if (step.type === 'event_roll') {
-      var reIndex = pad2(step.sum);
-      rollPopup({
+      var reIndex = M1.pad2(step.sum);
+      M1.rollPopup({
         actor: mover, title: 'Event Check', kind: 'dual', diceLabels: ['D1', 'D2'], presetValue: { a: step.a, b: step.b }, maxReadMs: EVENT_READ_MS,
         contextHtml: 'Roll two dice and add them together (&sect;5/6).',
         explain: function () { return 'Sum <b>' + step.sum + '</b> &rarr; Random Event <b>RE-' + reIndex + '</b>.'; },
@@ -661,16 +661,16 @@
       // Round rather than to any hex, so there is no square to mark. Say so plainly instead of
       // announcing a marker "placed at null".
       if (!step.hexId) {
-        infoPopup({ actor: mover, title: 'Event Marker', maxReadMs: EVENT_READ_MS, bodyHtml: 'This paragraph calls for an Event marker, but it was reached by the Round&rsquo;s own Event Check rather than by entering a hex (&sect;6/1) &mdash; there is no hex to mark, so none is placed.' }, cb);
+        M1.infoPopup({ actor: mover, title: 'Event Marker', maxReadMs: EVENT_READ_MS, bodyHtml: 'This paragraph calls for an Event marker, but it was reached by the Round&rsquo;s own Event Check rather than by entering a hex (&sect;6/1) &mdash; there is no hex to mark, so none is placed.' }, cb);
         return;
       }
       placeEventMarkerEl(step.hexId);
-      infoPopup({ actor: mover, title: 'Event Marker', maxReadMs: EVENT_READ_MS, bodyHtml: 'An Event marker is placed at ' + step.hexId + '. No further Paragraph or Event Checks are made there until the Condition changes.' }, cb);
+      M1.infoPopup({ actor: mover, title: 'Event Marker', maxReadMs: EVENT_READ_MS, bodyHtml: 'An Event marker is placed at ' + step.hexId + '. No further Paragraph or Event Checks are made there until the Condition changes.' }, cb);
       return;
     }
     if (step.type === 'landmark') {
       // Same hexless case as the Event marker above.
-      infoPopup({
+      M1.infoPopup({
         actor: mover, title: 'Landmark',
         bodyHtml: step.hexId
           ? 'A landmark is placed at ' + step.hexId + '.'
@@ -681,12 +681,12 @@
     if (step.type === 'award_vp') {
       M1.state.vpState.awards.push({ amount: step.amount, note: step.note || 'paragraph award' });
       renderVP();
-      infoPopup({ actor: mover, title: 'Victory Points', bodyHtml: 'This paragraph awards <b>+' + step.amount + ' VP</b>' + (step.note ? ' (' + step.note + ')' : '') + '.' }, cb);
+      M1.infoPopup({ actor: mover, title: 'Victory Points', bodyHtml: 'This paragraph awards <b>+' + step.amount + ' VP</b>' + (step.note ? ' (' + step.note + ')' : '') + '.' }, cb);
       return;
     }
     if (step.type === 'hidden_fire') { hiddenFireChain(mover, step.spec, cb); return; }
     if (step.type === 'run_procedure') {
-      infoPopup({ actor: mover, title: 'Procedure', bodyHtml: 'Procedure triggered: <b>' + step.name + '</b>.' }, cb);
+      M1.infoPopup({ actor: mover, title: 'Procedure', bodyHtml: 'Procedure triggered: <b>' + step.name + '</b>.' }, cb);
       return;
     }
     cb();

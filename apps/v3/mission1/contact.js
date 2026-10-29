@@ -133,9 +133,9 @@
       g.activationHexId = g.hexId;
       M1.state.germans[instanceId] = g;
       newIds.push(cardId);
-      logHeader('German activated: ' + g.name + ' at ' + g.hexId + '.');
-      Cues.banner('activation', 'German Activated', (card.Role ? card.Role + ' · ' : '') + g.hexId);
-      Cues.kranz(Object.keys(M1.state.germans).length > 1 ? 'smug' : 'confident', '<b>Achtung!</b> ' + g.name +
+      M1.logHeader('German activated: ' + g.name + ' at ' + g.hexId + '.');
+      M1.Cues.banner('activation', 'German Activated', (card.Role ? card.Role + ' · ' : '') + g.hexId);
+      M1.Cues.kranz(Object.keys(M1.state.germans).length > 1 ? 'smug' : 'confident', '<b>Achtung!</b> ' + g.name +
         ' takes his post at <b>' + g.hexId + '</b>. From now on he acts by his own card. He is worth <b>' + V.germanActivationVP(card.VP) +
         ' VP</b> to you for showing himself (&sect;2/1); enjoy them.', g.id);
       presentActivation(g, card, numericId, revealNext);
@@ -155,16 +155,16 @@
       var entry = { id: g.id, IN: g.IN, hexId: g.hexId, letter: g.letter, isCommander: false, receivesTwoTurns: g.receivesTwoTurns };
       if (g.receivesTwoTurns) {
         var result = Sched.insertMidRoundGerman(M1.state.track, entry, { arTrack: window.AMBUSH_AR_TRACK });
-        infoPopup({
+        M1.infoPopup({
           actor: g, title: 'Mid-Round Activation &mdash; AR Track',
           bodyHtml: g.name + ' joins the current Round&rsquo;s Action Round Track in the <b>' + slotLabel(result.slot) + '</b> space (&sect;6/6, receives two turns). No effect on US awareness.',
           logHtml: 'Mid-Round activation for ' + g.name + ': placed directly in ' + slotLabel(result.slot) + ' (two turns).',
         }, function () { step(idx + 1); });
         return;
       }
-      var roll = d10();
+      var roll = M1.d10();
       var result2 = Sched.insertMidRoundGerman(M1.state.track, entry, { rollDie: function () { return roll; }, arTrack: window.AMBUSH_AR_TRACK });
-      rollPopup({
+      M1.rollPopup({
         actor: g, title: 'Mid-Round Activation &mdash; AR Track', kind: 'single', presetValue: roll,
         contextHtml: g.name + ' (IN ' + g.IN + ') joins the current Round&rsquo;s Action Round Track (&sect;6/6). No effect on US awareness.',
         explain: function () {
@@ -188,7 +188,7 @@
   // troop. I expect to go through all these steps visually."
   function presentActivation(g, card, numericId, done) {
     // Step 1 — "Find Soldier's Card with that identity number and place it in front of you."
-    infoPopup({
+    M1.infoPopup({
       actor: g, title: 'German Activated — Card ' + card['Card ID'], variant: 'wide',
       bodyHtml: germanCardHtml(card, numericId),
       logHtml: 'German card <b>' + card['Card ID'] + '</b> (' + card.Role + ') drawn.',
@@ -202,7 +202,7 @@
       renderVP();
       var totals = V.computeVPTotal(M1.state.vpState);
       var conditional = V.parseGermanVP(card.VP || '').conditional;
-      infoPopup({
+      M1.infoPopup({
         actor: g, title: 'Victory Points Awarded',
         bodyHtml: '<b>+' + award + ' VP</b> for activating ' + card['Card ID'] + '. You keep this regardless of what happens to him later (&sect;2/1).' +
           (conditional ? '<br><br>His card also carries a conditional award: <b>+' + conditional.amount + ' VP if ' + conditional.trigger + '</b>.' : '') +
@@ -217,7 +217,7 @@
     function step3() {
       makeCounter(g, g.hexId);
       scrollMapTo(g.hexId);
-      infoPopup({
+      M1.infoPopup({
         actor: g, title: 'Counter Placed',
         bodyHtml: 'Counter <b>' + (g.letter || '?') + '</b> is placed in hex <b>' + g.hexId + '</b>, ' + g.stance + '. The map has scrolled to show him.',
         logHtml: 'Counter <b>' + (g.letter || '?') + '</b> placed at ' + g.hexId + '.',
@@ -229,7 +229,7 @@
     // printed on his card. Our AR Track is rebuilt from every active German at the start of each
     // Round, so Complete is genuinely where he sits until that placement happens.
     function step4() {
-      infoPopup({
+      M1.infoPopup({
         actor: g, title: 'Action Round Marker',
         bodyHtml: 'Action Round marker <b>' + (g.letter || '?') + '</b> (Initiative <b>' + g.IN + '</b>, from his card) goes in the <b>Complete</b> space. ' +
           'He takes no action until markers are placed for the coming Round.',
@@ -313,15 +313,15 @@
   }
   function hitBreakdownHtml(b) {
     return termSpan('Base ' + b.baseHit + ' (' + b.band + ')', baseHitTip(b.band)) + ' ' +
-      termSpan(fmtSigned(b.terrainMod) + ' terrain', terrainHitTip()) + ', ' +
-      termSpan(fmtSigned(b.ws) + ' WS', statTip('WS')) +
+      termSpan(M1.fmtSigned(b.terrainMod) + ' terrain', terrainHitTip()) + ', ' +
+      termSpan(M1.fmtSigned(b.ws) + ' WS', statTip('WS')) +
       (b.fireType === 'snap' ? ', ' + termSpan('&minus;2 snap', snapHitTip()) : '') +
-      (b.easyMod ? ', ' + termSpan(fmtSigned(b.easyMod) + ' easy mode', easyModTip(b.easyMod)) : '') +
+      (b.easyMod ? ', ' + termSpan(M1.fmtSigned(b.easyMod) + ' easy mode', easyModTip(b.easyMod)) : '') +
       ' &rarr; Hit Chance <b>' + b.clamped + '</b>.';
   }
   function hitBreakdownText(b) {
-    return 'Base ' + b.baseHit + ' (' + b.band + ' range) ' + fmtSigned(b.terrainMod) + ' terrain, ' + fmtSigned(b.ws) + ' WS' +
-      (b.fireType === 'snap' ? ', -2 snap' : '') + (b.easyMod ? ', ' + fmtSigned(b.easyMod) + ' easy mode' : '') +
+    return 'Base ' + b.baseHit + ' (' + b.band + ' range) ' + M1.fmtSigned(b.terrainMod) + ' terrain, ' + M1.fmtSigned(b.ws) + ' WS' +
+      (b.fireType === 'snap' ? ', -2 snap' : '') + (b.easyMod ? ', ' + M1.fmtSigned(b.easyMod) + ' easy mode' : '') +
       ' -> Hit Chance ' + b.clamped + '.';
   }
 
@@ -341,12 +341,12 @@
       var mod = terrainRow.mods[i];
       var cur = st === s.stance ? ' current' : '';
       return '<div class="stance-cell' + cur + '"><b>' + st + '</b><span>' +
-        (mod === null || mod === undefined ? 'n/a' : fmtSigned(mod)) + '</span></div>';
+        (mod === null || mod === undefined ? 'n/a' : M1.fmtSigned(mod)) + '</span></div>';
     }).join('');
 
     var statRows = [
       ['IN', 'Initiative (IN)', s.IN], ['PC', 'Perception (PC)', s.PC],
-      ['WS', 'Weapon Skill (WS)', fmtSigned(s.WS)], ['MPA', 'Movement (MPA)', s.mpa],
+      ['WS', 'Weapon Skill (WS)', M1.fmtSigned(s.WS)], ['MPA', 'Movement (MPA)', s.mpa],
     ];
     var gcard = '<div class="gcard">' + statRows.map(function (r) {
       return '<div class="gcard-row">' + termSpan(r[1], statTip(r[0], isGerman)) + '<b>' + r[2] + '</b></div>';
@@ -359,7 +359,7 @@
     var equipNotes = '<div class="gcard-notes"><span>Carrying</span>' + kitHtml(s) + '</div>';
 
     // solo: a fresh card each time, so clicking him again never stacks a second copy (Wan, 2026-10-25)
-    infoPopup({
+    M1.infoPopup({
       actor: s, variant: 'wide', solo: true,
       title: s.name + (s.isCommander ? ' — Commander' : '') + (s.status && s.status !== 'unharmed' ? ' — ' + s.status : ''),
       bodyHtml: gcard + terrainNotes + equipNotes,

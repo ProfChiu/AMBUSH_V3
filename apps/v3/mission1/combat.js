@@ -19,15 +19,15 @@
   function toHitCard(o, onHit, onMiss) {
     var result = o.result || function (roll) { return FC.resolveHitRoll(o.chance, roll) === 'hit' ? 'hit' : 'miss'; };
     var text = o.text || HIT_TEXT, words = o.logWords || HIT_WORDS, fx = o.fx;
-    rollPopup({ actor: o.actor, title: o.title, kind: 'single', variant: o.variant, contextHtml: o.contextHtml,
-      strip: o.strip !== undefined ? o.strip : o.result ? undefined : hitStrip(o.chance),
+    M1.rollPopup({ actor: o.actor, title: o.title, kind: 'single', variant: o.variant, contextHtml: o.contextHtml,
+      strip: o.strip !== undefined ? o.strip : o.result ? undefined : M1.hitStrip(o.chance),
       explain: function (roll) { return text[result(roll)]; },
       logText: function (roll) { return o.log + ': <span class="roll">' + roll + '</span> &rarr; ' + words[result(roll)] + '.'; },
       fxLanded: fx && function (roll) {
         var hit = result(roll) === 'hit';
         if (fx.mark) fx.mark().resolve(hit ? 'hit' : 'miss');
-        FX.floatDie(fx.hex, roll, hit ? 'hit' : 'miss');
-        if (fx.loud) { FX.sound(hit ? 'hit' : 'miss'); if (hit) FX.shake(); else FX.badge(fx.hex, 'MISS', 'neutral'); }
+        M1.FX.floatDie(fx.hex, roll, hit ? 'hit' : 'miss');
+        if (fx.loud) { M1.FX.sound(hit ? 'hit' : 'miss'); if (hit) M1.FX.shake(); else M1.FX.badge(fx.hex, 'MISS', 'neutral'); }
       },
     }, function (roll) {
       var r = result(roll);
@@ -48,16 +48,16 @@
     if (firer.side === 'german') wakeUpUnawareInHex(target.hexId);
     var tracer = { resolve: function () {} }; // board effect (task 4); set when the card shows the shot
 
-    infoPopup({ actor: { left: firer, right: target }, title: 'Fire — ' + (fireType === 'aimed' ? 'Aimed' : 'Snap'),
+    M1.infoPopup({ actor: { left: firer, right: target }, title: 'Fire — ' + (fireType === 'aimed' ? 'Aimed' : 'Snap'),
       bodyHtml: firer.name + ' fires (' + fireType + ') at ' + target.name + ' — range ' + range + ' (' + band + ').',
-      fx: function () { FX.ensureVisible([firer.hexId, target.hexId]); tracer = FX.tracer(firer.hexId, target.hexId, 'fire', weapon && weapon.id); } }, jamStep);
+      fx: function () { M1.FX.ensureVisible([firer.hexId, target.hexId]); tracer = M1.FX.tracer(firer.hexId, target.hexId, 'fire', weapon && weapon.id); } }, jamStep);
 
     function jamStep() {
-      rollPopup({ actor: { left: firer, right: target }, title: 'Jam Check', kind: 'percentile', variant: 'wide', 
+      M1.rollPopup({ actor: { left: firer, right: target }, title: 'Jam Check', kind: 'percentile', variant: 'wide', 
         contextHtml: 'Weapon: ' + weapon.name + '.',
         explain: function (roll) { var jam = FC.resolveJamCheck(weapon, fireType, roll); return jam.jammed ? '<b style="color:#e05a4a;">JAMMED</b> &mdash; stays jammed until cleared (&sect;9/4).' : 'No jam.'; },
-        logText: function (roll) { var jam = FC.resolveJamCheck(weapon, fireType, roll); return 'Jam check: <span class="roll">' + pad2(roll) + '</span> vs &le;' + pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
-        fxLanded: function (roll) { if (FC.resolveJamCheck(weapon, fireType, roll).jammed) { tracer.resolve('jam'); FX.badge(firer.hexId, 'JAMMED', 'bad'); } },
+        logText: function (roll) { var jam = FC.resolveJamCheck(weapon, fireType, roll); return 'Jam check: <span class="roll">' + M1.pad2(roll) + '</span> vs &le;' + M1.pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
+        fxLanded: function (roll) { if (FC.resolveJamCheck(weapon, fireType, roll).jammed) { tracer.resolve('jam'); M1.FX.badge(firer.hexId, 'JAMMED', 'bad'); } },
       }, function (roll) { if (FC.resolveJamCheck(weapon, fireType, roll).jammed) { firer.weaponJammed = true; onDone(); return; } hitStep(); });
     }
     function hitStep() {
@@ -69,7 +69,7 @@
       }, damageStep, ammoStep);
     }
     function damageStep() {
-      rollPopup({ actor: { left: firer, right: target }, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: damageStrip(weapon),
+      M1.rollPopup({ actor: { left: firer, right: target }, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: M1.damageStrip(weapon),
         explain: function (roll) {
           var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
           var ns = FC.escalateDamageResult(target.status, displayCode(target, dmg.code));
@@ -77,7 +77,7 @@
             fieldDressNote(target, dmg.code);
         },
         logText: function (roll) { var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND); return 'Damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + ' = ' + dmg.label + '</b>.'; },
-        fxLanded: function (roll) { FX.floatDie(target.hexId, roll, 'bad'); },
+        fxLanded: function (roll) { M1.FX.floatDie(target.hexId, roll, 'bad'); },
       }, function (roll) {
         var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
         applyDamage(target, D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
@@ -90,10 +90,10 @@
     // not just its consequence, so a German firer skips this step entirely.
     function ammoStep() {
       if (firer.side === 'german') { onDone(); return; }
-      rollPopup({ actor: firer, title: 'Ammo Check', kind: 'percentile', contextHtml: 'Weapon: ' + weapon.name + '.',
+      M1.rollPopup({ actor: firer, title: 'Ammo Check', kind: 'percentile', contextHtml: 'Weapon: ' + weapon.name + '.',
         explain: function (roll) { var ammo = FC.resolveAmmoExpenditure(weapon, roll); return ammo.expended ? 'Clip spent.' : 'Clip not used up.'; },
-        logText: function (roll) { var ammo = FC.resolveAmmoExpenditure(weapon, roll); return 'Ammo: <span class="roll">' + pad2(roll) + '</span> &rarr; ' + (ammo.expended ? 'clip spent.' : 'not used up.'); },
-        fxLanded: function (roll) { if (FC.resolveAmmoExpenditure(weapon, roll).expended) FX.badge(firer.hexId, 'CLIP SPENT', 'neutral'); },
+        logText: function (roll) { var ammo = FC.resolveAmmoExpenditure(weapon, roll); return 'Ammo: <span class="roll">' + M1.pad2(roll) + '</span> &rarr; ' + (ammo.expended ? 'clip spent.' : 'not used up.'); },
+        fxLanded: function (roll) { if (FC.resolveAmmoExpenditure(weapon, roll).expended) M1.FX.badge(firer.hexId, 'CLIP SPENT', 'neutral'); },
       }, function (roll) {
         var ammo = FC.resolveAmmoExpenditure(weapon, roll);
         if (ammo.expended) { EQ.expendAmmo(firer.inventory, firer.weaponId); renderRoster(); }
@@ -111,7 +111,7 @@
     var row = LOS.BUILDING_TERRAIN[LOS_TERRAIN[target.hexId]] ? TERRAIN_ROW_INTERIOR_FAR : terrainRowFor(target.hexId);
     if (!target.isActive) { onDone(); return; }
     if (!FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, target.stance)) {
-      infoPopup({ actor: target, title: 'Hidden rifleman', bodyHtml: 'A shot cracks out of nowhere, but ' + target.name + ' cannot be fired at where he lies.' }, onDone);
+      M1.infoPopup({ actor: target, title: 'Hidden rifleman', bodyHtml: 'A shot cracks out of nowhere, but ' + target.name + ' cannot be fired at where he lies.' }, onDone);
       return;
     }
     var easyMod = D.hitChanceMod(M1.state.difficulty, 'german');
@@ -120,12 +120,12 @@
       ws: spec.weaponSkill, fireType: spec.fireType, easyMod: easyMod,
     };
     b.clamped = FC.computeFinalHitChance({ baseHit: b.baseHit, terrainMod: b.terrainMod, fireType: b.fireType, weaponSkill: b.ws, otherMods: easyMod ? [easyMod] : [] }).clamped;
-    infoPopup({ actor: target, title: 'Hidden rifleman',
+    M1.infoPopup({ actor: target, title: 'Hidden rifleman',
       bodyHtml: target.name + ' is fired upon by a hidden rifleman: ' + spec.fireType + ', ' + spec.range + ' range, ' + weapon.name + ', Weapon Skill ' + spec.weaponSkill + '.' }, jamStep);
     function jamStep() {
-      rollPopup({ actor: target, title: 'Jam Check', kind: 'percentile', variant: 'wide', contextHtml: 'Weapon: ' + weapon.name + '.',
+      M1.rollPopup({ actor: target, title: 'Jam Check', kind: 'percentile', variant: 'wide', contextHtml: 'Weapon: ' + weapon.name + '.',
         explain: function (roll) { return FC.resolveJamCheck(weapon, spec.fireType, roll).jammed ? '<b style="color:#e05a4a;">JAMMED</b> &mdash; the shot never comes.' : 'No jam.'; },
-        logText: function (roll) { var jam = FC.resolveJamCheck(weapon, spec.fireType, roll); return 'Hidden rifleman, jam check: <span class="roll">' + pad2(roll) + '</span> vs &le;' + pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
+        logText: function (roll) { var jam = FC.resolveJamCheck(weapon, spec.fireType, roll); return 'Hidden rifleman, jam check: <span class="roll">' + M1.pad2(roll) + '</span> vs &le;' + M1.pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
       }, function (roll) { if (FC.resolveJamCheck(weapon, spec.fireType, roll).jammed) { onDone(); return; } hitStep(); });
     }
     function hitStep() {
@@ -134,14 +134,14 @@
       }, damageStep, onDone);
     }
     function damageStep() {
-      rollPopup({ actor: target, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: damageStrip(weapon),
+      M1.rollPopup({ actor: target, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: M1.damageStrip(weapon),
         explain: function (roll) {
           var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
           var ns = FC.escalateDamageResult(target.status, displayCode(target, dmg.code));
           return '<b>' + dmg.code + ' = ' + dmg.label + '</b> &mdash; ' + target.name + ' is now <b>' + ns.toUpperCase() + '</b>.' + fieldDressNote(target, dmg.code);
         },
         logText: function (roll) { var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND); return 'Hidden rifleman, damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + ' = ' + dmg.label + '</b>.'; },
-        fxLanded: function (roll) { FX.floatDie(target.hexId, roll, 'bad'); },
+        fxLanded: function (roll) { M1.FX.floatDie(target.hexId, roll, 'bad'); },
       }, function (roll) {
         var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
         applyDamage(target, D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
@@ -184,14 +184,14 @@
     }
 
     var arc = { resolve: function () {} };
-    infoPopup({ actor: thrower, title: 'Throw Grenade', focusHex: targetHexId, bodyHtml: thrower.name + ' throws a grenade at ' + targetHexId + ' — range ' + range + ' (' + band + ').',
-      fx: function () { FX.ensureVisible([thrower.hexId, targetHexId]); arc = FX.tracer(thrower.hexId, targetHexId, 'grenade'); } }, hitStep);
+    M1.infoPopup({ actor: thrower, title: 'Throw Grenade', focusHex: targetHexId, bodyHtml: thrower.name + ' throws a grenade at ' + targetHexId + ' — range ' + range + ' (' + band + ').',
+      fx: function () { M1.FX.ensureVisible([thrower.hexId, targetHexId]); arc = M1.FX.tracer(thrower.hexId, targetHexId, 'grenade'); } }, hitStep);
 
     function hitStep() {
-      var parts = ['Base ' + baseHit + ' (' + band + ')', fmtSigned(thrower.WS) + ' WS'];
+      var parts = ['Base ' + baseHit + ' (' + band + ')', M1.fmtSigned(thrower.WS) + ' WS'];
       if (thrower.status === 'wounded') parts.push('&minus;2 wounded');
       if (mods.indexOf(-3) !== -1) parts.push('&minus;3 not in sight');
-      if (easyMod) parts.push(fmtSigned(easyMod) + ' easy mode');
+      if (easyMod) parts.push(M1.fmtSigned(easyMod) + ' easy mode');
       var breakdown = parts.join(' ') + ' &rarr; Hit Chance <b>' + hitChance.clamped + '</b>.';
       toHitCard({ actor: thrower, title: 'Grenade Throw', contextHtml: breakdown, chance: hitChance.clamped,
         text: { hit: '<b style="color:var(--clear)">LANDS</b> in ' + targetHexId + '.', miss: 'Missed &mdash; scatters.' },
@@ -200,20 +200,20 @@
       }, function () { resolveLanding(targetHexId); }, scatterStep);
     }
     function scatterStep() {
-      rollPopup({ actor: thrower, title: 'Grenade Scatter', kind: 'single', contextHtml: 'Missed the target hex &mdash; rolling to see where it actually lands (&sect;10/3).',
+      M1.rollPopup({ actor: thrower, title: 'Grenade Scatter', kind: 'single', contextHtml: 'Missed the target hex &mdash; rolling to see where it actually lands (&sect;10/3).',
         explain: function (roll) { return 'Lands in <b>' + Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId + '</b>.'; },
         logText: function (roll) { return 'Scatter: <span class="roll">' + roll + '</span> &rarr; lands in ' + Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId + '.'; },
-        fxLanded: function (roll) { var land = Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId; FX.trail(targetHexId, land); FX.ensureVisible([land]); },
+        fxLanded: function (roll) { var land = Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId; M1.FX.trail(targetHexId, land); M1.FX.ensureVisible([land]); },
       }, function (roll) { resolveLanding(Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId); });
     }
     function resolveLanding(landHexId) {
-      rollPopup({ actor: thrower, title: 'Dud Check', kind: 'percentile', contextHtml: 'Grenade landed in ' + landHexId + '.',
+      M1.rollPopup({ actor: thrower, title: 'Dud Check', kind: 'percentile', contextHtml: 'Grenade landed in ' + landHexId + '.',
         explain: function (roll) { return Gr.resolveDudCheck(roll).dud ? '<b>DUD</b> &mdash; no effect.' : 'Explodes!'; },
-        logText: function (roll) { return 'Dud check: <span class="roll">' + pad2(roll) + '</span> &rarr; ' + (Gr.resolveDudCheck(roll).dud ? 'dud.' : 'explodes.'); },
+        logText: function (roll) { return 'Dud check: <span class="roll">' + M1.pad2(roll) + '</span> &rarr; ' + (Gr.resolveDudCheck(roll).dud ? 'dud.' : 'explodes.'); },
         fxLanded: function (roll) {
           var dud = Gr.resolveDudCheck(roll).dud;
-          FX.blast(landHexId, dud);
-          FX.badge(landHexId, dud ? 'DUD' : 'BOOM', dud ? 'neutral' : 'bad');
+          M1.FX.blast(landHexId, dud);
+          M1.FX.badge(landHexId, dud ? 'DUD' : 'BOOM', dud ? 'neutral' : 'bad');
         },
       }, function (roll) {
         if (Gr.resolveDudCheck(roll).dud) { onDone(); return; }
@@ -226,7 +226,7 @@
     function damageEach(occupants, i, landWeapon) {
       if (i >= occupants.length) { onDone(); return; }
       var victim = occupants[i];
-      rollPopup({ actor: victim, title: 'Grenade Damage — ' + victim.name, kind: 'single', contextHtml: 'Damage roll on the ' + landWeapon.name + ' row.', strip: damageStrip(landWeapon),
+      M1.rollPopup({ actor: victim, title: 'Grenade Damage — ' + victim.name, kind: 'single', contextHtml: 'Damage roll on the ' + landWeapon.name + ' row.', strip: M1.damageStrip(landWeapon),
         explain: function (roll) {
           var dmg = FC.resolveDamage(landWeapon, roll, CHART.DAMAGE_LEGEND);
           var code = dmg.code === 'X' ? FC.resolveXCode(victim.stance === 'prone') : dmg.code;
@@ -235,7 +235,7 @@
             fieldDressNote(victim, code);
         },
         logText: function (roll) { var dmg = FC.resolveDamage(landWeapon, roll, CHART.DAMAGE_LEGEND); return 'Grenade damage (' + victim.name + '): <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + '</b>.'; },
-        fxLanded: function (roll) { FX.floatDie(victim.hexId, roll, 'bad'); },
+        fxLanded: function (roll) { M1.FX.floatDie(victim.hexId, roll, 'bad'); },
       }, function (roll) {
         var dmg = FC.resolveDamage(landWeapon, roll, CHART.DAMAGE_LEGEND);
         var code = dmg.code === 'X' ? FC.resolveXCode(victim.stance === 'prone') : dmg.code;
@@ -254,11 +254,11 @@
     var weaponId = chooseCapture ? 'asltc' : 'asltk';
     var weapon = weaponById(weaponId);
     var lunge = { resolve: function () {} }; // board effect (task 4); declared before the card can show
-    infoPopup({
+    M1.infoPopup({
       actor: { left: attacker, right: defender },
       title: isCharge ? 'Charge Assault' : 'Assault',
       bodyHtml: attacker.name + (isCharge ? ' charge assaults ' : ' assaults ') + defender.name + (chooseCapture ? ' (to capture)' : ' (to kill)') + '.',
-      fx: function () { FX.ensureVisible([attacker.hexId, defender.hexId]); lunge = FX.tracer(attacker.hexId, defender.hexId, 'assault'); FX.badge(attacker.hexId, isCharge ? 'CHARGE' : 'ASSAULT', 'amber'); },
+      fx: function () { M1.FX.ensureVisible([attacker.hexId, defender.hexId]); lunge = M1.FX.tracer(attacker.hexId, defender.hexId, 'assault'); M1.FX.badge(attacker.hexId, isCharge ? 'CHARGE' : 'ASSAULT', 'amber'); },
     }, hitStep);
 
     function hitStep() {
@@ -273,11 +273,11 @@
       var easyMod = D.hitChanceMod(M1.state.difficulty, attacker.side);
       if (easyMod) hitChance = D.applyHitMod(hitChance, easyMod);
       // Spell out every §11/4 modifier that actually applied, so the number is auditable.
-      var parts = ['Base ' + CHART.BASE_HIT.assault, fmtSigned(attacker.WS) + ' attacker WS'];
+      var parts = ['Base ' + CHART.BASE_HIT.assault, M1.fmtSigned(attacker.WS) + ' attacker WS'];
       if ((mods.defenderWS || 0) >= 1 && !mods.defenderPanicked && !mods.defenderWounded) parts.push('&minus;' + mods.defenderWS + ' defender WS');
       if (isCharge) parts.push('&minus;3 charge assault');
       if (mods.attackerWounded) parts.push('&minus;2 attacker wounded');
-      if (easyMod) parts.push(fmtSigned(easyMod) + ' easy mode');
+      if (easyMod) parts.push(M1.fmtSigned(easyMod) + ' easy mode');
       var breakdown = parts.join(' ') + ' &rarr; Hit Chance <b>' + hitChance.clamped + '</b>.';
       toHitCard({ actor: { left: attacker, right: defender }, title: 'Assault Hit Chance', variant: 'wide', contextHtml: breakdown,
         chance: hitChance.clamped, log: 'Assault to-hit',
@@ -285,7 +285,7 @@
       }, damageStep, onDone);
     }
     function damageStep() {
-      rollPopup({ actor: { left: attacker, right: defender }, title: 'Assault Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: damageStrip(weapon),
+      M1.rollPopup({ actor: { left: attacker, right: defender }, title: 'Assault Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: M1.damageStrip(weapon),
         explain: function (roll) {
           var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
           var code = dmg.code === 'Z' ? FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
@@ -300,10 +300,10 @@
         },
         logText: function (roll) { var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND); return 'Assault damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + '</b>.'; },
         fxLanded: function (roll) {
-          FX.floatDie(defender.hexId, roll, 'bad');
+          M1.FX.floatDie(defender.hexId, roll, 'bad');
           var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
           var code = dmg.code === 'Z' ? FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
-          if (code === '*') FX.badge(defender.hexId, 'NO EFFECT', 'neutral');
+          if (code === '*') M1.FX.badge(defender.hexId, 'NO EFFECT', 'neutral');
         },
       }, function (roll) {
         var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
@@ -337,7 +337,7 @@
     var before = target.status;
     var newStatus = FC.escalateDamageResult(target.status, code);
     target.status = newStatus;
-    if (newStatus !== before) FX.status(target); else FX.badge(target.hexId, 'NO EFFECT', 'neutral');
+    if (newStatus !== before) M1.FX.status(target); else M1.FX.badge(target.hexId, 'NO EFFECT', 'neutral');
     // The AR Track only exists while a Round is in progress; `track` is null in Operations. Every
     // Sched call below therefore has to be conditional. Nothing inflicts damage during Operations
     // today — the one candidate, the minefield procedure, is displayed but never resolved — so
@@ -368,7 +368,7 @@
           // Task #68 (docs/37_PICKUP_EXCHANGE.md): actually lands in the hex now, pickup-able by
           // Pick Up/Exchange Equipment — previously just logged and vanished (docs/33's own gap).
           addGroundItem(target.hexId, id, 'port');
-          logLine(target.name + ' drops ' + equipmentName(id) + ' (wounded, Port Box reduced to one).', 'event');
+          M1.logLine(target.name + ' drops ' + equipmentName(id) + ' (wounded, Port Box reduced to one).', 'event');
         });
       }
       updateCounterVisual(target); renderTrack();
@@ -379,7 +379,7 @@
   }
   function applyCapture(target) {
     target.status = 'captured';
-    FX.status(target);
+    M1.FX.status(target);
     target.stance = 'prone';
     target.isActive = false;
     Sched.removeFromRound(M1.state.track, target.id);
@@ -419,12 +419,12 @@
     if (!seen) {
       g.isActive = false;
       var el = counterEls[g.id]; if (el) { el.remove(); delete counterEls[g.id]; }
-      logHeader(g.name + ' is left unguarded with no US soldier in sight &mdash; he flees the map for good (&sect;11/2).');
+      M1.logHeader(g.name + ' is left unguarded with no US soldier in sight &mdash; he flees the map for good (&sect;11/2).');
       renderRoster();
       return;
     }
     g.isActive = true;
-    logHeader(g.name + ' is left unguarded &mdash; he is free! All US soldiers are now aware of him (&sect;11/2).');
+    M1.logHeader(g.name + ' is left unguarded &mdash; he is free! All US soldiers are now aware of him (&sect;11/2).');
     activeUS().forEach(function (s) { s.aware = true; });
     renderRoster();
     startActionRound(1);
@@ -432,10 +432,10 @@
   function recordCasualty(soldier, outcome) {
     if (soldier.side === 'german') {
       M1.state.vpState.germanDefeats.push({ vpText: soldier.card.VP || '+1 VP', outcome: outcome });
-      logLine(soldier.name + ' is out of the fight (' + outcome + ').', 'event');
+      M1.logLine(soldier.name + ' is out of the fight (' + outcome + ').', 'event');
     } else {
       M1.state.vpState.usCasualties.push({ soldierId: soldier.id, outcome: outcome, wasExfiltrated: false });
-      logLine(soldier.name + ' is a casualty (' + outcome + ').', 'event');
+      M1.logLine(soldier.name + ' is a casualty (' + outcome + ').', 'event');
     }
   }
 
@@ -453,21 +453,21 @@
       if (s.status === 'panicked' && s.stance !== 'prone') {
         s.stance = 'prone';
         updateCounterVisual(s);
-        logLine(s.name + ' falls prone (panicked, &sect;13/1).', 'event');
+        M1.logLine(s.name + ' falls prone (panicked, &sect;13/1).', 'event');
       }
     });
   }
   function endRound() {
     document.getElementById('action-sec').style.display = 'none';
     fallPronePanickedSoldiers();
-    Cues.banner('round', 'Round ' + M1.state.roundNum + ' Complete');
-    infoPopup({ title: 'Round ' + M1.state.roundNum + ' Complete', bodyHtml: 'Round ' + M1.state.roundNum + ' complete.' }, function () {
+    M1.Cues.banner('round', 'Round ' + M1.state.roundNum + ' Complete');
+    M1.infoPopup({ title: 'Round ' + M1.state.roundNum + ' Complete', bodyHtml: 'Round ' + M1.state.roundNum + ' complete.' }, function () {
       if (!activeGermans().length) {
         // All Germans down or captured — back to Operations, matching §6's Rounds-end rule.
         M1.state.phase = 'movement';
         document.getElementById('tb-phase').textContent = 'Operations';
         document.getElementById('status-banner').textContent = 'No active Germans — back to Operations.';
-        Cues.banner('ops', 'Operations', 'No active Germans');
+        M1.Cues.banner('ops', 'Operations', 'No active Germans');
         document.getElementById('track-sec').style.display = 'none';
         document.getElementById('movement-sec').style.display = '';
         // §11/2 (Task #72): a captured German whose captor didn't survive/stay in his hex through
@@ -515,7 +515,7 @@
   }
   function finishExit(s, carried) {
     var remaining = activeUS().filter(function (o) { return o.id !== s.id; }).length;
-    infoPopup({
+    M1.infoPopup({
       actor: s, title: 'Exit Map',
       bodyHtml: s.name + ' leaves the map at ' + s.hexId + '.' +
         (carried ? ' He carries <b>' + carried.name + '</b> (incapacitated) off with him &mdash; no VP lost for that casualty (&sect;15).' : '') +
@@ -580,11 +580,11 @@
     clearDestMarks();
     var totals = renderVP();
     var result = V.resolveVictory(totals.total, vpRequirement());
-    Cues.banner('end', result === 'won' ? 'Mission Accomplished' : 'Mission Failed', totals.total + ' VP · need ' + vpRequirement(), result === 'won' ? 'won' : 'lost');
-    Cues.kranz(result === 'won' ? 'frustrated' : 'smug', result === 'won'
+    M1.Cues.banner('end', result === 'won' ? 'Mission Accomplished' : 'Mission Failed', totals.total + ' VP · need ' + vpRequirement(), result === 'won' ? 'won' : 'lost');
+    M1.Cues.kranz(result === 'won' ? 'frustrated' : 'smug', result === 'won'
       ? '<b>Verdammt.</b> ' + totals.total + ' VP against the ' + vpRequirement() + ' you needed. The ground is yours, for today.'
       : '<b>Zu wenig.</b> ' + totals.total + ' VP, and you needed ' + vpRequirement() + '. This ground stays ours.');
-    infoPopup({
+    M1.infoPopup({
       title: result === 'won' ? 'Mission Accomplished' : 'Mission Failed',
       bodyHtml: 'Ending: ' + reason + '. Final VP: ' + totals.gained + ' gained &minus; ' + totals.lost + ' lost = <b>' + totals.total + '</b> (need ' + vpRequirement() + '). Result: <b>' + result.toUpperCase() + '</b>.' +
         (vpTargetNote() ? '<br><br><span style="color:var(--text-label); font-size:12px;">' + vpTargetNote() + '</span>' : ''),
@@ -593,7 +593,7 @@
       banner.className = result === 'won' ? 'win' : 'lose';
       banner.textContent = result === 'won' ? 'MISSION WON (' + totals.total + ' VP)' : 'MISSION LOST (' + totals.total + ' VP)';
       document.getElementById('tb-phase').textContent = result === 'won' ? 'Won' : 'Lost';
-      logHeader('MISSION ' + result.toUpperCase() + ' — ' + totals.total + ' VP (' + reason + ').');
+      M1.logHeader('MISSION ' + result.toUpperCase() + ' — ' + totals.total + ' VP (' + reason + ').');
     });
   }
 

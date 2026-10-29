@@ -4,7 +4,7 @@
   // §4 Squad Generation — real procedure, auto-buy heuristic for the actual choices (see header)
   // ---------------------------------------------------------------------
   function startSquadGeneration() {
-    infoPopup({ title: 'Squad Generation', bodyHtml: 'Rolling to determine your squad\'s quality and equipment (§4).' }, function () {
+    M1.infoPopup({ title: 'Squad Generation', bodyHtml: 'Rolling to determine your squad\'s quality and equipment (§4).' }, function () {
       rollSquadQuality();
     });
   }
@@ -19,14 +19,14 @@
   function easyRollPopup(opts, cb) {
     var n = D.squadRolls(M1.state.difficulty);
     if (n < 2) {
-      rollPopup({
+      M1.rollPopup({
         title: opts.title, kind: 'single', contextHtml: opts.contextHtml,
         explain: function (roll) { return opts.explain(roll); },
         logText: function (roll) { return opts.logText(roll); },
       }, function (roll) { cb(roll); });
       return;
     }
-    rollPopup({
+    M1.rollPopup({
       title: opts.title + ' (Easy — best of two)', kind: 'dual', diceLabels: ['ROLL 1', 'ROLL 2'],
       contextHtml: opts.contextHtml + '<br>Easy mode rolls twice and keeps the better result.',
       explain: function (rolls) {
@@ -94,7 +94,7 @@
     });
     M1.state.usSoldiers = lettered;
 
-    infoPopup({
+    M1.infoPopup({
       title: 'Squad Assembled', bodyHtml: M1.state.usSoldiers.length + ' soldiers bought for ' + bought.spentSP + '/' + sp + ' Squad Points: ' +
         M1.state.usSoldiers.map(function (s) { return s.letter + ' (IN ' + s.IN + (s.isCommander ? ', Commander' : '') + ')'; }).join(', ') + '.',
     }, function () {
@@ -104,7 +104,7 @@
   function rollRatingsSequentially(i, wp) {
     if (i >= M1.state.usSoldiers.length) { buyEquipment(wp); return; }
     var s = M1.state.usSoldiers[i];
-    rollPopup({
+    M1.rollPopup({
       actor: s, title: 'Ratings — ' + s.name, kind: 'single',
       contextHtml: 'Rolling Perception, Weapon Skill, and Driving Skill for ' + s.letter + ' (IN ' + s.IN + ').',
       explain: function (roll) {
@@ -114,25 +114,25 @@
         // standing rule is that the player sees the machinery, and these were part of it.
         function rated(firstRoll, resolve) {
             var rolls = [firstRoll];
-            for (var k = 1; k < D.squadRolls(M1.state.difficulty); k++) rolls.push(d10());
+            for (var k = 1; k < D.squadRolls(M1.state.difficulty); k++) rolls.push(M1.d10());
             var best = D.chooseBest(rolls, resolve);
             return { value: best.value, rolls: rolls, kept: best.roll };
         }
         var pc = rated(roll, function (r) { return SG.resolvePC(SQCHART, r, s.IN); });
-        var ws = rated(d10(), function (r) { return SG.resolveWS(SQCHART, r, s.IN); });
-        var ds = rated(d10(), function (r) { return SG.resolveDS(SQCHART, r, s.IN); });
+        var ws = rated(M1.d10(), function (r) { return SG.resolveWS(SQCHART, r, s.IN); });
+        var ds = rated(M1.d10(), function (r) { return SG.resolveDS(SQCHART, r, s.IN); });
         s.PC = pc.value; s.WS = ws.value; s.DS = ds.value;
         function shown(label, r) {
           return r.rolls.length > 1
             ? label + ' rolled ' + r.rolls.join(' / ') + ', kept ' + r.kept
             : label + ' rolled ' + r.rolls[0];
         }
-        return 'PC <b>' + s.PC + '</b> &middot; WS <b>' + fmtSigned(s.WS) + '</b> &middot; DS <b>' + s.DS +
+        return 'PC <b>' + s.PC + '</b> &middot; WS <b>' + M1.fmtSigned(s.WS) + '</b> &middot; DS <b>' + s.DS +
           '</b> &middot; MPA <b>' + s.mpa + '</b>.' +
           '<br><span style="color:var(--text-label); font-size:12px;">' +
           [shown('PC', pc), shown('WS', ws), shown('DS', ds)].join(' &middot; ') + '</span>';
       },
-      logText: function () { return s.letter + ' ' + s.name + ': PC ' + s.PC + ', WS ' + fmtSigned(s.WS) + ', DS ' + s.DS + ', MPA ' + s.mpa + '.'; },
+      logText: function () { return s.letter + ' ' + s.name + ': PC ' + s.PC + ', WS ' + M1.fmtSigned(s.WS) + ', DS ' + s.DS + ', MPA ' + s.mpa + '.'; },
     }, function () { rollRatingsSequentially(i + 1, wp); });
   }
   function buyEquipment(wp) {
@@ -141,7 +141,7 @@
     // Boxes / Ammo Boxes — this is also where the BAR-to-commander swap actually happens now,
     // via equipmentrules.js's stow/drop rather than just overwriting weaponId.
     SG.distributeEquipment(M1.state.usSoldiers, bought, SQCHART, EQ);
-    infoPopup({
+    M1.infoPopup({
       title: 'Equipment', bodyHtml: 'Spent ' + bought.spentWP + '/' + wp + ' Weapon Points: ' +
         Object.keys(bought.equipment).map(function (id) { return bought.equipment[id] + '&times; ' + id; }).join(', ') + '.',
     }, function () {
@@ -175,7 +175,7 @@
   function promptPlaceSoldier() {
     var s = M1.state.usSoldiers[M1.state.entryIndex];
     document.getElementById('status-banner').textContent = 'Place ' + s.name + ' on the north edge (A1-J1).';
-    infoPopup({ actor: s, title: 'Entry Placement', bodyHtml: 'Place ' + s.name + ' on the north edge (A1&ndash;J1).' });
+    M1.infoPopup({ actor: s, title: 'Entry Placement', bodyHtml: 'Place ' + s.name + ' on the north edge (A1&ndash;J1).' });
   }
   function placeNextSoldier(hexId) {
     if (M1.state.entryIndex >= M1.state.usSoldiers.length) return;
@@ -183,7 +183,7 @@
     s.hexId = hexId;
     makeCounter(s, hexId);
     updateCounterVisual(s);
-    logLine(s.name + ' enters the map at ' + hexId + '.');
+    M1.logLine(s.name + ' enters the map at ' + hexId + '.');
     M1.state.entryIndex++;
     if (M1.state.entryIndex >= M1.state.usSoldiers.length) {
       Object.keys(entryEls).forEach(function (id) { entryEls[id].remove(); });

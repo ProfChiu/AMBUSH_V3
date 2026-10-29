@@ -47,6 +47,10 @@ def owners(sc):
         for n in sc['files'][f]['decls']:
             if n != 'M1':  # each wrapped file's own `var M1 = window.AmbushM1`
                 own[n] = f
+    for f in sc['order']:  # a mutable that became an M1 property: the file that sets it at load time
+        for r in sc['files'][f]['m1']:
+            if r['write'] and r['load'] and r['prop'] != 'state':
+                own.setdefault(r['prop'], f)
     return own
 
 

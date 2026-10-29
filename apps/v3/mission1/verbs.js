@@ -208,7 +208,7 @@
       buttons: [{ id: 'cancel', label: 'Cancel' }],
       render: function (ctx) {
         spec.choices = offers.map(function (o) {
-          return { text: stripTags(o.label), odds: null, pick: function () { Dialogs.reset(); cb(o); } };
+          return { text: M1.stripTags(o.label), odds: null, pick: function () { Dialogs.reset(); cb(o); } };
         });
         var html = offers.map(function (o, i) {
           return '<div class="target-row" data-idx="' + i + '"><span class="target-id"><b>' + o.label + '</b></span></div>';
@@ -236,7 +236,7 @@
   }
   function resolvePickup(actor, offer) {
     var ok = offer.take();
-    infoPopup({
+    M1.infoPopup({
       actor: actor, title: 'Pick Up / Exchange Equipment',
       bodyHtml: ok ? actor.name + ' takes ' + offer.label + '.' : actor.name + ' has no room to carry ' + offer.label + '.',
       logHtml: (ok ? actor.name + ' takes ' + offer.label + '.' : actor.name + ' has no room for ' + offer.label + '.'),
@@ -281,7 +281,7 @@
       onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (recipient) {
       Sched.giveTurn(M1.state.track, giver.id, recipient.id);
-      infoPopup({
+      M1.infoPopup({
         actor: { left: giver, right: recipient }, title: 'Give Turn',
         bodyHtml: giver.name + ' gives his turn to ' + recipient.name + '.',
         logHtml: giver.name + ' gives his turn to ' + recipient.name + ' (&sect;6/3).',
@@ -300,7 +300,7 @@
     }, function (recipient) {
       recipient.aware = true;
       Sched.applyBecomesAware(M1.state.track, recipient.id);
-      infoPopup({
+      M1.infoPopup({
         actor: { left: giver, right: recipient }, title: 'Make Aware',
         bodyHtml: giver.name + ' spends his turn to make ' + recipient.name + ' aware.',
         logHtml: recipient.name + ' is now aware (&sect;6/5), made aware by ' + giver.name + '.',
@@ -354,7 +354,7 @@
       if (free) s.usedFreeStanceChange = true;
       updateCounterVisual(s);
       var how = free ? 'free stance change' : '1 MP, Movement Action';
-      infoPopup({
+      M1.infoPopup({
         actor: s, title: 'Change Stance',
         bodyHtml: s.name + ' goes <b>' + offer.stance + '</b> (' + how + ').',
         logHtml: s.name + ' goes ' + offer.stance + ' (' + how + ', &sect;6/7).',
@@ -370,7 +370,7 @@
     if (!canPrepareWeapon(s)) { Toasts.show('Nothing to prepare.', { kind: 'error' }); return; }
     disableActionButtons();
     s.weaponPrepared = true;
-    infoPopup({
+    M1.infoPopup({
       actor: s, title: 'Prepare Weapon',
       bodyHtml: s.name + ' prepares the ' + equipmentName(s.weaponId) + '.',
       logHtml: s.name + ' prepares the ' + equipmentName(s.weaponId) + ' (&sect;5/3/&sect;6/7).',
@@ -390,14 +390,14 @@
       var mates = crewMates(firer);
       if (!mates.length) { Toasts.show('Aimed fire from a crew weapon needs a second crouching soldier in the hex (\u00a79/7).', { kind: 'error' }); return; }
       disableActionButtons();
-      chooseOffer(mates.map(function (m) { return { label: m.name + ' (' + m.stance + ', WS ' + fmtSigned(m.WS) + ')', id: m.id }; }), {
+      chooseOffer(mates.map(function (m) { return { label: m.name + ' (' + m.stance + ', WS ' + M1.fmtSigned(m.WS) + ')', id: m.id }; }), {
         title: 'Combine Actions',
         prompt: firer.name + ' can only aim the ' + equipmentName(firer.weaponId) +
           ' with a second crewman. Whoever helps spends his own turn doing it (&sect;9/7):',
         onCancel: function () { showActionPanel(M1.state.currentActorId); },
       }, function (offer) {
         var mate = findSoldier(offer.id);
-        infoPopup({
+        M1.infoPopup({
           actor: firer, title: 'Crew Weapon',
           bodyHtml: mate.name + ' crews the ' + equipmentName(firer.weaponId) + ' with ' + firer.name +
             '. Two soldiers combining their actions is what makes aimed fire possible (&sect;9/7) &mdash; ' +
@@ -491,7 +491,7 @@
     var result = M.dragInactiveSoldier({
       draggerStance: dragger.stance, draggerHasEmptyPortBox: true, draggerMPA: dragger.mpa,
       draggedIsIncapacitated: dragged.status === 'incapacitated',
-      rollD10: dragged.status === 'incapacitated' ? d10 : undefined,
+      rollD10: dragged.status === 'incapacitated' ? M1.d10 : undefined,
     });
     dragger.hexId = destHexId;
     dragger.mpRemaining = 0;
@@ -499,7 +499,7 @@
     scrollMapTo(destHexId);
 
     function finishDrag() {
-      infoPopup({
+      M1.infoPopup({
         actor: dragger, title: 'Drag',
         bodyHtml: dragger.name + ' drags ' + dragged.name + ' from ' + fromHexId + ' to <b>' + destHexId + '</b>.',
       }, function () {
@@ -515,7 +515,7 @@
       finishDrag();
       return;
     }
-    rollPopup({
+    M1.rollPopup({
       actor: dragged, title: 'Drag Roll', kind: 'single', presetValue: result.dragRoll,
       contextHtml: dragged.name + ' is incapacitated &mdash; a result of 0 kills him during the drag.',
       explain: function () { return result.diedFromDrag ? '<b style="color:#e05a4a;">DIES</b>.' : 'Survives &mdash; ' + dragged.name + ' is dragged along.'; },
@@ -530,7 +530,7 @@
         var existing = M1.state.vpState.usCasualties.filter(function (c) { return c.soldierId === dragged.id; })[0];
         if (existing) existing.outcome = 'killed'; else recordCasualty(dragged, 'killed');
         updateCounterVisual(dragged);
-        logLine(dragged.name + ' dies during the drag.', 'event');
+        M1.logLine(dragged.name + ' dies during the drag.', 'event');
         // A dead body stays where it fell — it isn't moved along with a failed drag.
       } else {
         dragged.hexId = destHexId;
@@ -576,7 +576,7 @@
         { id: 'cancel', label: 'Cancel' },
       ],
       render: function (ctx) {
-        ctx.bodyEl.innerHTML = actorRowHtml({ left: attacker, right: defender }) +
+        ctx.bodyEl.innerHTML = M1.actorRowHtml({ left: attacker, right: defender }) +
           '<div class="step-context">' + attacker.name + ' assaults ' + defender.name + '.<br><br>' +
           'A capture attempt uses the Assault-to-Capture row of the damage table &mdash; more results end without a kill, ' +
           'but a captured German is out of the fight and cannot be freed while a US soldier holds the hex.' +
@@ -605,7 +605,7 @@
     var fromHexId = attacker.hexId;
     attacker.hexId = defender.hexId;
     placeEl(counterEls[attacker.id], defender.hexId);
-    infoPopup({
+    M1.infoPopup({
       actor: attacker, title: 'Charge Assault — Move',
       bodyHtml: attacker.name + ' charges ' + fromHexId + ' &rarr; ' + defender.hexId +
         ' (' + TERRAIN_LABELS[REAL_TERRAIN[defender.hexId]] + '), spending ' + candidate.cost +
@@ -637,7 +637,7 @@
     var weapon = weaponById(s.weaponId);
     toHitCard({
       actor: s, title: 'Clear Jammed Weapon',
-      contextHtml: 'Weapon: ' + weapon.name + ' &middot; WS ' + fmtSigned(s.WS) + '.',
+      contextHtml: 'Weapon: ' + weapon.name + ' &middot; WS ' + M1.fmtSigned(s.WS) + '.',
       result: function (roll) { return FC.resolveClearJammedWeapon(s.WS, false, roll, CHART.CLEAR_JAM_CHART).result; },
       text: { clear: '<b style="color:var(--clear)">CLEARED</b> &mdash; the weapon works normally again.',
               jam: 'Still <b style="color:#e05a4a;">JAMMED</b>.',

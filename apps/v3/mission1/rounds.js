@@ -4,9 +4,8 @@
 //       wakeUpUnawareInHex
 // Uses from M1:
 //   core: AR, Asl, CHART, Checks, Dialogs, FC, M, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
-//       TERRAIN_LABELS, WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability,
-//       crewWeaponStanceOk, guardsAPrisoner, isCrewWeapon, losClearBetween, state, terrainRowForTarget,
-//       unprepareWeaponOnMove, weaponById, weaponMaxRange, weaponUsable
+//       TERRAIN_LABELS, crewWeaponStanceOk, guardsAPrisoner, losClearBetween, state, terrainRowForTarget,
+//       unprepareWeaponOnMove, weaponById, weaponMaxRange
 //   present: Cues, FX, Resolve, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
 //   info: Info
 //   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, equipmentName, findSoldier,
@@ -15,9 +14,8 @@
 //       finishMoveStep, pendingCancelAction, pendingConditionChange, pendingSteps, presentParagraphChain,
 //       roundLegalDestinations, runParagraphCheck, runRoundsConditionChange, standUpCost, walking
 //   contact: pendingContact
-//   verbs: disableActionButtons, doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn,
-//       doPlayerGrenade, doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates,
-//       giveTurnCandidates, grenadeCandidates, makeAwareCandidates, pickupOffers, stanceChangeCandidates
+//   verbs: VERB_BUTTONS, disableActionButtons, doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire,
+//       doPlayerGiveTurn, doPlayerGrenade, doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, verbs
 //   german: germanAutoTurn
 //   combat: checkEndingConditions, endRound
 (function () {
@@ -351,38 +349,6 @@
   function visibleEnemyTargets(firer) {
     return (firer.side === 'german' ? M1.activeUS() : M1.activeGermans()).filter(function (t) { return canFireAt(firer, t); });
   }
-  // v3 (Phase 3, ring menu): a greyed verb says why, in the rules' words, from the same tests that
-  // greyed it above. Presentation only: the reason is written to the button's data-why; nothing
-  // here decides whether the verb is legal.
-  function explainVerbs(s, targets, canFire, crew, crewOk) {
-    function why(id, text) {
-      var b = document.getElementById(id);
-      if (b.disabled) b.dataset.why = text; else delete b.dataset.why;
-    }
-    why('moveBtn', 'No hex he can reach with the MP he has left (§6/7).');
-    why('fireAimed', fireWhy('aimed'));
-    why('fireSnap', fireWhy('snap'));
-    function fireWhy(kind) {
-      if (!canFire) return s.weaponBroken ? 'His weapon is broken (§9/4).' : s.weaponJammed ? 'His weapon is jammed: clear it first (§9/4).' :
-        (M1.WEAPONS_REQUIRING_PREPARATION[s.weaponId] && !s.weaponPrepared) ? 'His weapon must be prepared before it fires (§6/7).' :
-        !s.weaponId ? 'He has no weapon.' : 'He is out of ammunition (§9/5).';
-      if (!targets.length) return 'No German in line of sight and in range (§8).';
-      if (!crewOk) return 'A crew weapon is fired crouching (§9/7).';
-      if (crew && kind === 'aimed' && !crew.aimed) return 'Alone on a crew weapon he can only snap fire (§9/7).';
-      if (crew && !crew.snap) return 'Two soldiers have already crewed this weapon this Round (§9/7).';
-      return 'Not available now.';
-    }
-    why('assaultBtn', s.stance !== 'standing' ? 'The attacking soldier must be standing (§11/1).' : 'No German in his hex or in an adjacent hex he can charge into (§11/1, §11/3).');
-    why('grenadeBtn', 'No grenade, or no hex in throwing range he can see (§10/1).');
-    why('dragBtn', 'No inactive soldier in his hex to drag, or nowhere to drag him (§6/7).');
-    why('giveTurnBtn', !s.isCommander ? 'Only a commander can give a Turn (§6/3).' : 'No soldier on the 1-Turn or Complete space can take one (§6/3).');
-    why('makeAwareBtn', !s.isCommander ? 'Only a commander can make a soldier aware (§6/5).' : 'No unaware, unwounded soldier within his Command Radius (§6/5).');
-    why('changeStanceBtn', 'His free change is used and he has no MP to pay for another (§6/7).');
-    why('prepareWeaponBtn', !M1.WEAPONS_REQUIRING_PREPARATION[s.weaponId] ? 'His weapon needs no preparation.' :
-      s.weaponPrepared ? 'His weapon is already prepared.' : 'He must be standing or crouching to prepare it (§6/7).');
-    why('pickupBtn', 'Nothing in his hex to pick up or exchange (§14).');
-    why('clearJamBtn', !s.weaponJammed ? 'His weapon is not jammed.' : 'He must be standing or crouching to clear a jam (§9/4).');
-  }
   function showActionPanel(id) {
     var s = M1.findSoldier(id);
     M1.clearDestMarks();
@@ -390,27 +356,17 @@
     document.getElementById('act-img').src = M1.currentImgFor(s);
     document.getElementById('act-name').textContent = s.name;
     document.getElementById('act-stats').innerHTML = 'IN:' + s.IN + ' WS:' + M1.fmtSigned(s.WS) + ' \u00b7 ' + s.stance + ' at ' + s.hexId + (s.status !== 'unharmed' ? ' \u00b7 ' + s.status : '') + M1.kitHtml(s, true);
-    var targets = visibleEnemyTargets(s);
-    var canFire = M1.weaponUsable(s);
-    document.getElementById('moveBtn').disabled = !Object.keys(M1.roundLegalDestinations(s)).length;
-    // §9/7 (Task A1): a crew weapon needs a crouching firer, is snap-only when he crews it alone,
-    // and only offers aimed fire when a second crouching soldier in the hex can combine actions.
-    var crew = M1.isCrewWeapon(s.weaponId) ? M1.crewFireAvailability(s) : null;
-    var crewOk = !crew || M1.crewWeaponStanceOk(s);
-    document.getElementById('fireAimed').disabled = !targets.length || !canFire || !crewOk || (crew && !crew.aimed);
-    document.getElementById('fireSnap').disabled = !targets.length || !canFire || !crewOk || (crew && !crew.snap);
-    // §11/1 + §11/3 reachability, not a bare adjacency test — see assaultCandidates().
-    document.getElementById('assaultBtn').disabled = !assaultCandidates(s).length;
-    document.getElementById('grenadeBtn').disabled = !M1.grenadeCandidates(s).length;
-    document.getElementById('dragBtn').disabled = !M1.dragCandidates(s).length || !M1.dragHexCandidates(s).length;
-    document.getElementById('giveTurnBtn').disabled = !M1.giveTurnCandidates(s).length;
-    document.getElementById('makeAwareBtn').disabled = !M1.makeAwareCandidates(s).length;
-    document.getElementById('changeStanceBtn').disabled = !M1.stanceChangeCandidates(s).length;
-    document.getElementById('prepareWeaponBtn').disabled = !M1.canPrepareWeapon(s);
-    document.getElementById('pickupBtn').disabled = !M1.pickupOffers(s).length;
-    document.getElementById('clearJamBtn').disabled = !M1.canClearJam(s);
-    document.getElementById('passTurn').disabled = false;
-    explainVerbs(s, targets, canFire, crew, crewOk);
+    // R7 Step 10: legality and its reason come from one place, M1.verbs (verbs.js). A greyed verb
+    // says why on its data-why (the ring shows it); Pass is always offered and keeps ring.js's own.
+    var v = M1.verbs(s);
+    Object.keys(M1.VERB_BUTTONS).forEach(function (name) {
+      var b = document.getElementById(M1.VERB_BUTTONS[name]);
+      b.disabled = !v[name].ok;
+      if (name === 'pass') return;
+      if (b.disabled) b.dataset.why = v[name].why; else delete b.dataset.why;
+    });
+    // the log lines below read the same fire tests
+    var targets = v.fire.targets, canFire = v.fire.canFire, crew = v.fire.crew;
     document.getElementById('action-sec').style.display = '';
     M1.Info.refresh(); // task 5: shade this soldier's reachable hexes now that it is his decision
     if (!targets.length) M1.logLine(M1.nameFor(id) + ' has no line of sight to any German this turn.');

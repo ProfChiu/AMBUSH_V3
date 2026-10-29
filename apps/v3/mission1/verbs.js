@@ -1,16 +1,18 @@
-// mission1/verbs.js (9 of 13) — the player's verbs: grenade, drag, pick up, command, stance, prepare, fire, assault, jam. Stage A cut of mission1.js lines 3468-4134 (docs/REFACTOR_MAP.md 5.4).
-// Exports to M1 (27): activeSoldiersIn, allInHex, carryCandidates, chooseOffer, clearJamRoll, disableActionButtons,
-//       doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn, doPlayerGrenade,
-//       doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates,
+// mission1/verbs.js (9 of 13) — the player's verbs: grenade, drag, pick up, command, stance, prepare, fire, assault, jam; verbs(), every Round verb with its reason (R7). Stage A cut of mission1.js lines 3468-4134 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (29): VERB_BUTTONS, activeSoldiersIn, allInHex, carryCandidates, chooseOffer, clearJamRoll,
+//       disableActionButtons, doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn,
+//       doPlayerGrenade, doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates,
 //       estimateHitChance, giveTurnCandidates, grenadeCandidates, grenadeMods, isInteriorHex, makeAwareCandidates,
-//       markExfiltrated, pickupOffers, resolvePickup, stanceChangeCandidates
+//       markExfiltrated, pickupOffers, resolvePickup, stanceChangeCandidates, verbs
 // Uses from M1:
-//   core: AR, Asl, CHART, Dialogs, EQ, FC, G, Gr, M, REAL_TERRAIN, Sched, TERRAIN_LABELS, Toasts, V, canClearJam,
-//       canPrepareWeapon, crewFiredThisRound, crewMates, isCrewWeapon, losClear, state, upright, weaponById
+//   core: AR, Asl, CHART, Dialogs, EQ, FC, G, Gr, M, REAL_TERRAIN, Sched, TERRAIN_LABELS, Toasts, V,
+//       WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability, crewFiredThisRound,
+//       crewMates, crewWeaponStanceOk, isCrewWeapon, losClear, state, upright, weaponById, weaponUsable
 //   present: actorRowHtml, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
 //   roster: activeGermans, activeUS, allGermans, boxesFor, counterEls, equipmentName, findSoldier, placeEl,
 //       renderRoster, scrollMapTo, updateCounterVisual
-//   operations: addDestMark, clearDestMarks, completeTurn, finishFireStep, runParagraphCheck, standUpCost
+//   operations: addDestMark, clearDestMarks, completeTurn, finishFireStep, roundLegalDestinations, runParagraphCheck,
+//       standUpCost
 //   contact: estimateHitChanceBreakdown, hitBreakdownText
 //   rounds: assaultCandidates, assaultOpts, chooseTarget, driveNext, renderTrack, showActionPanel,
 //       visibleEnemyTargets
@@ -31,7 +33,7 @@
   M1.grenadeCandidates = grenadeCandidates; M1.grenadeMods = grenadeMods; M1.isInteriorHex = isInteriorHex;
   M1.makeAwareCandidates = makeAwareCandidates; M1.markExfiltrated = markExfiltrated;
   M1.pickupOffers = pickupOffers; M1.resolvePickup = resolvePickup;
-  M1.stanceChangeCandidates = stanceChangeCandidates;
+  M1.stanceChangeCandidates = stanceChangeCandidates; M1.verbs = verbs;
   // ---------------------------------------------------------------------
   // §10 Grenade combat (Task #63, docs/35_GRENADE_COMBAT.md)
   // ---------------------------------------------------------------------
@@ -644,20 +646,103 @@
         ' of his ' + candidate.budget + ' charge MP.',
     }, function () { M1.runParagraphCheck(attacker, resolve, { skipEventCheck: true }); });
   }
+  // ---------------------------------------------------------------------
+  // The Round's verbs and their reasons, one source (R7 Step 10; REFACTOR_MAP 4.3 item 3, flags 7-8)
+  // ---------------------------------------------------------------------
+  // verbs(s[, only]) -> { name: { ok, why, cite } } for the action panel's verbs. `ok` is whether the
+  // verb is offered now; `why` the refusal in the rules' words ('' when ok); `cite` the rule. The
+  // panel's buttons are drawn from it (rounds.js showActionPanel: disabled + data-why), the ring
+  // reads those buttons, the bot reads them through verbsOffered (seams.js), and pickup also carries
+  // `stackWhy`, the stack panel's own longer reason (AmbushMission.stack().takeWhy). `only` (one
+  // verb name) computes just that verb; a full call also carries `fire` (not enumerable): the fire
+  // tests { targets, canFire, crew, crewOk }. Nothing else decides a verb's legality or words its refusal.
+  var VERB_BUTTONS = M1.VERB_BUTTONS = {
+    move: 'moveBtn', fireAimed: 'fireAimed', fireSnap: 'fireSnap', assault: 'assaultBtn', grenade: 'grenadeBtn',
+    drag: 'dragBtn', giveTurn: 'giveTurnBtn', makeAware: 'makeAwareBtn', changeStance: 'changeStanceBtn',
+    prepareWeapon: 'prepareWeaponBtn', pickup: 'pickupBtn', clearJam: 'clearJamBtn', pass: 'passTurn',
+  };
+  var VERB_CITES = {
+    move: '§6/7', fireAimed: '§8', fireSnap: '§8', assault: '§11/1', grenade: '§10/1', drag: '§6/7',
+    giveTurn: '§6/3', makeAware: '§6/5', changeStance: '§6/7', prepareWeapon: '§6/7', pickup: '§14',
+    clearJam: '§9/4', pass: '',
+  };
+  function verbs(s, only) {
+    var f = null; // the fire tests, shared by both fire verbs
+    function fireTests() {
+      if (!f) {
+        // §9/7 (Task A1): a crew weapon needs a crouching firer, is snap-only when he crews it alone,
+        // and only offers aimed fire when a second crouching soldier in the hex can combine actions.
+        f = { targets: M1.visibleEnemyTargets(s), canFire: M1.weaponUsable(s) };
+        f.crew = M1.isCrewWeapon(s.weaponId) ? M1.crewFireAvailability(s) : null;
+        f.crewOk = !f.crew || M1.crewWeaponStanceOk(s);
+      }
+      return f;
+    }
+    function fireOk(kind) {
+      var t = fireTests();
+      return !(!t.targets.length || !t.canFire || !t.crewOk || (t.crew && !t.crew[kind]));
+    }
+    function fireWhy(kind) {
+      var t = fireTests();
+      if (!t.canFire) return s.weaponBroken ? 'His weapon is broken (§9/4).' : s.weaponJammed ? 'His weapon is jammed: clear it first (§9/4).' :
+        (M1.WEAPONS_REQUIRING_PREPARATION[s.weaponId] && !s.weaponPrepared) ? 'His weapon must be prepared before it fires (§6/7).' :
+        !s.weaponId ? 'He has no weapon.' : 'He is out of ammunition (§9/5).';
+      if (!t.targets.length) return 'No German in line of sight and in range (§8).';
+      if (!t.crewOk) return 'A crew weapon is fired crouching (§9/7).';
+      if (t.crew && kind === 'aimed' && !t.crew.aimed) return 'Alone on a crew weapon he can only snap fire (§9/7).';
+      if (t.crew && !t.crew.snap) return 'Two soldiers have already crewed this weapon this Round (§9/7).';
+      return 'Not available now.';
+    }
+    // each verb: [ok(), why()] — why() is read only when the verb is refused
+    var RULES = {
+      move: [function () { return !!Object.keys(M1.roundLegalDestinations(s)).length; },
+        function () { return 'No hex he can reach with the MP he has left (§6/7).'; }],
+      fireAimed: [function () { return fireOk('aimed'); }, function () { return fireWhy('aimed'); }],
+      fireSnap: [function () { return fireOk('snap'); }, function () { return fireWhy('snap'); }],
+      // §11/1 + §11/3 reachability, not a bare adjacency test — see assaultCandidates().
+      assault: [function () { return !!M1.assaultCandidates(s).length; },
+        function () { return s.stance !== 'standing' ? 'The attacking soldier must be standing (§11/1).' : 'No German in his hex or in an adjacent hex he can charge into (§11/1, §11/3).'; }],
+      grenade: [function () { return !!grenadeCandidates(s).length; },
+        function () { return 'No grenade, or no hex in throwing range he can see (§10/1).'; }],
+      drag: [function () { return !!dragCandidates(s).length && !!dragHexCandidates(s).length; },
+        function () { return 'No inactive soldier in his hex to drag, or nowhere to drag him (§6/7).'; }],
+      giveTurn: [function () { return !!giveTurnCandidates(s).length; },
+        function () { return !s.isCommander ? 'Only a commander can give a Turn (§6/3).' : 'No soldier on the 1-Turn or Complete space can take one (§6/3).'; }],
+      makeAware: [function () { return !!makeAwareCandidates(s).length; },
+        function () { return !s.isCommander ? 'Only a commander can make a soldier aware (§6/5).' : 'No unaware, unwounded soldier within his Command Radius (§6/5).'; }],
+      changeStance: [function () { return !!stanceChangeCandidates(s).length; },
+        function () { return 'His free change is used and he has no MP to pay for another (§6/7).'; }],
+      prepareWeapon: [function () { return !!M1.canPrepareWeapon(s); },
+        function () { return !M1.WEAPONS_REQUIRING_PREPARATION[s.weaponId] ? 'His weapon needs no preparation.' :
+          s.weaponPrepared ? 'His weapon is already prepared.' : 'He must be standing or crouching to prepare it (§6/7).'; }],
+      pickup: [function () { return !!pickupOffers(s).length; },
+        function () { return 'Nothing in his hex to pick up or exchange (§14).'; }],
+      clearJam: [function () { return !!M1.canClearJam(s); },
+        function () { return !s.weaponJammed ? 'His weapon is not jammed.' : 'He must be standing or crouching to clear a jam (§9/4).'; }],
+      pass: [function () { return true; }, function () { return ''; }],
+    };
+    var out = {};
+    if (!only) fireTests(); // the panel has always run the fire tests first
+    Object.keys(VERB_BUTTONS).forEach(function (name) {
+      if (only && name !== only) return;
+      var ok = RULES[name][0](), why = ok ? '' : RULES[name][1](), m = why.match(/§[^)]*/);
+      out[name] = { ok: ok, why: why, cite: m ? m[0] : VERB_CITES[name] };
+    });
+    // the fire tests themselves (rounds.js's log lines), kept off the verb list
+    if (f) Object.defineProperty(out, 'fire', { value: f, enumerable: false });
+    if (out.pickup) {
+      // the stack panel's reason (seams.js stack().takeWhy), when he stands in the hex but cannot take
+      var hexId = s.hexId;
+      out.pickup.stackWhy = !M1.upright(s) ? 'He must be standing or crouching (§6/7).' :
+        (s.stance === 'standing' && allInHex(hexId).some(function (t) { return t.id !== s.id && !t.isActive; }))
+          ? 'Taking equipment from an inactive soldier needs him crouching (§6/7).' :
+        allInHex(hexId).some(function (t) { return t.side !== s.side && t.isActive && t.weaponId; })
+          ? 'A German keeps his weapon until he is killed, incapacitated or captured (§6/7, §14).' : 'Nothing here he can take.';
+    }
+    return out;
+  }
   function disableActionButtons() {
-    document.getElementById('moveBtn').disabled = true;
-    document.getElementById('fireAimed').disabled = true;
-    document.getElementById('fireSnap').disabled = true;
-    document.getElementById('assaultBtn').disabled = true;
-    document.getElementById('grenadeBtn').disabled = true;
-    document.getElementById('dragBtn').disabled = true;
-    document.getElementById('giveTurnBtn').disabled = true;
-    document.getElementById('makeAwareBtn').disabled = true;
-    document.getElementById('changeStanceBtn').disabled = true;
-    document.getElementById('prepareWeaponBtn').disabled = true;
-    document.getElementById('pickupBtn').disabled = true;
-    document.getElementById('clearJamBtn').disabled = true;
-    document.getElementById('passTurn').disabled = true;
+    Object.keys(VERB_BUTTONS).forEach(function (name) { document.getElementById(VERB_BUTTONS[name]).disabled = true; });
   }
 
   // §9/4 "Clearing a Jammed Weapon": one die, cross-referenced against the soldier's Weapon Skill

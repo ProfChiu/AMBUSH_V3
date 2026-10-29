@@ -3,7 +3,7 @@
 // Puts on window: __mission1Debug, AmbushMission (the shell, lessons, bot and live drives read these).
 // Uses from M1:
 //   core: CHART, D, Dialogs, EQ, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, M, MISSION_CARDS, Ops, REAL_TERRAIN,
-//       TERRAIN_LABELS, dialogLog, edgeFeatures, setDifficulty, state, terrainRowFor, upright
+//       TERRAIN_LABELS, dialogLog, edgeFeatures, setDifficulty, state, terrainRowFor
 //   present: Resolve, lessonRng, stripTags
 //   info: Sight
 //   roster: allGermans, counterEls, currentImgFor, entryEls, equipmentName, findSoldier, renderVP, shownVP
@@ -12,7 +12,7 @@
 //       selectedSoldier, walkRoute
 //   contact: activateGermansSequentially
 //   rounds: pickActor, picking
-//   verbs: allInHex, disableActionButtons, pickupOffers, resolvePickup
+//   verbs: VERB_BUTTONS, allInHex, disableActionButtons, pickupOffers, resolvePickup, verbs
 //   combat: applyDamage, tryExit
 //   save: applySavedState, isSafeToSave, loadSaveList, saveGame, startGameFlow
 (function () {
@@ -41,18 +41,15 @@
   //                      pendingDecision() answers { kind:'resolving' } while a card line plays
   // ---------------------------------------------------------------------
   // Verb name -> [panel section, button]. Names are the contract; element ids are this page's.
+  // The Round's verbs are verbs.js's M1.VERB_BUTTONS (the buttons M1.verbs draws), in its order.
   var VERBS = {
     'stance:standing': ['movement-sec', 'stance-standing'], 'stance:crouching': ['movement-sec', 'stance-crouching'],
     'stance:prone': ['movement-sec', 'stance-prone'], exitMap: ['movement-sec', 'exitMapBtn'],
     clearJamOps: ['movement-sec', 'clearJamOpsBtn'],
-    move: ['action-sec', 'moveBtn'], fireAimed: ['action-sec', 'fireAimed'], fireSnap: ['action-sec', 'fireSnap'],
-    assault: ['action-sec', 'assaultBtn'], grenade: ['action-sec', 'grenadeBtn'], drag: ['action-sec', 'dragBtn'],
-    giveTurn: ['action-sec', 'giveTurnBtn'], makeAware: ['action-sec', 'makeAwareBtn'],
-    changeStance: ['action-sec', 'changeStanceBtn'], prepareWeapon: ['action-sec', 'prepareWeaponBtn'],
-    pickup: ['action-sec', 'pickupBtn'], clearJam: ['action-sec', 'clearJamBtn'], pass: ['action-sec', 'passTurn'],
-    cancelMove: ['action-sec', 'cancelMoveBtn'],
-    newRound: ['round-sec', 'newRoundBtn'],
   };
+  Object.keys(M1.VERB_BUTTONS).forEach(function (name) { VERBS[name] = ['action-sec', M1.VERB_BUTTONS[name]]; });
+  VERBS.cancelMove = ['action-sec', 'cancelMoveBtn'];
+  VERBS.newRound = ['round-sec', 'newRoundBtn'];
   function verbsOffered() {
     var out = {};
     Object.keys(VERBS).forEach(function (name) {
@@ -207,11 +204,7 @@
         hexId: hexId,
         actor: actor ? { id: actor.id, name: actor.name, here: actor.hexId === hexId } : null,
         takeWhy: !actor ? '' : actor.hexId !== hexId ? actor.name + ' is not in this hex.' :
-          canTake ? '' : !M1.upright(actor) ? 'He must be standing or crouching (§6/7).' :
-          (actor.stance === 'standing' && M1.allInHex(hexId).some(function (t) { return t.id !== actor.id && !t.isActive; }))
-            ? 'Taking equipment from an inactive soldier needs him crouching (§6/7).' :
-          M1.allInHex(hexId).some(function (t) { return t.side !== actor.side && t.isActive && t.weaponId; })
-            ? 'A German keeps his weapon until he is killed, incapacitated or captured (§6/7, §14).' : 'Nothing here he can take.',
+          canTake ? '' : M1.verbs(actor, 'pickup').pickup.stackWhy, // the reason lives with the verb (verbs.js)
         tokens: M1.allInHex(hexId).filter(function (t) { return !t.exited && (t.side !== 'german' || M1.counterEls[t.id]); }).map(function (t) {
           var act = M1.state.phase === 'movement' && t.side !== 'german' && t.isActive ? 'select' :
             M1.picking && M1.picking.ids.indexOf(t.id) !== -1 ? 'pick' : '';

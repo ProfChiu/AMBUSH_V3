@@ -77,23 +77,23 @@
     },
     clickHex: function (hexId) {
       if (M1.state.phase === 'entry' && M1.entryEls[hexId]) { M1.placeNextSoldier(hexId); return true; }
-      if (destPicks[hexId]) { destPicks[hexId](); return true; }
+      if (M1.destPicks[hexId]) { M1.destPicks[hexId](); return true; }
       // Task 6: in Operations any hex with a wall-aware route is a destination — the soldier
       // walks it and stops when something happens.
-      if (M1.state.phase === 'movement' && selectedSoldier() && walkRoute(hexId)) return true;
+      if (M1.state.phase === 'movement' && M1.selectedSoldier() && M1.walkRoute(hexId)) return true;
       throw new Error('clickHex(' + hexId + '): the map offers no decision there');
     },
     pickActor: function (soldierId) { return pickActor(soldierId); },
     select: function (soldierId) {
       if (M1.state.phase !== 'movement' || !M1.counterEls[soldierId] || !M1.findSoldier(soldierId)) return false;
-      if (M1.state.selectedId !== soldierId) selectSoldier(soldierId);
+      if (M1.state.selectedId !== soldierId) M1.selectSoldier(soldierId);
       return true;
     },
     board: function () {
       var shownSel = M1.state.selectedId && M1.counterEls[M1.state.selectedId] && M1.counterEls[M1.state.selectedId].classList.contains('selected') ? M1.state.selectedId : null;
       return {
         phase: M1.state.phase, roundNum: M1.state.roundNum, condition: M1.state.opsState ? M1.state.opsState.condition : null,
-        currentActorId: M1.state.currentActorId, selectedId: shownSel, lastSelectedId: lastSelectedId,
+        currentActorId: M1.state.currentActorId, selectedId: shownSel, lastSelectedId: M1.lastSelectedId,
         us: M1.state.usSoldiers.map(function (s) {
           return { id: s.id, letter: s.letter, hexId: s.hexId, stance: s.stance, status: s.status,
             isActive: !!s.isActive, exited: !!s.exited, aware: !!s.aware, mpa: s.mpa,
@@ -105,7 +105,7 @@
         }),
         vp: { gained: M1.shownVP.gained, lost: M1.shownVP.lost, total: M1.shownVP.total, need: M1.shownVP.need },
         casualties: M1.state.vpState.usCasualties, activations: M1.state.vpState.germanActivations.length,
-        dests: Object.keys(destPicks),
+        dests: Object.keys(M1.destPicks),
         entryHexes: M1.state.phase === 'entry' ? Object.keys(M1.entryEls) : [],
         verbs: verbsOffered(),
         // v3: the soldiers the player may pick (§6/1)
@@ -125,7 +125,7 @@
     pendingDecision: automation.pendingDecision, choose: automation.choose, press: automation.press,
     clickHex: automation.clickHex, select: automation.select, pickActor: automation.pickActor, board: automation.board,
     dialogLog: automation.dialogLog, setPresentation: automation.setPresentation,
-    tryExit: function () { var s = selectedSoldier(); if (s) M1.tryExit(s); },
+    tryExit: function () { var s = M1.selectedSoldier(); if (s) M1.tryExit(s); },
     // currentActorId matters as much as the track itself for anything driving a Round from
     // outside: the AR Track says whose turn it SHOULD be, this says whose turn the game is
     // actually presenting. Its absence silently broke the automated player (tools/bot/), which
@@ -155,7 +155,7 @@
     // wall rules (a second, driftable copy of them), this hands it the game's own answer.
     // Returns the next hex to step to, or null if the goal is unreachable.
     operationsNextStepForTesting: function (fromHexId, goalHexId) {
-      var route = operationsRoute(fromHexId, goalHexId); // same search, now shared with the walk
+      var route = M1.operationsRoute(fromHexId, goalHexId); // same search, now shared with the walk
       return route && route.length ? route[0] : null;
     },
   };
@@ -208,7 +208,7 @@
     hexOf: function (id) { var t = M1.findSoldier(id); return t ? t.hexId : null; },
     actOn: function (id) {
       if (picking) return pickActor(id);
-      if (M1.state.phase === 'movement' && M1.counterEls[id] && M1.findSoldier(id).side !== 'german') { selectSoldier(id); return true; }
+      if (M1.state.phase === 'movement' && M1.counterEls[id] && M1.findSoldier(id).side !== 'german') { M1.selectSoldier(id); return true; }
       return false;
     },
     take: function (idx) {
@@ -228,7 +228,7 @@
         M1.lessonRng = rng || null;
         M1.applySavedState(JSON.parse(JSON.stringify(data)));
         // v3 opens Operations with nobody selected (punch list 3); a load selects the first soldier
-        if (M1.state.phase === 'movement') deselect();
+        if (M1.state.phase === 'movement') M1.deselect();
       },
       board: automation.board, pending: automation.pendingDecision,
       // the German side, revealed the way a paragraph's activate_german effect reveals it
@@ -245,7 +245,7 @@
         ['standing', 'crouching', 'prone'].forEach(function (st) {
           mod[st] = FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, st) ? FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, st) : null;
         });
-        var d = s && M1.state.phase === 'round' ? roundLegalDestinations(s)[hexId] : null;
+        var d = s && M1.state.phase === 'round' ? M1.roundLegalDestinations(s)[hexId] : null;
         var out = { hex: hexId, terrain: terrain, label: TERRAIN_LABELS[terrain] || terrain || 'unknown',
           mp: M.mpCost(terrain), reach: d ? d.cost : null, mpa: s ? s.mpa : null, row: row, mod: mod,
           cover: row === 0 ? 'no cover' : row <= 3 ? 'light cover' : 'good cover',

@@ -4,7 +4,7 @@
   // Action Round
   // ---------------------------------------------------------------------
   function startActionRound(n) {
-    walking = null; // a walk interrupted by Rounds commencing is over, and its continuation
+    M1.walking = null; // a walk interrupted by Rounds commencing is over, and its continuation
     M1.state.phase = 'round';
     M1.state.roundNum = n;
     // §9/7's "a maximum of two soldiers can fire a single crew weapon in one Round" is a per-Round
@@ -17,7 +17,7 @@
     document.getElementById('status-banner').className = '';
     document.getElementById('movement-sec').style.display = 'none';
     document.getElementById('round-sec').style.display = 'none';
-    clearDestMarks();
+    M1.clearDestMarks();
 
     // §6/5: "When Rounds end and you return to Operations, all US soldiers are again considered
     // unaware." startActionRound(1) is called exactly once per fresh Rounds sequence (never
@@ -55,18 +55,18 @@
     if (n === 1) { next(); return; } // "Not conducted in Round 1"
     var mover = M1.activeUS()[0];
     if (!mover) { next(); return; } // no active US soldier left — the mission has surely ended by now
-    pendingSteps = []; currentHex = null; currentParagraph = null;
-    var ctx = buildOpsCtx(mover);
+    M1.pendingSteps = []; M1.currentHex = null; M1.currentParagraph = null;
+    var ctx = M1.buildOpsCtx(mover);
     var result = Ops.roundEventCheck({
       mission: '1', missionCards: MISSION_CARDS, condition: M1.state.opsState.condition, paragraphs: PARAGRAPHS,
       programs: PROGRAMS, state: M1.state.opsState, ctx: ctx,
       rollForEvent: function () {
         var a = M1.d10(), b = M1.d10();
-        pendingSteps.push({ type: 'event_roll', hex: null, paragraph: null, a: a, b: b, sum: a + b });
+        M1.pendingSteps.push({ type: 'event_roll', hex: null, paragraph: null, a: a, b: b, sum: a + b });
         return a + b;
       },
     });
-    presentParagraphChain(mover, result.chain, null, next);
+    M1.presentParagraphChain(mover, result.chain, null, next);
   }
 
   // ---------------------------------------------------------------------
@@ -212,10 +212,10 @@
   // Round 1's markers are down, as a change during Rounds (§6/11), so the first German turn
   // already reads the new Condition's column (docs/PARAGRAPH_DATA_GAPS.md §4, Phase 8c).
   function afterPlacement(n) {
-    if (n === 1 && pendingConditionChange !== null) {
-      var to = pendingConditionChange;
-      pendingConditionChange = null;
-      if (to > M1.state.opsState.condition) { runRoundsConditionChange(to, driveNext); return; }
+    if (n === 1 && M1.pendingConditionChange !== null) {
+      var to = M1.pendingConditionChange;
+      M1.pendingConditionChange = null;
+      if (to > M1.state.opsState.condition) { M1.runRoundsConditionChange(to, driveNext); return; }
     }
     driveNext();
   }
@@ -356,14 +356,14 @@
   }
   function showActionPanel(id) {
     var s = M1.findSoldier(id);
-    clearDestMarks();
+    M1.clearDestMarks();
     document.getElementById('cancelMoveBtn').style.display = 'none';
     document.getElementById('act-img').src = M1.currentImgFor(s);
     document.getElementById('act-name').textContent = s.name;
     document.getElementById('act-stats').innerHTML = 'IN:' + s.IN + ' WS:' + M1.fmtSigned(s.WS) + ' \u00b7 ' + s.stance + ' at ' + s.hexId + (s.status !== 'unharmed' ? ' \u00b7 ' + s.status : '') + M1.kitHtml(s, true);
     var targets = visibleEnemyTargets(s);
     var canFire = weaponUsable(s);
-    document.getElementById('moveBtn').disabled = !Object.keys(roundLegalDestinations(s)).length;
+    document.getElementById('moveBtn').disabled = !Object.keys(M1.roundLegalDestinations(s)).length;
     // §9/7 (Task A1): a crew weapon needs a crouching firer, is snap-only when he crews it alone,
     // and only offers aimed fire when a second crouching soldier in the hex can combine actions.
     var crew = isCrewWeapon(s.weaponId) ? crewFireAvailability(s) : null;
@@ -393,21 +393,21 @@
   }
   document.getElementById('moveBtn').addEventListener('click', function () {
     var s = M1.findSoldier(M1.state.currentActorId);
-    var dests = roundLegalDestinations(s);
+    var dests = M1.roundLegalDestinations(s);
     if (!Object.keys(dests).length) return;
     M1.disableActionButtons();
-    pendingCancelAction = null; // this is a fresh, non-combo Move — default cancel behavior
+    M1.pendingCancelAction = null; // this is a fresh, non-combo Move — default cancel behavior
     document.getElementById('cancelMoveBtn').style.display = '';
-    clearDestMarks();
+    M1.clearDestMarks();
     Object.keys(dests).forEach(function (hexId) {
-      addDestMark(hexId, destCostClass(dests[hexId].cost), hexId + ' (' + dests[hexId].cost + ' MP)',
-        function () { doRoundMove(s, dests[hexId].path, dests[hexId].cost, function () { completeTurn(s.id); }); });
+      M1.addDestMark(hexId, M1.destCostClass(dests[hexId].cost), hexId + ' (' + dests[hexId].cost + ' MP)',
+        function () { doRoundMove(s, dests[hexId].path, dests[hexId].cost, function () { M1.completeTurn(s.id); }); });
     });
     document.getElementById('status-banner').textContent = s.name + ' — choose a destination (up to ' + s.mpa + ' MP' +
-      (s.stance === 'prone' ? ', ' + (standUpCost(s) === 0 ? 'standing up free first' : standUpCost(s) + ' of them to stand up first') : '') + '), or Cancel.';
+      (s.stance === 'prone' ? ', ' + (M1.standUpCost(s) === 0 ? 'standing up free first' : M1.standUpCost(s) + ' of them to stand up first') : '') + '), or Cancel.';
   });
   document.getElementById('cancelMoveBtn').addEventListener('click', function () {
-    if (pendingCancelAction) { var fn = pendingCancelAction; pendingCancelAction = null; fn(); return; }
+    if (M1.pendingCancelAction) { var fn = M1.pendingCancelAction; M1.pendingCancelAction = null; fn(); return; }
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
     showActionPanel(M1.state.currentActorId);
   });
@@ -433,8 +433,8 @@
   // combo-eligible move (≤ half MPA, first sub-action this turn) can offer a snap-fire follow-up
   // instead of always ending the turn immediately.
   function doRoundMove(mover, path, totalCost, onEndTurn) {
-    clearDestMarks();
-    pendingCancelAction = null;
+    M1.clearDestMarks();
+    M1.pendingCancelAction = null;
     document.getElementById('cancelMoveBtn').style.display = 'none';
     var steps = path.slice(1); // path[0] is the start hex
     var i = 0;
@@ -444,7 +444,7 @@
     // makes the rest of the move legal, and because on a wounded soldier it is what the MP went on.
     function standUpThen(next) {
       if (mover.stance !== 'prone') { next(); return; }
-      var free = standUpCost(mover) === 0;
+      var free = M1.standUpCost(mover) === 0;
       mover.stance = 'standing';
       if (free) mover.usedFreeStanceChange = true;
       M1.updateCounterVisual(mover);
@@ -465,7 +465,7 @@
       if (i >= steps.length) {
         M1.checkEndingConditions();
         if (M1.state.phase !== 'round') return;
-        finishMoveStep(mover, totalCost, onEndTurn);
+        M1.finishMoveStep(mover, totalCost, onEndTurn);
         return;
       }
       var hexId = steps[i]; i++;
@@ -479,7 +479,7 @@
         bodyHtml: mover.name + ' moves ' + fromHexId + ' &rarr; ' + hexId + ' (' + TERRAIN_LABELS[REAL_TERRAIN[hexId]] + ').' +
           (unprepared ? ' The ' + M1.equipmentName(mover.weaponId) + ' is no longer prepared.' : ''),
         fx: function () { M1.FX.trail(fromHexId, hexId); M1.FX.ensureVisible([hexId]); },
-      }, function () { runParagraphCheck(mover, stepNext, { skipEventCheck: true }); });
+      }, function () { M1.runParagraphCheck(mover, stepNext, { skipEventCheck: true }); });
     }
     standUpThen(stepNext);
   }

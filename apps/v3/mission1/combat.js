@@ -6,12 +6,12 @@
 //   present: Cues, FX, damageStrip, fmtSigned, hitStrip, infoPopup, logHeader, logLine, pad2, rollPopup
 //   roster: activeGermans, activeUS, addGroundItem, allGermans, counterEls, equipmentName, renderRoster, renderVP,
 //   updateCounterVisual
+//   operations: clearDestMarks, deselect, renderStatusBanner, selectedSoldier
 //   contact: estimateHitChanceBreakdown, hitBreakdownHtml
 //   verbs: activeSoldiersIn, carryCandidates, grenadeMods, isInteriorHex, markExfiltrated
 // Still global (their files are not wrapped yet):
 //   core: Asl, CHART, D, ENTRY_HEXES, EQ, FC, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_TERRAIN, Sched,
 //   TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, terrainRowFor, vpRequirement, vpTargetNote, weaponById
-//   operations: clearDestMarks, deselect, renderStatusBanner, selectedSoldier
 //   rounds: assaultOpts, chooseTarget, renderTrack, startActionRound, wakeUpUnawareInHex
 (function () {
   'use strict';
@@ -495,7 +495,7 @@
         // §11/2 (Task #72): a captured German whose captor didn't survive/stay in his hex through
         // the rest of the Round is immediately unguarded the moment Operations resumes.
         checkCapturedGermanEscapes();
-        if (M1.state.phase === 'movement') deselect(M1.activeUS().length ? M1.activeUS()[0].id : null);
+        if (M1.state.phase === 'movement') M1.deselect(M1.activeUS().length ? M1.activeUS()[0].id : null);
         return;
       }
       document.getElementById('round-sec').style.display = '';
@@ -559,13 +559,13 @@
       checkCapturedGermanEscapes(); // §11/2: exiting can leave a captured German unguarded
       if (M1.state.phase !== 'movement') return; // freeing a German can immediately commence Rounds
       var left = M1.activeUS();
-      if (left.length) deselect(left[0].id);
-      else { clearDestMarks(); renderStatusBanner(); }
+      if (left.length) M1.deselect(left[0].id);
+      else { M1.clearDestMarks(); M1.renderStatusBanner(); }
     });
   }
   document.getElementById('exitMapBtn').addEventListener('click', function () {
     if (M1.state.phase !== 'movement') return;
-    tryExit(selectedSoldier());
+    tryExit(M1.selectedSoldier());
   });
 
   // ---------------------------------------------------------------------
@@ -599,7 +599,7 @@
     document.getElementById('action-sec').style.display = 'none';
     document.getElementById('round-sec').style.display = 'none';
     document.getElementById('movement-sec').style.display = 'none';
-    clearDestMarks();
+    M1.clearDestMarks();
     var totals = M1.renderVP();
     var result = V.resolveVictory(totals.total, vpRequirement());
     M1.Cues.banner('end', result === 'won' ? 'Mission Accomplished' : 'Mission Failed', totals.total + ' VP · need ' + vpRequirement(), result === 'won' ? 'won' : 'lost');

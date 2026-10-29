@@ -6,10 +6,10 @@
 //   roster: activeUS, canvas, counterEls, entryEls, eventMarkerEls, findSoldier, makeCounter, placeEl,
 //   placeEventMarkerEl, renderRoster, renderVP, updateCounterVisual
 //   setup: placeNextSoldier, promptPlaceSoldier, startSquadGeneration
+//   operations: clearDestMarks, resetOperationsFlow, selectSoldier
 //   contact: resetContactFlow
 // Still global (their files are not wrapped yet):
 //   core: D, Dialogs, ENTRY_HEXES, Sched, Toasts, V, VP_REQUIREMENT_RULEBOOK, setDifficulty, vpReachable
-//   operations: clearDestMarks, resetOperationsFlow, selectSoldier
 //   rounds: driveNext, renderTrack, resetRoundFlow
 (function () {
   'use strict';
@@ -99,9 +99,9 @@
     // chain can never fire afterward and act on the state we're about to replace.
     Dialogs.reset();
     // Bug 13: the chains Dialogs.reset() just stopped leave their state behind; drop it too.
-    resetOperationsFlow(); M1.resetContactFlow(); resetRoundFlow();
+    M1.resetOperationsFlow(); M1.resetContactFlow(); resetRoundFlow();
     Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].remove(); }); M1.counterEls = {};
-    clearDestMarks();
+    M1.clearDestMarks();
     Object.keys(M1.entryEls).forEach(function (k) { M1.entryEls[k].remove(); }); M1.entryEls = {};
     Object.keys(M1.eventMarkerEls).forEach(function (k) { M1.eventMarkerEls[k].remove(); }); M1.eventMarkerEls = {};
 
@@ -164,7 +164,7 @@
     } else if (M1.state.phase === 'movement') {
       document.getElementById('tb-phase').textContent = 'Operations';
       document.getElementById('movement-sec').style.display = '';
-      if (M1.activeUS().length) selectSoldier(M1.state.selectedId && M1.findSoldier(M1.state.selectedId) ? M1.state.selectedId : M1.activeUS()[0].id);
+      if (M1.activeUS().length) M1.selectSoldier(M1.state.selectedId && M1.findSoldier(M1.state.selectedId) ? M1.state.selectedId : M1.activeUS()[0].id);
     } else if (M1.state.phase === 'round') {
       document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum;
       document.getElementById('track-sec').style.display = '';

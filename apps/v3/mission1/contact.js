@@ -5,10 +5,10 @@
 //   core: state
 //   present: Cues, d10, fmtSigned, infoPopup, logHeader, rollPopup
 //   roster: findSoldier, kitHtml, makeCounter, renderVP, scrollMapTo
+//   operations: pendingConditionChange, runConditionChange, runRoundsConditionChange
 // Still global (their files are not wrapped yet):
 //   core: CHART, D, FC, GAct, GERMAN_ROSTER, Ops, Sched, V, germanInstanceId, img, paragraphHex, resolveGermanCardId,
 //   terrainRowFor, terrainRowForTarget, vpRequirement, weaponById
-//   operations: pendingConditionChange, runConditionChange, runRoundsConditionChange
 //   rounds: renderTrack, slotLabel, startActionRound
 (function () {
   'use strict';
@@ -49,9 +49,9 @@
   function afterParagraphChain(chain, next) {
     var activateEffects = chain.effects.filter(function (e) { return e.op === 'activate_german'; });
     function afterActivation() {
-      if (pendingConditionChange !== null) {
-        var to = pendingConditionChange;
-        pendingConditionChange = null;
+      if (M1.pendingConditionChange !== null) {
+        var to = M1.pendingConditionChange;
+        M1.pendingConditionChange = null;
         // §5/5: "Conditions always change from a lower number to a higher number." A second,
         // real bug found live alongside the one above: a Condition Change scan reads every
         // occupied hex's paragraph SYNCHRONOUSLY inside Ops.conditionChange, before any of those
@@ -72,8 +72,8 @@
         // are actually in progress (`phase === 'round'`) when the paragraph that requested the
         // change finishes, so it's the natural dispatch point rather than duplicating a phase
         // check at every caller of runParagraphCheck/runGermanParagraph/runEventPhase.
-        if (M1.state.phase === 'round') runRoundsConditionChange(to, next);
-        else runConditionChange(to, next);
+        if (M1.state.phase === 'round') M1.runRoundsConditionChange(to, next);
+        else M1.runConditionChange(to, next);
         return;
       }
       next();

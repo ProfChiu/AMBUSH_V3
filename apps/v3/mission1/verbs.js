@@ -9,12 +9,12 @@
 //   present: actorRowHtml, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
 //   roster: activeGermans, activeUS, allGermans, boxesFor, counterEls, equipmentName, findSoldier, placeEl,
 //   renderRoster, scrollMapTo, updateCounterVisual
+//   operations: addDestMark, clearDestMarks, completeTurn, finishFireStep, runParagraphCheck, standUpCost
 //   contact: estimateHitChanceBreakdown, hitBreakdownText
 //   combat: assaultChain, fireChain, grenadeChain, recordCasualty, toHitCard
 // Still global (their files are not wrapped yet):
 //   core: AR, Asl, CHART, Dialogs, EQ, FC, G, Gr, M, REAL_TERRAIN, Sched, TERRAIN_LABELS, Toasts, V, canClearJam,
 //   canPrepareWeapon, crewFiredThisRound, crewMates, isCrewWeapon, losClear, upright, weaponById
-//   operations: addDestMark, clearDestMarks, completeTurn, finishFireStep, runParagraphCheck, standUpCost
 //   rounds: assaultCandidates, assaultOpts, chooseTarget, driveNext, renderTrack, showActionPanel,
 //   visibleEnemyTargets
 (function () {
@@ -367,7 +367,7 @@
   function stanceChangeIsFree(s) { return !!s && !s.wounded && !s.usedFreeStanceChange; }
   function stanceChangeCandidates(s) {
     if (!s) return [];
-    if (!stanceChangeIsFree(s) && s.mpa < standUpCost(s)) return []; // no free change and no MP to buy one
+    if (!stanceChangeIsFree(s) && s.mpa < M1.standUpCost(s)) return []; // no free change and no MP to buy one
     return ['standing', 'crouching', 'prone'].filter(function (st) { return st !== s.stance; });
   }
   function doPlayerChangeStance() {
@@ -463,8 +463,8 @@
       // (Aimed has none) — fireType is fixed for the lifetime of this call, so branching once
       // here is equivalent to, and simpler than, threading it through fireChain's own callback.
       var onDone = fireType === 'snap'
-        ? function () { finishFireStep(firer, function () { completeTurn(firer.id); }); }
-        : function () { completeTurn(firer.id); };
+        ? function () { M1.finishFireStep(firer, function () { M1.completeTurn(firer.id); }); }
+        : function () { M1.completeTurn(firer.id); };
       if (isCrewWeapon(firer.weaponId)) {
         var fired = crewFiredThisRound(firer);
         if (fired.indexOf(firer.id) === -1) fired.push(firer.id); // §9/7's two-DISTINCT-soldiers cap
@@ -502,9 +502,9 @@
     disableActionButtons();
     function pickDestination(dragged) {
       document.getElementById('cancelMoveBtn').style.display = '';
-      clearDestMarks();
+      M1.clearDestMarks();
       destHexes.forEach(function (hexId) {
-        addDestMark(hexId, 'dest-mark cost-1', hexId, function () { performDrag(dragger, dragged, hexId); });
+        M1.addDestMark(hexId, 'dest-mark cost-1', hexId, function () { performDrag(dragger, dragged, hexId); });
       });
       document.getElementById('status-banner').textContent = dragger.name + ' — choose an adjacent hex to drag ' + dragged.name + ' to, or Cancel.';
     }
@@ -516,7 +516,7 @@
     }, pickDestination);
   }
   function performDrag(dragger, dragged, destHexId) {
-    clearDestMarks();
+    M1.clearDestMarks();
     document.getElementById('cancelMoveBtn').style.display = 'none';
     var fromHexId = dragger.hexId;
     // §7/3: "expend entire Movement Point Allowance"; §5/3/§6/7: "if the inactive soldier is
@@ -537,7 +537,7 @@
         actor: dragger, title: 'Drag',
         bodyHtml: dragger.name + ' drags ' + dragged.name + ' from ' + fromHexId + ' to <b>' + destHexId + '</b>.',
       }, function () {
-        runParagraphCheck(dragger, function () {
+        M1.runParagraphCheck(dragger, function () {
           if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, dragger.id); renderTrack(); driveNext(); }
         }, { skipEventCheck: true });
       });
@@ -644,7 +644,7 @@
       bodyHtml: attacker.name + ' charges ' + fromHexId + ' &rarr; ' + defender.hexId +
         ' (' + TERRAIN_LABELS[REAL_TERRAIN[defender.hexId]] + '), spending ' + candidate.cost +
         ' of his ' + candidate.budget + ' charge MP.',
-    }, function () { runParagraphCheck(attacker, resolve, { skipEventCheck: true }); });
+    }, function () { M1.runParagraphCheck(attacker, resolve, { skipEventCheck: true }); });
   }
   function disableActionButtons() {
     document.getElementById('moveBtn').disabled = true;

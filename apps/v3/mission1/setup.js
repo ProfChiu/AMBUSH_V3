@@ -4,9 +4,9 @@
 //   core: state
 //   present: d10, fmtSigned, infoPopup, logLine, rollPopup
 //   roster: canvas, entryEls, makeCounter, placeEl, renderRoster, updateCounterVisual
+//   operations: startOperations
 // Still global (their files are not wrapped yet):
 //   core: D, ENTRY_HEXES, EQ, SG, SQCHART, img
-//   operations: startOperations
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -200,7 +200,7 @@
     M1.state.entryIndex++;
     if (M1.state.entryIndex >= M1.state.usSoldiers.length) {
       Object.keys(M1.entryEls).forEach(function (id) { M1.entryEls[id].remove(); });
-      startOperations();
+      M1.startOperations();
     } else {
       promptPlaceSoldier();
     }

@@ -6,13 +6,13 @@
 //   info: Info
 //   roster: activeGermans, activeUS, counterEls, equipmentName, findSoldier, nameFor, placeEl, renderRoster,
 //   renderVP, scrollMapTo, updateCounterVisual
+//   operations: pendingConditionChange, runParagraphCheck
 //   verbs: clearJamRoll, estimateHitChance, grenadeCandidates
 //   combat: applyCapture, assaultChain, checkEndingConditions, fireChain, grenadeChain
 // Still global (their files are not wrapped yet):
 //   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
 //   Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
 //   edgeFeatureBetween, isCrewWeapon, losClearBetween, unprepareWeaponOnMove, weaponById, weaponUsable
-//   operations: pendingConditionChange, runParagraphCheck
 //   rounds: driveNext, renderTrack, visibleEnemyTargets
 (function () {
   'use strict';
@@ -428,7 +428,7 @@
     }
     if (a.action === 'set_condition') {
       M1.infoPopup({ actor: g, title: 'Condition Change', bodyHtml: 'Paragraph ' + a.paragraph + ' puts <b>Condition ' + a.to + '</b> into effect.' }, function () {
-        pendingConditionChange = a.to; next();
+        M1.pendingConditionChange = a.to; next();
       });
       return;
     }
@@ -610,7 +610,7 @@
       actor: g, title: 'Move',
       bodyHtml: g.name + ' ' + (open ? 'runs' : 'crawls') + ' ' + fromHexId + ' &rarr; <b>' + destHexId + '</b> (' + TERRAIN_LABELS[terrain] + ').',
     }, function () {
-      runParagraphCheck(g, function () {
+      M1.runParagraphCheck(g, function () {
         if (M1.state.phase === 'over') { onDone(); return; }
         if (!open || remaining <= 0) { onDone(); return; } // crawled -> "his movement is over" (§7/4)
         resolveGermanMoveByReference(g, remaining, onDone);

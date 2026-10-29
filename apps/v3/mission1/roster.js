@@ -6,11 +6,11 @@
 // Uses from M1:
 //   core: state
 //   present: FX, Resolve, fmtSigned
+//   operations: selectSoldier
 //   contact: showSoldierInspector
 // Still global (their files are not wrapped yet):
 //   core: D, EQ, FloatDialogs, G, SQCHART, V, WEAPONS_REQUIRING_PREPARATION, img, vpRequirement, vpTargetNote,
 //   weaponById
-//   operations: selectSoldier
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -82,7 +82,7 @@
       // (a no-op otherwise) — still "click on him" per the user's own ask, without turning
       // every ordinary movement-planning click into an interrupting modal.
       if (M1.state.selectedId === s.id) { M1.showSoldierInspector(s.id); return; }
-      selectSoldier(s.id);
+      M1.selectSoldier(s.id);
       return;
     }
     if (M1.state.phase === 'round') M1.showSoldierInspector(s.id);

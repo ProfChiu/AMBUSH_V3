@@ -257,7 +257,7 @@
   // there a prisoner in my hex". docs/46 flagged this rule as NOT built *because* crew weapons
   // were never wired; A1 wired them, so it costs one condition now.
   function guardsAPrisoner(s) {
-    return s.side !== 'german' && capturedGermansAt(s.hexId).length > 0;
+    return s.side !== 'german' && M1.capturedGermansAt(s.hexId).length > 0;
   }
   function crewFireAvailability(s) {
     var mates = crewMates(s);

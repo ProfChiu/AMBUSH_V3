@@ -1,5 +1,38 @@
-'use strict';
 // mission1/operations.js (6 of 13) — selection, destinations, combo moves, walking, HUD, Paragraph Check, step chain. Stage A cut of mission1.js lines 1796-2488 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (31): addDestMark, buildOpsCtx, capturedGermansAt, clearDestMarks, completeTurn, currentHex,
+//   currentParagraph, deselect, destCostClass, destPicks, finishFireStep, finishMoveStep, lastSelectedId,
+//   legalAdjacentHexIds, operationsRoute, pendingCancelAction, pendingConditionChange, pendingSteps,
+//   presentParagraphChain, renderStatusBanner, resetOperationsFlow, roundLegalDestinations, runConditionChange,
+//   runParagraphCheck, runRoundsConditionChange, selectSoldier, selectedSoldier, standUpCost, startOperations,
+//   walkRoute, walking
+// Uses from M1:
+//   core: state
+//   present: Cues, FX, Resolve, d10, fmtSigned, infoPopup, logHeader, logLine, pad2, rollPopup, stripTags
+//   info: Info
+//   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, destEls, eventMarkerEls,
+//   findSoldier, kitHtml, nameFor, placeEl, placeEventMarkerEl, renderVP, updateCounterVisual
+//   contact: afterParagraphChain, estimateHitChanceBreakdown, hitBreakdownText, noteContact
+//   verbs: chooseOffer, clearJamRoll, estimateHitChance
+//   combat: canExit, checkCapturedGermanEscapes, checkEndingConditions, fireChain, hiddenFireChain
+// Still global (their files are not wrapped yet):
+//   core: G, LOS_DB, LOS_TERRAIN, M, MISSION, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
+//   TERRAIN_LABELS, canClearJam, edgeFeatureBetween, edgeFeatures, germanInstanceId, losClear, paragraphHex,
+//   weaponUsable
+//   rounds: chooseTarget, doRoundMove, driveNext, renderTrack, startActionRound, visibleEnemyTargets
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.addDestMark = addDestMark; M1.buildOpsCtx = buildOpsCtx; M1.capturedGermansAt = capturedGermansAt;
+  M1.clearDestMarks = clearDestMarks; M1.completeTurn = completeTurn; M1.deselect = deselect;
+  M1.destCostClass = destCostClass; M1.finishFireStep = finishFireStep; M1.finishMoveStep = finishMoveStep;
+  M1.legalAdjacentHexIds = legalAdjacentHexIds; M1.operationsRoute = operationsRoute;
+  M1.presentParagraphChain = presentParagraphChain; M1.renderStatusBanner = renderStatusBanner;
+  M1.resetOperationsFlow = resetOperationsFlow; M1.roundLegalDestinations = roundLegalDestinations;
+  M1.runConditionChange = runConditionChange; M1.runParagraphCheck = runParagraphCheck;
+  M1.runRoundsConditionChange = runRoundsConditionChange; M1.selectSoldier = selectSoldier;
+  M1.selectedSoldier = selectedSoldier; M1.standUpCost = standUpCost; M1.startOperations = startOperations;
+  M1.walkRoute = walkRoute;
   // ---------------------------------------------------------------------
   // Operations phase — real movement + real Paragraph Check (operationsloop.js) per hex entered.
   // ---------------------------------------------------------------------
@@ -31,21 +64,21 @@
   // who moves (§5/3: "in any order you choose"). Nobody is pre-selected: after a move or walk
   // (once Done closes its card), when Operations begins, and when a soldier exits, the selection
   // is cleared. lastSelectedId keeps the soldier v2 would have kept selected, for the bot only.
-  var lastSelectedId = null;
+  M1.lastSelectedId = null;
   function deselect(suggestId) {
-    if (suggestId) lastSelectedId = suggestId;
+    if (suggestId) M1.lastSelectedId = suggestId;
     selectSoldier(null);
   }
   function endOpsMove() {
     if (M1.state.phase !== 'movement') return;
     var id = M1.state.selectedId;
-    M1.Resolve.awaitDone(function () { if (M1.state.phase === 'movement' && M1.state.selectedId === id && !walking) deselect(id); });
+    M1.Resolve.awaitDone(function () { if (M1.state.phase === 'movement' && M1.state.selectedId === id && !M1.walking) deselect(id); });
     if (id) document.getElementById('status-banner').textContent = M1.nameFor(id) + '’s move is done. Choose who moves next.';
   }
   function selectSoldier(id) {
-    if (walking && walking.id !== id) walking = null; // selecting someone else ends the walk
+    if (M1.walking && M1.walking.id !== id) M1.walking = null; // selecting someone else ends the walk
     M1.state.selectedId = id;
-    if (id) lastSelectedId = id;
+    if (id) M1.lastSelectedId = id;
     if (M1.state.phase === 'movement') document.getElementById('movement-sec').style.display = id ? '' : 'none';
     Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].classList.toggle('selected', k === id); });
     renderHud();
@@ -55,10 +88,10 @@
     M1.Info.refresh();
     renderStatusBanner();
   }
-  function clearDestMarks() { Object.keys(M1.destEls).forEach(function (k) { M1.destEls[k].remove(); }); M1.destEls = {}; destPicks = {}; }
+  function clearDestMarks() { Object.keys(M1.destEls).forEach(function (k) { M1.destEls[k].remove(); }); M1.destEls = {}; M1.destPicks = {}; }
   // Every destination marker goes through here, so its pick handler is recorded next to the
   // element: a map click and __mission1Debug.clickHex() run the same function.
-  var destPicks = {};
+  M1.destPicks = {};
   function addDestMark(hexId, className, title, onPick) {
     var el = document.createElement('div');
     el.className = className;
@@ -67,7 +100,7 @@
     el.addEventListener('click', function (e) { e.stopPropagation(); onPick(); });
     M1.canvas.appendChild(el);
     M1.destEls[hexId] = el;
-    destPicks[hexId] = onPick;
+    M1.destPicks[hexId] = onPick;
   }
   function destCostClass(cost) { return 'dest-mark ' + (cost <= 1 ? 'cost-1' : cost === 2 ? 'cost-2' : 'cost-3plus'); }
 
@@ -219,9 +252,9 @@
       showComboMoveDestinations(s, offer.dests, onEndTurn);
     });
   }
-  var pendingCancelAction = null; // set while a combo-move destination picker is open
+  M1.pendingCancelAction = null; // set while a combo-move destination picker is open
   function showComboMoveDestinations(s, dests, onEndTurn) {
-    pendingCancelAction = onEndTurn;
+    M1.pendingCancelAction = onEndTurn;
     document.getElementById('cancelMoveBtn').style.display = '';
     clearDestMarks();
     Object.keys(dests).forEach(function (hexId) {
@@ -284,44 +317,44 @@
   // paragraph with an effect, an event, an activation, Rounds commencing, the mission ending, or
   // the soldier becoming unable to move. Quiet hexes just go by. (§5/3 is unchanged: this is the
   // same action repeated, not a new kind of move.)
-  var walking = null;
+  M1.walking = null;
   // A walk is only live while its own soldier is still the selected one in Operations: anything
   // that ends the phase, the selection or the soldier ends it (a continuation that never arrives —
   // Rounds commencing inside a Paragraph Check, say — must not leave the map unclickable).
-  function walkLive() { return !!walking && M1.state.phase === 'movement' && M1.state.selectedId === walking.id; }
+  function walkLive() { return !!M1.walking && M1.state.phase === 'movement' && M1.state.selectedId === M1.walking.id; }
   function walkRoute(goalHexId) {
-    if (walking && !walkLive()) walking = null;
+    if (M1.walking && !walkLive()) M1.walking = null;
     var s = selectedSoldier();
-    if (walking || !s || M1.state.phase !== 'movement') return false;
+    if (M1.walking || !s || M1.state.phase !== 'movement') return false;
 
     var route = operationsRoute(s.hexId, goalHexId);
     if (!route || !route.length) return false;
     if (route.length === 1) { doMove(route[0], endOpsMove); return true; }
-    walking = { id: s.id, route: route, i: 0, goal: goalHexId };
+    M1.walking = { id: s.id, route: route, i: 0, goal: goalHexId };
     M1.logLine(s.name + ' sets off for <b>' + goalHexId + '</b> (' + route.length + ' hexes).');
     stepWalk();
     return true;
   }
   function stopWalk(why) {
-    if (!walking) return;
-    var s = M1.findSoldier(walking.id);
+    if (!M1.walking) return;
+    var s = M1.findSoldier(M1.walking.id);
     if (why && s) M1.logLine(s.name + ' stops at ' + s.hexId + ' &mdash; ' + why + '.');
-    walking = null;
+    M1.walking = null;
     if (M1.state.phase === 'movement') { renderDestinations(); renderStatusBanner(); M1.Info.refresh(); }
   }
   function stepWalk() {
-    if (!walking) return;
-    var s = M1.findSoldier(walking.id);
-    if (M1.state.phase !== 'movement') { walking = null; return; }          // Rounds began, or the mission ended
+    if (!M1.walking) return;
+    var s = M1.findSoldier(M1.walking.id);
+    if (M1.state.phase !== 'movement') { M1.walking = null; return; }          // Rounds began, or the mission ended
     if (!s || !s.isActive || s.exited) { stopWalk('he can no longer move'); return; }
-    if (M1.state.selectedId !== walking.id) { stopWalk('another soldier was selected'); return; }
-    var next = walking.route[walking.i];
+    if (M1.state.selectedId !== M1.walking.id) { stopWalk('another soldier was selected'); return; }
+    var next = M1.walking.route[M1.walking.i];
     if (legalAdjacentHexIds(s).indexOf(next) === -1) { stopWalk('the way is blocked'); return; }
-    walking.i++;
+    M1.walking.i++;
     doMove(next, function (quiet) {
-      if (!walking) return;
+      if (!M1.walking) return;
       if (!quiet) { stopWalk('something happened here'); endOpsMove(); return; }
-      if (walking.i >= walking.route.length) { stopWalk(null); endOpsMove(); return; }
+      if (M1.walking.i >= M1.walking.route.length) { stopWalk(null); endOpsMove(); return; }
       stepWalk();
     });
   }
@@ -447,7 +480,7 @@
   // A condition change requested by the paragraph interpreter (ctx.setCondition) mid-chain —
   // applied AFTER the current chain's pop-ups finish, per §5/5: "after completing the
   // instructions called for in the paragraph... replace the current Mission Card."
-  var pendingConditionChange = null;
+  M1.pendingConditionChange = null;
 
   // §5 step-by-step visibility: Perception/Activation Checks, Event Marker placement, Landmark
   // placement, VP awards, and named procedures all fire synchronously inside
@@ -459,9 +492,9 @@
   // tie-break. Each queued step is tagged with the hex and paragraph that produced it (via the
   // onEnterHex/onEnterParagraph observability hooks, operationsloop.js) so presentParagraphChain
   // can interleave it with the right paragraph's text instead of dumping everything at the end.
-  var pendingSteps = [];
-  var currentHex = null;
-  var currentParagraph = null;
+  M1.pendingSteps = [];
+  M1.currentHex = null;
+  M1.currentParagraph = null;
 
   // ctx.resolveCheck's Perception Check needs a real soldier's PC, but a Condition Change scan
   // (§5/5) walks EVERY occupied hex, potentially several different soldiers, with one shared ctx
@@ -479,10 +512,10 @@
       // {id, pc}: each soldier in sight rolls his own PC check (Phase 8c; it was the mover's PC).
       soldiersWhoCanSee: function (hexId) { var h = paragraphHex(hexId); return M1.activeUS().filter(function (s) { return losClear(s.hexId, h, s.stance); }).map(function (s) { return { id: s.id, pc: s.PC }; }); },
       isGermanRemovedOnce: function (numericId) { var g = M1.state.germans[germanInstanceId(numericId)]; return !!(g && !g.isActive); },
-      onEnterHex: function (hexId) { currentHex = hexId; currentParagraph = null; },
-      onEnterParagraph: function (num) { currentParagraph = num; },
+      onEnterHex: function (hexId) { M1.currentHex = hexId; M1.currentParagraph = null; },
+      onEnterParagraph: function (num) { M1.currentParagraph = num; },
       onCheckResolved: function (kind, modifier, roll, result, soldier) {
-        pendingSteps.push({ type: 'check', hex: currentHex, paragraph: currentParagraph, kind: kind, modifier: modifier, roll: roll, result: result, soldierId: soldier ? soldier.id : null });
+        M1.pendingSteps.push({ type: 'check', hex: M1.currentHex, paragraph: M1.currentParagraph, kind: kind, modifier: modifier, roll: roll, result: result, soldierId: soldier ? soldier.id : null });
       },
       // 608 ("see 290 if in clear") and 195 (on or under the bridge) ask where the soldier
       // whose check is running stands. The engine has no under-the-bridge position, so a
@@ -493,14 +526,14 @@
         if (test === 'on_bridge') return /bridge/i.test((LOS_DB.hexes[h] || {}).notes || '');
         return false;
       },
-      onHiddenFire: function (spec) { pendingSteps.push({ type: 'hidden_fire', hex: currentHex, paragraph: currentParagraph, spec: spec }); },
+      onHiddenFire: function (spec) { M1.pendingSteps.push({ type: 'hidden_fire', hex: M1.currentHex, paragraph: M1.currentParagraph, spec: spec }); },
       // A "place_event_marker"/"place_landmark" op with no explicit hex in its paragraph data
       // means "this hex" (the one whose Paragraph Check is running) — fall back to currentHex.
-      onPlaceEventMarker: function (hexId) { pendingSteps.push({ type: 'event_marker', hex: currentHex, paragraph: currentParagraph, hexId: hexId || currentHex }); },
-      onPlaceLandmark: function (hexId) { pendingSteps.push({ type: 'landmark', hex: currentHex, paragraph: currentParagraph, hexId: paragraphHex(hexId) || currentHex }); },
-      onSetCondition: function (to) { pendingConditionChange = to; },
-      onAwardVP: function (amount, note) { pendingSteps.push({ type: 'award_vp', hex: currentHex, paragraph: currentParagraph, amount: amount, note: note }); },
-      onRunProcedure: function (name) { pendingSteps.push({ type: 'run_procedure', hex: currentHex, paragraph: currentParagraph, name: name }); },
+      onPlaceEventMarker: function (hexId) { M1.pendingSteps.push({ type: 'event_marker', hex: M1.currentHex, paragraph: M1.currentParagraph, hexId: hexId || M1.currentHex }); },
+      onPlaceLandmark: function (hexId) { M1.pendingSteps.push({ type: 'landmark', hex: M1.currentHex, paragraph: M1.currentParagraph, hexId: paragraphHex(hexId) || M1.currentHex }); },
+      onSetCondition: function (to) { M1.pendingConditionChange = to; },
+      onAwardVP: function (amount, note) { M1.pendingSteps.push({ type: 'award_vp', hex: M1.currentHex, paragraph: M1.currentParagraph, amount: amount, note: note }); },
+      onRunProcedure: function (name) { M1.pendingSteps.push({ type: 'run_procedure', hex: M1.currentHex, paragraph: M1.currentParagraph, name: name }); },
     });
   }
 
@@ -509,14 +542,14 @@
   var lastCheckQuiet = true;
   function runParagraphCheck(mover, next, opts) {
     opts = opts || {};
-    pendingSteps = []; currentHex = mover.hexId; currentParagraph = null;
+    M1.pendingSteps = []; M1.currentHex = mover.hexId; M1.currentParagraph = null;
     var ctx = buildOpsCtx(mover);
     var result = Ops.paragraphCheck({
       hexId: mover.hexId, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS,
       programs: PROGRAMS, state: M1.state.opsState, ctx: ctx, skipEventCheck: !!opts.skipEventCheck,
       rollForEvent: function () {
         var a = M1.d10(), b = M1.d10();
-        pendingSteps.push({ type: 'event_roll', hex: mover.hexId, paragraph: null, a: a, b: b, sum: a + b });
+        M1.pendingSteps.push({ type: 'event_roll', hex: mover.hexId, paragraph: null, a: a, b: b, sum: a + b });
         return a + b;
       },
     });
@@ -544,7 +577,7 @@
       '</b> column of his card (' + (M1.state.phase === 'round' ? '&sect;6/11' : '&sect;5/5') + ').');
     var pcSoldier = M1.activeUS()[0];
     if (!pcSoldier) { onFinish(); return; }
-    pendingSteps = []; currentHex = null; currentParagraph = null;
+    M1.pendingSteps = []; M1.currentHex = null; M1.currentParagraph = null;
     var ctx = buildOpsCtx(pcSoldier);
     var occupiedHexIds = M1.activeUS().map(function (s) { return s.hexId; });
     // Both §5/5 and §6/11 clear all Event markers when the Condition changes — the on-map
@@ -589,10 +622,10 @@
   // followed immediately by the steps its own program produced.
   function buildStepPlan(visited, hexId) {
     var plan = [];
-    pendingSteps.filter(function (s) { return s.hex === hexId && s.paragraph === null; }).forEach(function (s) { plan.push(s); });
+    M1.pendingSteps.filter(function (s) { return s.hex === hexId && s.paragraph === null; }).forEach(function (s) { plan.push(s); });
     visited.forEach(function (num) {
       plan.push({ type: 'paragraph_text', num: num });
-      pendingSteps.filter(function (s) { return s.hex === hexId && s.paragraph === num; }).forEach(function (s) { plan.push(s); });
+      M1.pendingSteps.filter(function (s) { return s.hex === hexId && s.paragraph === num; }).forEach(function (s) { plan.push(s); });
     });
     return plan;
   }
@@ -697,12 +730,13 @@
   // calls this so no paragraph-check queue, walk, combo-move cancel or destination pick from the
   // abandoned position reaches the loaded one.
   function resetOperationsFlow() {
-    pendingConditionChange = null;
-    pendingSteps = []; currentHex = null; currentParagraph = null;
+    M1.pendingConditionChange = null;
+    M1.pendingSteps = []; M1.currentHex = null; M1.currentParagraph = null;
     lastCheckQuiet = true;
-    walking = null;
-    pendingCancelAction = null;
-    destPicks = {};
+    M1.walking = null;
+    M1.pendingCancelAction = null;
+    M1.destPicks = {};
     clearTimeout(stanceBeatTimer); stanceBeatTimer = null;
     document.body.classList.remove('stance-beat');
   }
+})();

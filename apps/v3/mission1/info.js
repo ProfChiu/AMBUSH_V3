@@ -4,11 +4,11 @@
 //   core: state
 //   present: FX, fmtSigned
 //   roster: activeGermans, canvas, findSoldier
+//   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute
 //   contact: estimateHitChanceBreakdown
 // Still global (their files are not wrapped yet):
 //   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
 //   edgeFeatures, losClear, terrainRowFor, weaponById, weaponUsable
-//   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute
 //   rounds: canFireAt
 (function () {
   'use strict';
@@ -67,7 +67,7 @@
 
     // Who the player is acting for right now, if anyone.
     function viewer() {
-      if (M1.state.phase === 'movement') return selectedSoldier() || null;
+      if (M1.state.phase === 'movement') return M1.selectedSoldier() || null;
       if (M1.state.phase === 'round') { var a = M1.findSoldier(M1.state.currentActorId); return a && a.side !== 'german' ? a : null; }
       return null;
     }
@@ -86,9 +86,9 @@
       var key = v.id + '@' + v.hexId;
       if (key !== lastEnsured) { lastEnsured = key; M1.FX.ensureVisible([v.hexId], true); }
       var reach = [];
-      if (M1.state.phase === 'movement') reach = legalAdjacentHexIds(v);
+      if (M1.state.phase === 'movement') reach = M1.legalAdjacentHexIds(v);
       else if (document.getElementById('action-sec').style.display !== 'none') {
-        reach = Object.keys(roundLegalDestinations(v)).filter(function (h) { return h !== v.hexId; });
+        reach = Object.keys(M1.roundLegalDestinations(v)).filter(function (h) { return h !== v.hexId; });
       }
       var g = document.createElementNS(NS, 'g');
       reach.forEach(function (h) {
@@ -136,12 +136,12 @@
       if (v && hexId !== v.hexId) {
         if (M1.state.phase === 'movement') {
           var route = hoverRoute;
-          html += legalAdjacentHexIds(v).indexOf(hexId) !== -1
+          html += M1.legalAdjacentHexIds(v).indexOf(hexId) !== -1
             ? '<div>' + v.name + ' can step here.</div>'
             : route ? '<div>Click to walk here: <b>' + route.length + ' hexes</b> <span class="ih-dim">(stops if anything happens)</span></div>'
               : '<div class="ih-dim">No route from ' + v.name + ' &mdash; walls or prohibited ground.</div>';
         } else {
-          var d = roundLegalDestinations(v)[hexId];
+          var d = M1.roundLegalDestinations(v)[hexId];
           html += d ? '<div>Move: <b>' + d.cost + ' MP</b> of ' + v.mpa + (d.standUp ? ' (stands up first)' : '') + '.</div>'
             : '<div class="ih-dim">Beyond ' + v.name + '&rsquo;s ' + v.mpa + ' MP this turn.</div>';
         }
@@ -231,7 +231,7 @@
       if (hx !== lastHex) {
         lastHex = hx;
         var v = viewer();
-        hoverRoute = v && M1.state.phase === 'movement' && hx !== v.hexId ? operationsRoute(v.hexId, hx) : null;
+        hoverRoute = v && M1.state.phase === 'movement' && hx !== v.hexId ? M1.operationsRoute(v.hexId, hx) : null;
         drawRoute(v, hoverRoute);
       }
     }
@@ -252,8 +252,8 @@
       hide(); closePin();
       // A click just outside a destination marker still means that hex: do the ordinary one-hex
       // move rather than nothing (or, worse, a walk starting with the same step).
-      if (destPicks[hx]) { destPicks[hx](); return; }
-      walkRoute(hx);
+      if (M1.destPicks[hx]) { M1.destPicks[hx](); return; }
+      M1.walkRoute(hx);
     });
     vp.addEventListener('mousemove', function (e) { try { onMove(e); } catch (err) { hide(); console.error('[Ambush info]', err); } });
     vp.addEventListener('mouseleave', hide);

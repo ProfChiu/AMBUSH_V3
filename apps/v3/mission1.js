@@ -1,33 +1,24 @@
 /*
- * mission1demo.js — Phase 10 Mission 1 playthrough (docs/31_VICTORY.md)
+ * mission1.js — Ambush! Digital v3, Mission 1: the presentation and game flow over v2's rules engine
  *
- * Drives apps/game/mission1.html: the first place every module built across Phases 4-10 runs
- * together against REAL Mission 1 data — real squad generation (§4), real Map A, real mission-
- * card/paragraph-book data (assets/data/mission_cards.js/paragraphs.js/paragraph_programs.js),
- * the real German roster, real Action Round scheduling, the full combat suite (fire/grenade/
- * assault/crew-weapon/hazard/penetration), and real Victory Point accounting against Mission 1's
- * actual two ending conditions (docs/31_VICTORY.md). Presentation follows the established
- * chess-like pop-up default (docs/25_MECHANIC_TEST.md §5, confirmed as standing default in
- * docs/11's working rules) — the popup/dice helpers below are the same shape as
- * skirmishchessdemo.js's, just extended for a full mission instead of one skirmish.
+ * Loaded by apps/v3/index.html after the 19 rules modules (apps/game/*.js) and the data globals
+ * (assets/data/*.js). Everything a player sees and does in Mission 1 runs here: squad generation
+ * (§4), entry, Operations, contact paragraphs, Action Rounds, the combat suite (fire, grenade,
+ * assault, crew weapons, hazards), Port Box / Ammo Box equipment (EQ, §4 and §13/2), saves, and
+ * Victory Points against Mission 1's two endings. Every roll is a d10() in a fixed order, shown on
+ * a resolution card (Resolve) and on the board (FX, Info). Exposes window.AmbushMission (the shell,
+ * stack and lessons) and window.__mission1Debug (tools/bot and the live_*.py drives).
  *
- * JUDGMENT CALLS made per the user's explicit direction (2026-08-04/05, "for any questionable
- * rule, make a judgement call... flag them for possible problem in future"):
+ * JUDGMENT CALLS (2026-08-04/05, "for any questionable rule, make a judgement call... flag them"):
  *  - German card IDs "25" and "81", referenced by real Mission 1 paragraph programs
- *    (assets/data/paragraph_programs.js), do not exist anywhere in the 47-card transcribed
- *    roster (assets/data/german_roster.json) — likely additional physical cards never
- *    photographed. Substituted with a real, well-tested stand-in card (GE 33/V) whenever
- *    referenced; logged loudly every time, not silently swapped in.
- *  - Mission 1 Ending 1's "heights ... from which he can see all the road hexes on the map"
- *    condition needs real terrain analysis this build doesn't attempt (victoryrules.js's own
- *    header already flags this as caller-simplified). A small hardcoded candidate hex set
- *    approximates the described Q19-Y13 elevation line; occupying one of those hexes satisfies
- *    the condition here, without verifying actual line-of-sight to every road hex on the map.
- *  - No Port Box/Ammo Box inventory model exists (docs/24 §1) — ammo/equipment tracking during
- *    the mission is abstracted to "the soldier still has this weapon," not box-by-box.
- *  - Squad buying is auto-resolved (squadgenrules.js's autoBuySoldiers/autoBuyEquipment) rather
- *    than an interactive negotiation — §4 itself is rulebook-real, only the *choice* of what to
- *    buy is automated, documented in squadgenrules.js's own header.
+ *    (assets/data/paragraph_programs.js), do not exist in the 47-card transcribed roster
+ *    (assets/data/german_roster.json). They are substituted with GE 33/V
+ *    (GERMAN_FALLBACK_CARD_ID), logged every time, never silently.
+ *  - Mission 1 Ending 1's "heights ... from which he can see all the road hexes on the map" is
+ *    approximated by a hardcoded hex set (HEIGHTS_CANDIDATE_HEXES, the Q19-Y13 elevation line);
+ *    occupying one satisfies the condition without a line-of-sight check to every road hex.
+ *  - Squad buying is auto-resolved (squadgenrules.js's autoBuySoldiers/autoBuyEquipment): §4 is
+ *    rulebook-real, only the choice of what to buy is automated.
  */
 (function () {
   'use strict';
@@ -72,13 +63,11 @@
   var FC = window.AmbushFireCombat;
   var Gr = window.AmbushGrenades;
   var Asl = window.AmbushAssault;
-  var Hz = window.AmbushHazards;
   var CW = window.AmbushCrewWeapons;
   var SG = window.AmbushSquadGen;
   var EQ = window.AmbushEquipment;
   var V = window.AmbushVictory;
   var D = window.AmbushDifficulty;
-  var Interp = window.AmbushParagraphInterpreter;
   var Ops = window.AmbushOperations;
   var GAct = window.AmbushGermanActions;
 
@@ -533,18 +522,6 @@
     }
     return '<div class="combat-row">' + combatantHtml(actor) + '</div>';
   }
-  function diceTrayHtml(kind, diceLabels) {
-    var ids = kind === 'percentile' ? ['dieTens', 'dieOnes'] : kind === 'dual' ? ['dieA', 'dieB'] : ['dieA'];
-    var cells = ids.map(function (id, i) {
-      var die = '<div class="die-face" id="' + id + '">&ndash;</div>';
-      if (diceLabels && diceLabels[i]) {
-        die = '<div style="text-align:center;">' + die +
-          '<div style="font-family:var(--font-mono);font-size:11px;color:var(--text-label);margin-top:4px;letter-spacing:.5px;">' + diceLabels[i] + '</div></div>';
-      }
-      return die;
-    });
-    return '<div class="dice-tray">' + cells.join('') + '</div>';
-  }
   // Every non-decision step is a line on a resolution card (Resolve, below). The v1 modal versions
   // of these two helpers — one dialog per step, a "Roll" press for the player's own dice — were
   // the Classic dialogs build, removed 2026-09-21 once Wan no longer needed the comparison. The
@@ -565,49 +542,11 @@
   // Capture/Kill) stay modal. Speed: slow / normal / fast; hold Space or hold the mouse on the
   // map to run to the next decision (Gate 0 answer 3). Speed never changes an outcome.
   // ---------------------------------------------------------------------
-  // The builds the player can choose between, in the order the chooser shows them. Each carries
-  // its own version, so the title bar (and therefore any screenshot) always says which one is
-  // running. A future A/B variant is one more entry here plus its branch in the code it changes —
-  // nothing else in the chooser or the title needs touching.
-  var PRESENTATIONS = [
-    {
-      id: 'cards', version: 'v1.2', name: 'Resolution cards',
-      tagline: 'The board resolves the fight. You press only to decide.',
-      bullets: [
-        'A shot is one press: pick the target, then Jam, To-Hit, Damage and Ammo play out on a card beside the soldier.',
-        'Tracers, dice and result badges appear on the map; the radio log keeps every line.',
-        'Right-click any hex for cover, odds and who can see it; click a distant hex to walk there.',
-        'Speed control, and hold Space to run to the next decision.',
-      ],
-    },
-    // v1.1 Classic dialogs (the v1 pop-up-per-step presentation) was retired 2026-09-21. To A/B
-    // a new idea, add its entry here (id, version, name, tagline, bullets) and branch on
-    // Resolve.mode where it differs: the chooser reappears automatically once there are two.
-  ];
-  function presentationById(id) {
-    return PRESENTATIONS.filter(function (v) { return v.id === id; })[0] || PRESENTATIONS[0];
-  }
-
   var Resolve = (function () {
-    var UI_KEY = 'ambush.v2.presentation', SPEED_KEY = 'ambush.v2.speed';
+    var SPEED_KEY = 'ambush.v2.speed';
     var SPEEDS = { slow: 1.7, normal: 1, fast: 0.4 };
     function stored(key, fallback) { try { return window.localStorage.getItem(key) || fallback; } catch (e) { return fallback; } }
     function store(key, v) { try { window.localStorage.setItem(key, v); } catch (e) { /* private window: per-visit only */ } }
-    // Precedence: the bot's override, then ?ui=<build id> in the URL (what the launcher
-    // passes, so a stale toggle from an earlier session cannot decide what you are testing),
-    // then this browser's remembered choice, then cards.
-    function known(id) { return PRESENTATIONS.some(function (v) { return v.id === id; }); }
-    function fromQuery() {
-      try {
-        var m = /[?&]ui=([a-z0-9-]+)/.exec(window.location.search);
-        return m && known(m[1]) ? m[1] : null;
-      } catch (e) { return null; }
-    }
-    var forced = window.__AMBUSH_UI || fromQuery();   // automation or the launcher decided
-    var lastPlayed = stored(UI_KEY, '');               // what this browser chose last time
-    if (forced && !known(forced)) forced = null;
-    if (!known(lastPlayed)) lastPlayed = '';            // e.g. 'classic', from before it was retired
-    var mode = forced || lastPlayed || PRESENTATIONS[0].id;
     var speed = stored(SPEED_KEY, 'normal');
     if (!SPEEDS[speed]) speed = 'normal';
     var skipping = false;
@@ -615,7 +554,6 @@
 
     // Task 6: cards cover Operations as well as Action Rounds — the per-step Move pop-up becomes
     // a line on the walking soldier's card, which is what lets a multi-hex walk flow at all.
-    function active() { return mode === 'cards'; }
     function T(ms) { return skipping ? 0 : Math.round(ms * SPEEDS[speed]); }
 
     // Reading time (Wan, 2026-09-23: "I would like to read them before they disappear"). A line
@@ -669,7 +607,7 @@
     // a click on the map, a ring verb, a pick or a panel button, or a decision dialog. Done and
     // Enter still close it. The menu strip and its popups (log, squad) leave it up.
     function awaitDone(fn) {
-      if (active() && card) { card.finished = true; card.el.classList.add('done'); }
+      if (card) { card.finished = true; card.el.classList.add('done'); }
       fn();
     }
     function lingering() { return !!(card && card.finished); }
@@ -859,15 +797,6 @@
       speed = s; store(SPEED_KEY, s);
       document.querySelectorAll('#speedCtl button').forEach(function (b) { b.classList.toggle('active', b.dataset.speed === s); });
     }
-    function setMode(m) {
-      if (!known(m)) return;
-      mode = m; store(UI_KEY, m);
-      var v = presentationById(m);
-      document.getElementById('build-label').textContent = v.version + ' · ' + v.name;
-      document.getElementById('speedCtl').style.display = m === 'cards' ? '' : 'none';
-      var lh = document.getElementById('log-heading'); if (lh) lh.textContent = m === 'cards' ? 'Radio Log' : 'Log';
-      document.body.classList.toggle('cards-mode', m === 'cards');
-    }
     document.querySelectorAll('#speedCtl button').forEach(function (b) {
       b.addEventListener('click', function () { setSpeed(b.dataset.speed); });
     });
@@ -880,17 +809,14 @@
     vp.addEventListener('mousedown', function (e) { if (e.button === 0 && document.body.classList.contains('resolving')) startSkipping(); });
     window.addEventListener('mouseup', function () { skipping = false; });
     window.addEventListener('blur', function () { skipping = false; });
-    setMode(mode); setSpeed(speed);
-    // Nothing has been chosen yet: the title stays blank until the chooser is answered, so it can
-    // never name a build the player did not pick.
-    // With a choice to make, the title stays blank until the chooser is answered, so it never
-    // names a build the player did not pick. With one build there is nothing to choose.
-    if (!forced && PRESENTATIONS.length > 1) document.getElementById('build-label').textContent = '';
-    document.getElementById('presentationBtn').style.display = PRESENTATIONS.length > 1 ? '' : 'none';
+    // Resolution cards are the only presentation (the v1.1/v1.2 chooser was removed in R2).
+    document.getElementById('speedCtl').style.display = '';
+    var lh = document.getElementById('log-heading'); if (lh) lh.textContent = 'Radio Log';
+    document.body.classList.add('cards-mode');
+    setSpeed(speed);
 
-    return { active: active, pushInfo: pushInfo, pushRoll: pushRoll, setMode: setMode, setSpeed: setSpeed, T: T,
-      awaitDone: awaitDone, lingering: lingering, pressDone: pressDone,
-      get mode() { return mode; }, get forced() { return !!forced; }, get lastPlayed() { return lastPlayed; } };
+    return { pushInfo: pushInfo, pushRoll: pushRoll, setSpeed: setSpeed, T: T,
+      awaitDone: awaitDone, lingering: lingering, pressDone: pressDone };
   })();
 
   // ---------------------------------------------------------------------
@@ -904,10 +830,9 @@
   var FX = (function () {
     var svg = null, badgeCount = {};
     var NS = 'http://www.w3.org/2000/svg';
-    function on() { return Resolve.active(); }
     function ms(base) { return Math.max(120, Resolve.T(base)); }
     // Phase 5: a cue only when the board is showing results, never while they are skipped
-    function sound(name) { if (on() && Resolve.T(100) > 0 && window.AmbushAudio) AmbushAudio.play(name); }
+    function sound(name) { if (Resolve.T(100) > 0 && window.AmbushAudio) AmbushAudio.play(name); }
     function layer() {
       if (svg && svg.parentNode) return svg;
       svg = document.createElementNS(NS, 'svg');
@@ -938,7 +863,7 @@
     // Phase 5: the shot's sound follows the weapon (weapon_chart ids); a grenade is a throw
     var SHOT = { pistol: 'pistol', smg: 'smg', mp: 'smg', bar: 'mg', mmg: 'mg', baz: 'rocket' };
     function tracer(fromHex, toHex, kind, weaponId) {
-      if (!on() || !fromHex || !toHex) return { resolve: function () {} };
+      if (!fromHex || !toHex) return { resolve: function () {} };
       var l = line(fromHex, toHex, 'fx-tracer fx-' + (kind || 'fire'));
       if ((kind || 'fire') === 'fire') { flash(fromHex); sound(SHOT[weaponId] || 'rifle'); }
       else if (kind === 'grenade') sound('throw');
@@ -952,11 +877,11 @@
       return { resolve: finish };
     }
     function trail(fromHex, toHex) {
-      if (!on() || !fromHex || !toHex || fromHex === toHex) return;
+      if (!fromHex || !toHex || fromHex === toHex) return;
       fadeOut(line(fromHex, toHex, 'fx-trail'), 2600);
     }
     function floatDie(hexId, value, tone) {
-      if (!on() || !hexId) return;
+      if (!hexId) return;
       var el = document.createElement('div');
       el.className = 'fx-die fx-' + (tone || 'neutral');
       el.textContent = value;
@@ -967,7 +892,7 @@
     }
     // Badges stack upward when several land on one hex in quick succession (a grenade's victims).
     function badge(hexId, text, tone) {
-      if (!on() || !hexId) return;
+      if (!hexId) return;
       var n = badgeCount[hexId] = (badgeCount[hexId] || 0) + 1;
       var el = document.createElement('div');
       el.className = 'fx-badge fx-' + (tone || 'neutral');
@@ -980,7 +905,7 @@
       }, 2600);
     }
     function blast(hexId, dud) {
-      if (!on() || !hexId) return;
+      if (!hexId) return;
       var el = document.createElement('div');
       el.className = dud ? 'fx-blast fx-dud' : 'fx-blast';
       at(el, hexId);
@@ -993,7 +918,7 @@
     // a hit only (off under reduced motion), and a stamp on the counter when his status changes.
     function still() { return document.body.classList.contains('still'); }
     function flash(hexId) {
-      if (!on() || !hexId) return;
+      if (!hexId) return;
       var el = document.createElement('div');
       el.className = 'fx-flash';
       at(el, hexId);
@@ -1002,7 +927,7 @@
     }
     var shakeTimer = null;
     function shake() {
-      if (!on() || still()) return;
+      if (still()) return;
       canvas.classList.remove('fx-shake');
       void canvas.offsetWidth; // restart the animation when hits land back to back
       canvas.classList.add('fx-shake');
@@ -1011,7 +936,7 @@
     }
     // sub: a smaller second line; life: how long it stays (ms, default 2800)
     function stamp(hexId, text, tone, sub, life) {
-      if (!on() || !hexId) return;
+      if (!hexId) return;
       var n = badgeCount[hexId] = (badgeCount[hexId] || 0) + 1;
       var el = document.createElement('div');
       el.className = 'fx-stamp fx-' + (tone || 'bad');
@@ -1027,7 +952,7 @@
     // Pan only when something is off-screen, just far enough to show all of `hexes` (v3: the
     // camera is the stage's zoom/pan view, AmbushStage.view, not v2's vertical scroll).
     function ensureVisible(hexes, instant) {
-      if (!on() || !window.AmbushStage) return;
+      if (!window.AmbushStage) return;
       var pts = hexes.filter(Boolean).map(function (h) { var p = pctPos(h); return { x: p.left / 100 * G.MAP_WIDTH, y: p.top / 100 * G.MAP_HEIGHT }; });
       if (!pts.length) return;
       // Instant when the player is about to click (a gliding map moves the hex out from under
@@ -1071,7 +996,6 @@
     var NS = 'http://www.w3.org/2000/svg';
     var MW = G.MAP_WIDTH, MH = G.MAP_HEIGHT, R = G.GRID.col_pitch / 1.5; // flat-top: pitch = 1.5 R
     var svg = null, tip = null, lastHex = null, lastReason = {}, hoverRoute = null, lastEnsured = null;
-    function on() { return Resolve.active(); }
     function layer() {
       if (svg && svg.parentNode) return svg;
       svg = document.createElementNS(NS, 'svg');
@@ -1114,7 +1038,7 @@
     function clear() { if (svg) svg.innerHTML = ''; }
     function refresh() {
       clear();
-      if (!on() || !decisionPending()) return;
+      if (!decisionPending()) return;
       var v = viewer();
       if (!v || !v.hexId || v.exited) return;
       // The map is taller than the window: a soldier whose turn it is must be where the player can
@@ -1262,7 +1186,7 @@
       layer().appendChild(g);
     }
     function onMove(e) {
-      if (!on() || document.body.classList.contains('resolving') || Dialogs.current) { hide(); return; }
+      if (document.body.classList.contains('resolving') || Dialogs.current) { hide(); return; }
       var hx = hexAt(e);
       if (!hx) { hide(); return; }
       if (hx !== lastHex) {
@@ -1281,7 +1205,7 @@
       // own meaning, and the last entry placement switches the phase inside its own click — that
       // click then bubbled here and marched the soldier off across the map.
       if (e.target !== canvas && !e.target.classList.contains('map-image')) return;
-      if (!on() || phase !== 'movement' || Dialogs.current || !viewer()) return;
+      if (phase !== 'movement' || Dialogs.current || !viewer()) return;
       var r = canvas.getBoundingClientRect();
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
       var hx = G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id;
@@ -1314,7 +1238,7 @@
       if (e.button !== 2 || !rDown) return;
       var moved = Math.abs(e.clientX - rDown.x) + Math.abs(e.clientY - rDown.y) > 6;
       rDown = null;
-      if (moved || !on() || (Dialogs.current && !Dialogs.current.modeless)) return;
+      if (moved || (Dialogs.current && !Dialogs.current.modeless)) return;
       var hx = hexAt(e);
       if (!hx || (pinned && pinned.hex === hx)) { closePin(); return; }
       pinned = { hex: hx, x: e.clientX, y: e.clientY };
@@ -1382,7 +1306,6 @@
   var canvas = document.getElementById('world');
   var counterEls = {};
   var destEls = {};
-  var pathEls = [];
   var entryEls = {};
   var eventMarkerEls = {};
 
@@ -1402,7 +1325,7 @@
   function glideEl(el) {
     var d = Resolve.T(420);
     clearTimeout(el._glide);
-    if (!d || !Resolve.active() || document.body.classList.contains('still')) { el.style.transition = ''; el.classList.remove('moving'); return; }
+    if (!d || document.body.classList.contains('still')) { el.style.transition = ''; el.classList.remove('moving'); return; }
     el.style.transition = 'left ' + d + 'ms ease-in-out, top ' + d + 'ms ease-in-out, filter .2s, opacity .2s';
     el.style.setProperty('--glide', d + 'ms');
     el.classList.remove('moving'); void el.offsetWidth; el.classList.add('moving');
@@ -1936,7 +1859,6 @@
     destPicks[hexId] = onPick;
   }
   function destCostClass(cost) { return 'dest-mark ' + (cost <= 1 ? 'cost-1' : cost === 2 ? 'cost-2' : 'cost-3plus'); }
-  function clearPathMarks() { pathEls.forEach(function (el) { el.remove(); }); pathEls = []; }
 
   function startOperations() {
     phase = 'movement';
@@ -2113,9 +2035,7 @@
     var s = selectedSoldier();
     if (!s) { banner.textContent = 'Select a soldier to move.'; return; }
     banner.textContent = legalAdjacentHexIds(s).length
-      ? s.name + (Resolve.active()
-        ? ' selected — click any hex to walk there (he stops if anything happens), or choose another action.'
-        : ' selected — click a highlighted hex to move, or choose another action.')
+      ? s.name + ' selected — click any hex to walk there (he stops if anything happens), or choose another action.'
       : s.name + ' cannot move — change stance or select another soldier.';
   }
 
@@ -2218,7 +2138,7 @@
     row.style.display = '';
   }
   function doMove(hexId, onSettled) {
-    clearDestMarks(); clearPathMarks();
+    clearDestMarks();
     var s = selectedSoldier();
     var asGroup = document.getElementById('groupMoveToggle').checked;
     var group = asGroup ? groupAt(s) : [s];
@@ -3193,10 +3113,8 @@
   // the player's next decision closes it (Resolve.awaitDone).
   function driveNext() {
     if (phase !== 'round') return;
-    if (Resolve.active()) {
-      document.getElementById('action-sec').style.display = 'none';
-      highlightActor(null);
-    }
+    document.getElementById('action-sec').style.display = 'none';
+    highlightActor(null);
     Resolve.awaitDone(driveNextNow);
   }
   // §6/1: "If more than one US soldier occupies a space, you can have them go in any order you
@@ -5465,7 +5383,7 @@
     // chain can never fire afterward and act on the state we're about to replace.
     Dialogs.reset();
     Object.keys(counterEls).forEach(function (k) { counterEls[k].remove(); }); counterEls = {};
-    clearDestMarks(); clearPathMarks();
+    clearDestMarks();
     Object.keys(entryEls).forEach(function (k) { entryEls[k].remove(); }); entryEls = {};
     Object.keys(eventMarkerEls).forEach(function (k) { eventMarkerEls[k].remove(); }); eventMarkerEls = {};
 
@@ -5602,39 +5520,7 @@
   // ---------------------------------------------------------------------
   // Start screen — shown once, on page load, instead of jumping straight into Squad Generation.
   // ---------------------------------------------------------------------
-  // Which build to play, chosen explicitly rather than toggled. Shown before the mission starts
-  // (and reachable later from the HUD), skipped when the launcher or the bot already said which.
-  // Built as a rows dialog so automation answers it the same way it answers any other choice.
-  function choosePresentation(next) {
-    var spec = {
-      title: 'Choose how the game presents itself', variant: 'wide', allowEnter: false, allowEscape: false,
-      buttons: [],
-      render: function (ctx) {
-        spec.choices = [];
-        var html = PRESENTATIONS.map(function (v, i) {
-          spec.choices.push({
-            text: v.version + ' ' + v.name, odds: null,
-            pick: function () { Dialogs.reset(); Resolve.setMode(v.id); if (next) next(); },
-          });
-          return '<div class="mode-col' + (Resolve.lastPlayed === v.id ? ' current' : '') + '" data-idx="' + i + '">' +
-            '<div class="ver">' + v.version + '</div><h4>' + v.name + '</h4>' +
-            '<div class="tag">' + v.tagline + '</div><ul>' +
-            v.bullets.map(function (b) { return '<li>' + b + '</li>'; }).join('') +
-            '</ul><button class="btn' + (v.id === 'cards' ? ' amber' : '') + '" data-idx="' + i + '">Play ' + v.name + '</button></div>';
-        }).join('');
-        ctx.bodyEl.innerHTML = '<div class="step-context">Same rules, same dice, same map — only the presentation ' +
-          'differs, and you can change it later from the panel on the right.</div>' +
-          '<div class="mode-grid">' + html + '</div>';
-        Array.prototype.forEach.call(ctx.bodyEl.querySelectorAll('.mode-col button'), function (b) {
-          b.addEventListener('click', function () { spec.choices[parseInt(b.dataset.idx, 10)].pick(); });
-        });
-      },
-    };
-    Dialogs.push(spec);
-  }
-
-  function startGameFlow(skipChooser) {
-    if (!skipChooser && !Resolve.forced && PRESENTATIONS.length > 1) { choosePresentation(function () { startGameFlow(true); }); return; }
+  function startGameFlow() {
     var saves = loadSaveList();
     Dialogs.push({
       title: 'Ambush! Digital — Mission 1', variant: 'narrow', allowEnter: true, allowEscape: false,
@@ -5660,7 +5546,7 @@
       },
       onButton: function (id, ctx) { ctx.close(id); },
       onClose: function (id) {
-        if (id === 'load') { openLoadDialog(function () { startGameFlow(true); }); return; }
+        if (id === 'load') { openLoadDialog(function () { startGameFlow(); }); return; }
         setDifficulty(id === 'easy' ? D.EASY : D.NORMAL);
         startSquadGeneration();
       },
@@ -5710,13 +5596,6 @@
     URL.revokeObjectURL(url);
   });
   document.getElementById('resetBtn').addEventListener('click', function () { location.reload(); });
-  // Change build mid-mission: the same chooser, applied to the game in progress. Refused mid-step
-  // for the same reason saving is — a half-resolved action must not change presentation under itself.
-  document.getElementById('presentationBtn').addEventListener('click', function () {
-    if (Dialogs.current) { Toasts.show('Finish the current step first.'); return; }
-    choosePresentation(function () { Info.refresh(); renderStatusBanner(); });
-  });
-
   // ---------------------------------------------------------------------
   // Automation seam (v2 task 2, docs/02_HANDOFF.md). tools/bot/ plays ONLY through these five
   // calls plus select(); it never reads or clicks the page's markup. When the presentation
@@ -5736,8 +5615,8 @@
   //   board()            the state the player can see: phase, soldiers, Germans, VP panel,
   //                      offered destinations/entry hexes, and verbs {name: enabled}
   //   dialogLog()        every dialog presented so far: { title, rows, modeless, phase } (pacing.py)
-  //   setPresentation(m) a PRESENTATIONS id ('cards' today); pendingDecision() answers
-  //                      { kind:'resolving' } while a resolution-card line is playing
+  //   setPresentation()  kept for old callers: always 'cards', the only presentation;
+  //                      pendingDecision() answers { kind:'resolving' } while a card line plays
   // ---------------------------------------------------------------------
   // Verb name -> [panel section, button]. Names are the contract; element ids are this page's.
   var VERBS = {
@@ -5797,7 +5676,7 @@
       if (destPicks[hexId]) { destPicks[hexId](); return true; }
       // Task 6: in Operations any hex with a wall-aware route is a destination — the soldier
       // walks it and stops when something happens.
-      if (Resolve.active() && phase === 'movement' && selectedSoldier() && walkRoute(hexId)) return true;
+      if (phase === 'movement' && selectedSoldier() && walkRoute(hexId)) return true;
       throw new Error('clickHex(' + hexId + '): the map offers no decision there');
     },
     pickActor: function (soldierId) { return pickActor(soldierId); },
@@ -5828,19 +5707,17 @@
         verbs: verbsOffered(),
         // v3: the soldiers the player may pick (§6/1)
         pickable: picking ? picking.ids.slice() : [],
-        presentation: Resolve.mode,
+        presentation: 'cards',
         banner: document.getElementById('status-banner').textContent || '',
       };
     },
     dialogLog: function () { return dialogLog.slice(); },
-    setPresentation: function (m) { Resolve.setMode(m); return Resolve.mode; },
+    setPresentation: function () { return 'cards'; },
   };
 
-  // Expose a couple of things the driver/verification pass needs without a dedicated UI button
-  // (exiting the map is a movement-phase action on an entry hex, not a separate click target).
-  // Console-only verification hook — no UI button, not part of the real game flow. Drives the
-  // SAME activateGermansSequentially() a real paragraph's activate_german effect would, so
-  // testing this path exercises the real code, not a parallel shortcut.
+  // The console seam for tools/: the automation calls above, plus the hooks tools/bot and
+  // tools/repro_save.py use (R2 removed the 36 *ForTesting hooks nothing called). Each drives the
+  // same production function a player's action runs.
   window.__mission1Debug = {
     pendingDecision: automation.pendingDecision, choose: automation.choose, press: automation.press,
     clickHex: automation.clickHex, select: automation.select, pickActor: automation.pickActor, board: automation.board,
@@ -5859,136 +5736,15 @@
     spawnGermanForTesting: function (cardId, hexId) {
       activateGermansSequentially([{ ids: [cardId.replace(/^GE /, '').replace(/\/.*/, '')], hex: hexId, stance: 'crouching' }], 0, function () {});
     },
-    // Console-only verification hooks for §15's exfiltration exemption — same "read real state,
-    // drive the real production function" convention as every other task's hooks. Reaching this
-    // state naturally needs a soldier incapacitated by real dice AND dragged to a north-edge hex.
-    carryCandidatesForTesting: function (soldierId) {
-      var s = findSoldier(soldierId);
-      return s ? carryCandidates(s).map(function (t) { return t.id; }) : [];
-    },
-    casualtyRecordsForTesting: function () { return vpState.usCasualties; },
     saveGame: saveGame,
     listSaves: loadSaveList,
     loadSaveAtIndex: function (i) { var list = loadSaveList(); if (list[i] !== undefined) applySavedState(list[i]); },
-    openLoadDialog: openLoadDialog,
     isSafeToSave: isSafeToSave,
-    startGameFlow: startGameFlow,
-    // Console-only verification hook for §6/8's Movement Reference chain (task 74b) — drives
-    // the exact production function directly, since which German Action Paragraph a spawned
-    // German rolls into is otherwise random.
-    moveGermanByReferenceForTesting: function (germanId) {
-      var g = germans[germanId];
-      if (g) resolveGermanMoveByReference(g, g.mpa || 0, function () {});
-    },
-    // Console-only verification hook for §6/5 US Awareness (task 56) — drives
-    // runAwarenessPhase(n, ...) directly for a controlled n, since naturally reaching Round 2/3+
-    // depends on random German behavior finishing Round 1 without ending Rounds first.
-    runAwarenessPhaseForTesting: function (n) { runAwarenessPhase(n, function () {}); },
-    // Console-only verification hook for §6/1 step 2 Rounds Event Phase (task 57) — same reason
-    // as runAwarenessPhaseForTesting: naturally reaching Round 2 depends on the German not ending
-    // Rounds first.
-    runEventPhaseForTesting: function (n) { runEventPhase(n, function () {}); },
     // Console-only verification hook for §13/2's Port Box loss on wound (task 61) — drives the
     // real applyDamage('W') path directly, since reaching a specific soldier's wound naturally
     // depends on random fire-combat outcomes.
     applyWoundForTesting: function (soldierId) { var s = findSoldier(soldierId); if (s) applyDamage(s, 'W', 'test'); },
-    // Console-only verification hook for §10 grenade combat (task 63) — drives the real
-    // grenadeChain directly for a given thrower/target hex, since which German paragraph
-    // actually calls for a grenade throw is otherwise random. Same convention as
-    // moveGermanByReferenceForTesting/runAwarenessPhaseForTesting.
-    throwGrenadeForTesting: function (throwerId, targetHexId) {
-      var s = findSoldier(throwerId);
-      if (s) grenadeChain(s, targetHexId, function () {});
-    },
-    // Console-only verification hooks for §5/3/§6/7/§7/3 Drag Inactive Soldier (task 59) — same
-    // "drive the real production function directly, since reaching this state naturally depends
-    // on random combat outcomes" convention as applyWoundForTesting/throwGrenadeForTesting.
-    applyIncapacitationForTesting: function (soldierId) { var s = findSoldier(soldierId); if (s) applyDamage(s, 'I', 'test'); },
-    dragForTesting: function (draggerId, draggedId, destHexId) {
-      var dragger = findSoldier(draggerId), dragged = findSoldier(draggedId);
-      if (dragger && dragged) performDrag(dragger, dragged, destHexId);
-    },
-    // Console-only verification hooks for §5/3/§6/7 Pick Up/Exchange Equipment (task 68) — same
-    // convention as the drag hooks above: read real state (offers) and drive the real production
-    // function (offer.take) directly, since which items are actually available in a given hex
-    // depends on random combat outcomes.
-    pickupOffersForTesting: function (soldierId) {
-      var s = findSoldier(soldierId);
-      return s ? pickupOffers(s).map(function (o) { return o.label; }) : [];
-    },
-    takePickupOfferForTesting: function (soldierId, offerIndex) {
-      var s = findSoldier(soldierId);
-      if (!s) return 'no such soldier';
-      var offers = pickupOffers(s);
-      if (!offers[offerIndex]) return 'no such offer';
-      return offers[offerIndex].take();
-    },
     groundItemsForTesting: function () { return groundItems; },
-    // Console-only verification hooks for §6/3/§6/5 Give Turn / Make Aware (task 64) — same
-    // convention as every other task's hooks: read real state and drive the real production
-    // functions directly, since reaching a specific commander/recipient pairing naturally
-    // depends on random initiative/awareness outcomes.
-    giveTurnCandidatesForTesting: function (giverId) {
-      var g = findSoldier(giverId);
-      return g ? giveTurnCandidates(g).map(function (s) { return s.id; }) : [];
-    },
-    doGiveTurnForTesting: function (giverId, recipientId) {
-      var g = findSoldier(giverId), r = findSoldier(recipientId);
-      if (!g || !r) return 'no such soldier';
-      return Sched.giveTurn(track, g.id, r.id);
-    },
-    makeAwareCandidatesForTesting: function (giverId) {
-      var g = findSoldier(giverId);
-      return g ? makeAwareCandidates(g).map(function (s) { return s.id; }) : [];
-    },
-    doMakeAwareForTesting: function (giverId, recipientId) {
-      var g = findSoldier(giverId), r = findSoldier(recipientId);
-      if (!g || !r) return 'no such soldier';
-      r.aware = true;
-      return Sched.applyBecomesAware(track, r.id);
-    },
-    // Console-only verification hooks for §13/2 wound effects (task 58) — same convention as
-    // every prior task's hooks.
-    stanceChangeCandidatesForTesting: function (soldierId) {
-      var s = findSoldier(soldierId);
-      return s ? stanceChangeCandidates(s) : [];
-    },
-    // Console-only verification hooks for §13/1 Panic effects (task 65) — same convention as
-    // every prior task's hooks.
-    applyPanicForTesting: function (soldierId) { var s = findSoldier(soldierId); if (s) applyDamage(s, 'P', 'test'); },
-    endRoundForTesting: function () { endRound(); },
-    // Console-only verification hook for §6/11 Condition Changes During Rounds (task 66) — drives
-    // the real production function directly, since triggering a real mid-Round set_condition
-    // effect naturally depends on which paragraph a spawned German's Action Number rolls into.
-    runRoundsConditionChangeForTesting: function (to) {
-      runRoundsConditionChange(to, function () { logLine('Rounds Condition Change scan complete, resuming Round ' + roundNum + '.', 'event'); });
-    },
-    // Console-only verification hooks for §5/3/§6/7 Prepare Weapon (task 69).
-    canPrepareWeaponForTesting: function (soldierId) { var s = findSoldier(soldierId); return canPrepareWeapon(s); },
-    // Console-only verification hooks for §9/7 crew weapons (Task A1). Give a soldier the MMG and
-    // read back exactly what the game would offer him, without needing an MMG to fall into his
-    // hands by chance mid-firefight.
-    giveCrewWeaponForTesting: function (soldierId, weaponId) {
-      var s = findSoldier(soldierId);
-      if (!s) return null;
-      s.weaponId = weaponId || 'mmg';
-      s.weaponPrepared = true; s.weaponJammed = false; s.weaponBroken = false;
-      if (s.side !== 'german' && s.inventory) EQ.stowAmmo(s.inventory, s.weaponId);
-      return { id: s.id, weaponId: s.weaponId };
-    },
-    // Console-only verification hook for §8/2 / §9's terrain rows (Task: Map A buildings). Reads
-    // back the real hit-chance breakdown for a firer/target pair without having to engineer the
-    // firefight that would produce it naturally.
-    hitBreakdownForTesting: function (firerId, targetId, fireType) {
-      var f = findSoldier(firerId), t = findSoldier(targetId);
-      if (!f || !t) return null;
-      var b = estimateHitChanceBreakdown(f, t, fireType || 'aimed');
-      if (!b) return { outOfRange: true };
-      return {
-        terrainRow: terrainRowForTarget(f, t), terrainMod: b.terrainMod,
-        clamped: b.clamped, los: losClearBetween(f, t),
-      };
-    },
     // Wall-aware Operations pathfinding, exposed for the automated player. The bot steps toward a
     // goal by picking whichever adjacent hex is nearest by raw hex distance, which walks it
     // straight into a building wall and oscillates for ever — K12 and L12 are both "closer to
@@ -5998,70 +5754,6 @@
     operationsNextStepForTesting: function (fromHexId, goalHexId) {
       var route = operationsRoute(fromHexId, goalHexId); // same search, now shared with the walk
       return route && route.length ? route[0] : null;
-    },
-    losBetweenForTesting: function (aId, bId) {
-      var a = findSoldier(aId), b = findSoldier(bId);
-      return a && b ? losClearBetween(a, b) : null;
-    },
-    crewFireAvailabilityForTesting: function (soldierId) {
-      var s = findSoldier(soldierId);
-      if (!s || !isCrewWeapon(s.weaponId)) return null;
-      var a = crewFireAvailability(s);
-      return { stanceOk: crewWeaponStanceOk(s), snap: a.snap, aimed: a.aimed,
-               mates: a.mates.map(function (m) { return m.id; }), firedBy: crewFiredThisRound(s).slice() };
-    },
-    weaponUsableForTesting: function (soldierId) { var s = findSoldier(soldierId); return weaponUsable(s); },
-    unprepareWeaponOnMoveForTesting: function (soldierId) { var s = findSoldier(soldierId); return unprepareWeaponOnMove(s); },
-    // Console-only verification hooks for §6/7 Snap Fire Twice / §7/3 Move/Snap Fire (task 70).
-    comboMoveBudgetForTesting: function (soldierId) { var s = findSoldier(soldierId); return comboMoveBudget(s); },
-    finishFireStepForTesting: function (soldierId) {
-      var s = findSoldier(soldierId);
-      finishFireStep(s, function () { logLine(s.name + ': combo declined/unavailable, turn ends.', 'event'); });
-    },
-    finishMoveStepForTesting: function (soldierId, cost) {
-      var s = findSoldier(soldierId);
-      finishMoveStep(s, cost, function () { logLine(s.name + ': combo declined/unavailable, turn ends.', 'event'); });
-    },
-    // Console-only: drives the real driveNext() directly, so a synthetic-but-legitimate track
-    // state (e.g. one soldier alone in a real walkable slot) actually becomes currentActorId for
-    // real, instead of only being correct from the scheduler's own point of view — needed because
-    // doRoundMove's own stepNext() guard checks the demo layer's currentActorId, not just the
-    // track's bookkeeping (unlike Sched.giveTurn, which only asserts against the track itself).
-    driveNextForTesting: function () { driveNext(); },
-    // Console-only verification hook for §6/6 German Activation During Rounds (task 71) — drives
-    // the SAME activateGermansSequentially() a real paragraph's activate_german effect would, so
-    // insertMidRoundGermans (and its dice/popup chain) is exercised for real rather than by a
-    // parallel shortcut. Only meaningful while phase === 'round'.
-    activateGermanMidRoundForTesting: function (numericId, hexId) {
-      if (phase !== 'round') return 'not in round phase';
-      activateGermansSequentially([{ ids: [String(numericId)], hex: hexId, stance: 'crouching' }], 0, function () {
-        logLine('Mid-Round German activation test complete.', 'event');
-      });
-    },
-    insertMidRoundGermanForTesting: function (cardId, receivesTwoTurns) {
-      var g = germans[cardId];
-      if (!g) return 'no such german';
-      var entry = { id: g.id, IN: g.IN, hexId: g.hexId, letter: g.letter, isCommander: false, receivesTwoTurns: !!receivesTwoTurns };
-      var roll = d10();
-      return Sched.insertMidRoundGerman(track, entry, { rollDie: function () { return roll; }, arTrack: window.AMBUSH_AR_TRACK });
-    },
-    // Console-only verification hooks for §11/2 Captured German (task 72) — applyCaptureForTesting
-    // drives the real applyCapture() directly (bypassing the dice-driven assault chain, same
-    // convention as applyWoundForTesting/applyPanicForTesting) so the escape/freeing state
-    // machine can be exercised without depending on a lucky Assault Table roll first.
-    applyCaptureForTesting: function (soldierId) { var g = findSoldier(soldierId); if (g) applyCapture(g); },
-    checkCapturedGermanEscapesForTesting: function () { checkCapturedGermanEscapes(); },
-    // Console-only verification hook for §6/8 Special Reactions triggerable mid-mission (task
-    // 73) — drives the real performGermanActions() directly with a synthetic one-action list
-    // (same "drive the real production function directly" convention as every other hook this
-    // session), since no paragraph reachable in Mission 1's actual data exercises
-    // set_special_reaction (see docs/47_SPECIAL_REACTIONS.md). currentActorId is set first since
-    // germanAutoTurn() (which this action re-enters) reads it, not a parameter.
-    performGermanActionForTesting: function (soldierId, action) {
-      var g = findSoldier(soldierId);
-      if (!g) return 'no such german';
-      currentActorId = soldierId;
-      performGermanActions(g, [action], 0);
     },
   };
 
@@ -6125,7 +5817,7 @@
     },
     // v2's own start dialog (Normal / Easy / Load): index.html?play=ask, so the bot picks the level
     // exactly as it does on v2's page
-    ask: function () { startGameFlow(true); },
+    ask: function () { startGameFlow(); },
     // v3 Phase 6 (lesson.js): a lesson opens on a saved position (a fixture, the same shape a save
     // has) and rolls from its own seeded stream; the bot's seam reads the board while it runs.
     lesson: {

@@ -635,21 +635,15 @@
   // consume) differs.
   function clearJamRoll(s, cb) {
     var weapon = weaponById(s.weaponId);
-    rollPopup({
-      actor: s, title: 'Clear Jammed Weapon', kind: 'single', 
+    toHitCard({
+      actor: s, title: 'Clear Jammed Weapon',
       contextHtml: 'Weapon: ' + weapon.name + ' &middot; WS ' + fmtSigned(s.WS) + '.',
-      explain: function (roll) {
-        var res = FC.resolveClearJammedWeapon(s.WS, false, roll, CHART.CLEAR_JAM_CHART).result;
-        return res === 'clear' ? '<b style="color:var(--clear)">CLEARED</b> &mdash; the weapon works normally again.'
-          : res === 'jam' ? 'Still <b style="color:#e05a4a;">JAMMED</b>.'
-          : '<b style="color:#e05a4a;">BROKEN</b> &mdash; unusable for the rest of the game.';
-      },
-      logText: function (roll) {
-        var res = FC.resolveClearJammedWeapon(s.WS, false, roll, CHART.CLEAR_JAM_CHART).result;
-        return s.name + ' attempts to clear his jammed ' + weapon.name + ': <span class="roll">' + roll + '</span> &rarr; ' + res.toUpperCase() + '.';
-      },
-    }, function (roll) {
-      var res = FC.resolveClearJammedWeapon(s.WS, false, roll, CHART.CLEAR_JAM_CHART).result;
+      result: function (roll) { return FC.resolveClearJammedWeapon(s.WS, false, roll, CHART.CLEAR_JAM_CHART).result; },
+      text: { clear: '<b style="color:var(--clear)">CLEARED</b> &mdash; the weapon works normally again.',
+              jam: 'Still <b style="color:#e05a4a;">JAMMED</b>.',
+              'break': '<b style="color:#e05a4a;">BROKEN</b> &mdash; unusable for the rest of the game.' },
+      log: s.name + ' attempts to clear his jammed ' + weapon.name, logWords: { clear: 'CLEAR', jam: 'JAM', 'break': 'BREAK' },
+    }, function (res) {
       if (res === 'clear') s.weaponJammed = false;
       else if (res === 'break') { s.weaponJammed = false; s.weaponBroken = true; }
       cb();

@@ -692,3 +692,45 @@ global lost, exactly 345 added.
 (lines 81-94 of the file), `selectedId` in `operations.js`, `entryIndex` in `setup.js`, `difficulty` in `core.js`. Until
 Stage B they are window properties, so a missed rename will not throw when read through `window.x` or `typeof`; grep
 for bare names as planned, and rerun `check_globals.py` (its expected set shrinks by the moved names).
+
+**R4 results (2026-10-29): Steps 4-5. T1 green after Step 4 and after each of the five chains; T2 green** on the final tree (1,073 s: T1 PASS 150 s; parity 30/30 Normal + 30/30 Easy identical; traces
+identical; live chapters 55, drills 55, germans 36, lesson 39, map 47 ok, 0 fail; engine 19/19 match the manifest).
+Commits: `1ea9781` (Step 4), `9b3d770` (5a fire), `8bc2521` (5b hidden fire), `c9d5004` (5c grenade), `c5a73a0` (5d
+assault), and the commit carrying this entry (5e clear jam).
+- **Step 4, `counters.js` is the one builder.** `AmbushCounters.make(s, onClick)` builds `div.counter` (+ `enemy` for a
+  German), `data-soldier-id`, one `<img src>`; the click runs `stopPropagation` then `onClick(s, e)`. It does **not**
+  call `update`, because the German-activation site never did (calling it would set `el._stance` early and change when
+  the first rustle sounds). `update(el, s, onStance)` is mission1's `updateCounterVisual` body: `wounded`, `dead`
+  (`OUT` = `isOut`), `img.src = srcFor(s)`, the commander star once, `onStance(s)` on a living soldier's stance change.
+  `srcFor(s)`: a German always `s.img` (mission1 gives every German his **crouching** scan, `contact.js`), a US soldier
+  `imgCrouch` when crouching or prone; a soldier with no `img` (`counter_test.html`) gets `scanFor(s)`, which now also
+  gives Germans the crouching scan. `roster.js` adds `counterClick(s)` (the one click handler: German → inspector; US →
+  select / inspect in Operations, inspect in a Round), `makeCounter(s, hexId)` (make, place, append, register) and
+  `stanceRustle()`; `currentImgFor` delegates to `srcFor`. The four sites (`setup.js`, `contact.js`, `save.js` ×2) call
+  `makeCounter`. `counter_test.html` adds `.de` itself (counters.css's German face) and calls `update` after `make`.
+- **Step 5, `toHitCard(o, onHit, onMiss)`** in `combat.js` above `fireChain`: `actor, title, variant, contextHtml`;
+  `chance` (strip defaults to `hitStrip(chance)`); `text {hit, miss}` (default HIT. / Miss.); `log` + `logWords`
+  (line reads "`log`: roll → word."); `fx {hex, mark, loud}` (`mark()` is read when the die lands, since the
+  tracer / arc / lunge is set by the intro card's fx). Clear jam needed a three-way outcome, so the builder takes
+  `result(roll)` → key; then `onHit(key)` is the only continuation. Grenade uses `text`/`logWords` (LANDS in X /
+  scatters) and a quiet `fx` (no sound/shake/badge). Left on purpose: `hitStrip`'s own `resolveHitRoll` (present.js),
+  `rounds.js`'s picker odds, and the non-to-hit cards (jam check, damage, ammo, scatter, dud), which have their own shapes.
+  `resolveHitRoll` in combat.js: 16 → 1 (the builder); `fxLanded` blocks there: 12 → 9 (one is the builder's).
+- **Lines:** counters.js 46 → 70; combat.js 592 → 599 (+37 builder, −30 call sites); contact.js 394 → 387; roster.js
+  278 → 289; save.js 282 → 257; setup.js 216 → 196; verbs.js 669 → 663.
+- **New proof tool `tools/check_counters.py`:** plays seed 7000, records every `.counter`'s outerHTML (minus
+  stack badges and the glide's `moving`/`transition`) and the rustle count before each bot decision, then loads each
+  save the game wrote in a fresh page (with `--against`, the baseline's saves, since when a save lands is timing); it
+  also records every `FX.floatDie/sound/shake/badge` call, every `speak()` (the card result lines) and the play log.
+  Seed 7000 Normal (239 snapshots, 4,083 events, 993 log lines) and Easy (377 / 2,758 / 909) identical after every
+  step, each run twice on unchanged code first to prove it deterministic. No bot seed reaches hidden fire (paragraphs
+  20/23) and seed 7000 clears a jam only 1-2 times, so two driven checks (scratch scripts, not kept) called
+  `hiddenFireChain` 12× (7 hits) and `clearJamRoll` 30× at WS 2..−2 (16 clear, 9 jam, 5 break) before and after:
+  fx, speech and log identical. `check_globals.py` PASS (351 names, was 345: + `counterClick`, `makeCounter`, `stanceRustle`,
+  `toHitCard`, `HIT_TEXT`, `HIT_WORDS`). `live_map.py` PASS; `counter_test.html` 192 counters, 0 broken images, 0
+  console errors; one screenshot of a loaded Round 6 board (US standing/crouched/wounded, Germans, dead) looked right.
+- **For R5.** Stage B's vars in `roster.js` moved down 11 lines (now 92-105: `usSoldiers` … `groundItems`); `counterEls`
+  stays a roster.js var and `makeCounter` writes it. `applySavedState` (save.js 64) now rebuilds counters through
+  `makeCounter`, so a save-format change there touches no DOM code. `check_counters.py` exercises save/load of 10 saves
+  per difficulty and will show any counter difference the save fixes cause (bug 12 will add `groundItems`; counters
+  should stay identical). Its save key is hard-coded `ambush-mission1-saves-v1`: update it with Step 8's `ambush.v3.saves`.

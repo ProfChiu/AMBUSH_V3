@@ -139,11 +139,11 @@
         el.className = 'entry-hex';
         M1.placeEl(el, hexId);
         el.title = hexId;
-        el.addEventListener('click', function (e) { e.stopPropagation(); placeNextSoldier(hexId); });
+        el.addEventListener('click', function (e) { e.stopPropagation(); M1.placeNextSoldier(hexId); });
         M1.canvas.appendChild(el);
         M1.entryEls[hexId] = el;
       });
-      promptPlaceSoldier();
+      M1.promptPlaceSoldier();
     } else if (M1.state.phase === 'movement') {
       document.getElementById('tb-phase').textContent = 'Operations';
       document.getElementById('movement-sec').style.display = '';
@@ -227,7 +227,7 @@
       onClose: function (id) {
         if (id === 'load') { openLoadDialog(function () { startGameFlow(); }); return; }
         setDifficulty(id === 'easy' ? D.EASY : D.NORMAL);
-        startSquadGeneration();
+        M1.startSquadGeneration();
       },
     });
   }

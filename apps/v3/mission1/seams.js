@@ -76,7 +76,7 @@
       return true;
     },
     clickHex: function (hexId) {
-      if (M1.state.phase === 'entry' && M1.entryEls[hexId]) { placeNextSoldier(hexId); return true; }
+      if (M1.state.phase === 'entry' && M1.entryEls[hexId]) { M1.placeNextSoldier(hexId); return true; }
       if (destPicks[hexId]) { destPicks[hexId](); return true; }
       // Task 6: in Operations any hex with a wall-aware route is a destination — the soldier
       // walks it and stops when something happens.
@@ -166,7 +166,7 @@
   window.AmbushMission = {
     start: function (level) {
       setDifficulty(level === 'easy' ? D.EASY : D.NORMAL);
-      startSquadGeneration();
+      M1.startSquadGeneration();
     },
     // v3 punch list 2 (stack.js): everything in one hex, what each token carries, and what the
     // player may do from there: pick/select a soldier, or (in a Round) have the current actor take

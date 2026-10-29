@@ -1,5 +1,18 @@
-'use strict';
 // mission1/setup.js (5 of 13) — section 4 squad generation, entry placement. Stage A cut of mission1.js lines 1582-1795 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (3): placeNextSoldier, promptPlaceSoldier, startSquadGeneration
+// Uses from M1:
+//   core: state
+//   present: d10, fmtSigned, infoPopup, logLine, rollPopup
+//   roster: canvas, entryEls, makeCounter, placeEl, renderRoster, updateCounterVisual
+// Still global (their files are not wrapped yet):
+//   core: D, ENTRY_HEXES, EQ, SG, SQCHART, img
+//   operations: startOperations
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.placeNextSoldier = placeNextSoldier; M1.promptPlaceSoldier = promptPlaceSoldier;
+  M1.startSquadGeneration = startSquadGeneration;
   // ---------------------------------------------------------------------
   // §4 Squad Generation — real procedure, auto-buy heuristic for the actual choices (see header)
   // ---------------------------------------------------------------------
@@ -192,4 +205,4 @@
       promptPlaceSoldier();
     }
   }
-
+})();

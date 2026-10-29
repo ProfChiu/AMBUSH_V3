@@ -196,7 +196,7 @@
     if (avail.fire) offers.push({ label: 'Fire &mdash; Snap (again)', kind: 'fire' });
     if (avail.move) offers.push({ label: 'Move (up to ' + comboMoveBudget(s) + ' MP left)', kind: 'move', dests: avail.moveDests });
     offers.push({ label: 'End Turn', kind: 'end' });
-    chooseOffer(offers, {
+    M1.chooseOffer(offers, {
       title: 'Combo Action',
       prompt: s.name + ' can take one more action this turn (&sect;6/7/&sect;7/3):',
       onCancel: onEndTurn,
@@ -208,7 +208,7 @@
         chooseTarget(s, targets, {
           title: 'Select Target — Snap Fire',
           prompt: s.name + ' has line of sight to ' + targets.length + (targets.length === 1 ? ' German' : ' Germans') + '. Choose a target.',
-          hitChanceFor: function (t) { return estimateHitChance(s, t, 'snap'); },
+          hitChanceFor: function (t) { return M1.estimateHitChance(s, t, 'snap'); },
           hitChanceTipFor: function (t) { var b = M1.estimateHitChanceBreakdown(s, t, 'snap'); return b ? M1.hitBreakdownText(b) : ''; },
           onCancel: onEndTurn,
         }, function (target) {
@@ -441,7 +441,7 @@
     var s = selectedSoldier();
     if (!canClearJam(s)) return;
     document.getElementById('clearJamOpsBtn').disabled = true;
-    clearJamRoll(s, function () { renderHud(); renderStatusBanner(); });
+    M1.clearJamRoll(s, function () { renderHud(); renderStatusBanner(); });
   });
 
   // A condition change requested by the paragraph interpreter (ctx.setCondition) mid-chain —

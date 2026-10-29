@@ -223,6 +223,7 @@ function wrap(target, spec) {
           if (!d.init) edits.push([d.id.end, d.id.end, ' = undefined']);
           return;
         }
+        if (target === 'core') return;  // core: M1 is created part-way down, so its exports go at the end
         hit.forEach(function (d) {
           if (!d.init) throw new Error('exported var ' + d.id.name + ' has no initialiser');
           edits.push([d.init.start, d.init.start, 'M1.' + d.id.name + ' = ']);
@@ -248,7 +249,8 @@ function wrap(target, spec) {
     edits.forEach(function (e) { code = code.slice(0, e[0]) + e[2] + code.slice(e[1]); });
     var src = F.wrapped ? code : code.slice(PRE.length, code.length - '\n})();'.length);
     if (F.file === target) {
-      var fns = spec.exports.filter(function (n) { return F.top.names[n].kind === 'function'; });
+      var fns = spec.exports.filter(function (n) {
+        return target === 'core' ? n !== 'M1' : F.top.names[n].kind === 'function'; });
       src = wrapSource(src, target, fns);
     }
     fs.writeFileSync(path.join(DIR, F.file + '.js'), src);
@@ -274,9 +276,9 @@ function wrapSource(src, target, fns) {
       ln = ln ? ln + ' ' + piece : '  ' + piece;
     });
     if (ln) block.push(ln);
-    if (target === 'core') open.push('  // Function exports (hoisted): after `var M1` below, at the end of the file.');
-    else open = open.concat(['  // Exported functions (hoisted, so they are on M1 before any line below runs).'], block);
-    if (target === 'core') body = body.concat(['', '  // Exported functions (core creates M1 above, so they go on it here).'], block);
+    if (target !== 'core') open = open.concat(['  // Exported functions (hoisted, so they are on M1 before any line below runs).'], block);
+    else body = body.concat(['', '  // Exports. core.js creates M1 part-way down (after the engine aliases its state needs),',
+      '  // so everything it shares goes on M1 here, before any other file loads. None is reassigned.'], block);
   }
   return head.concat(open, body, ['})();', '']).join('\n');
 }

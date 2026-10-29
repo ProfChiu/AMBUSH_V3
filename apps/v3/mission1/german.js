@@ -6,6 +6,7 @@
 //   info: Info
 //   roster: activeGermans, activeUS, counterEls, equipmentName, findSoldier, nameFor, placeEl, renderRoster,
 //   renderVP, scrollMapTo, updateCounterVisual
+//   verbs: clearJamRoll, estimateHitChance, grenadeCandidates
 //   combat: applyCapture, assaultChain, checkEndingConditions, fireChain, grenadeChain
 // Still global (their files are not wrapped yet):
 //   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
@@ -13,7 +14,6 @@
 //   edgeFeatureBetween, isCrewWeapon, losClearBetween, unprepareWeaponOnMove, weaponById, weaponUsable
 //   operations: pendingConditionChange, runParagraphCheck
 //   rounds: driveNext, renderTrack, visibleEnemyTargets
-//   verbs: clearJamRoll, estimateHitChance, grenadeCandidates
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -289,7 +289,7 @@
             bodyHtml: g.name + ' is ordered to fire, but his ' + weaponById(g.weaponId).name +
               ' is jammed and he has no second weapon. &sect;9/4: he attempts to unjam it instead.',
             logHtml: g.name + ': ordered to fire with a jammed weapon and no second weapon &mdash; attempts to unjam (&sect;9/4).',
-          }, function () { clearJamRoll(g, next); });
+          }, function () { M1.clearJamRoll(g, next); });
           return;
         }
         // Genuinely weaponless: broken, or an unarmed card. §9/4's "acquire a weapon from another
@@ -359,7 +359,7 @@
         M1.infoPopup({ actor: g, title: 'No Grenade', bodyHtml: g.name + ' would throw a grenade, but has none left.' }, next);
         return;
       }
-      var gTargets = grenadeCandidates(g);
+      var gTargets = M1.grenadeCandidates(g);
       if (!gTargets.length) {
         M1.infoPopup({ actor: g, title: 'No Target', bodyHtml: g.name + ' has no US soldier within grenade range from ' + g.hexId + '.' }, next);
         return;
@@ -480,7 +480,7 @@
   function germanPickTarget(g, targets, rule, cb) {
     if (targets.length === 1) { cb(targets[0]); return; }
     var candidates = targets.map(function (s) {
-      return { id: s.id, distance: FC.hexDistance(g.hexId, s.hexId), hitChance: estimateHitChance(g, s, 'aimed') };
+      return { id: s.id, distance: FC.hexDistance(g.hexId, s.hexId), hitChance: M1.estimateHitChance(g, s, 'aimed') };
     });
     if (rule === 'easiest') {
       candidates.sort(function (a, b) { return b.hitChance - a.hitChance || a.distance - b.distance; });

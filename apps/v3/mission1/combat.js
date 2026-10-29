@@ -7,12 +7,12 @@
 //   roster: activeGermans, activeUS, addGroundItem, allGermans, counterEls, equipmentName, renderRoster, renderVP,
 //   updateCounterVisual
 //   contact: estimateHitChanceBreakdown, hitBreakdownHtml
+//   verbs: activeSoldiersIn, carryCandidates, grenadeMods, isInteriorHex, markExfiltrated
 // Still global (their files are not wrapped yet):
 //   core: Asl, CHART, D, ENTRY_HEXES, EQ, FC, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_TERRAIN, Sched,
 //   TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, terrainRowFor, vpRequirement, vpTargetNote, weaponById
 //   operations: clearDestMarks, deselect, renderStatusBanner, selectedSoldier
 //   rounds: assaultOpts, chooseTarget, renderTrack, startActionRound, wakeUpUnawareInHex
-//   verbs: activeSoldiersIn, carryCandidates, grenadeMods, isInteriorHex, markExfiltrated
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -185,8 +185,8 @@
   // ---------------------------------------------------------------------
   function grenadeChain(thrower, targetHexId, onDone) {
     var range = FC.hexDistance(thrower.hexId, targetHexId);
-    var band = FC.resolveRangeBand(weaponById(Gr.weaponIdFor('grenade', isInteriorHex(targetHexId))), range);
-    var mods = grenadeMods(thrower, targetHexId);
+    var band = FC.resolveRangeBand(weaponById(Gr.weaponIdFor('grenade', M1.isInteriorHex(targetHexId))), range);
+    var mods = M1.grenadeMods(thrower, targetHexId);
     var baseHit = CHART.BASE_HIT[band];
     // Gr.computeHitChance takes a flat list of modifiers, so Easy mode's is just another entry.
     var easyMod = D.hitChanceMod(M1.state.difficulty, thrower.side);
@@ -239,8 +239,8 @@
         },
       }, function (roll) {
         if (Gr.resolveDudCheck(roll).dud) { onDone(); return; }
-        var landWeapon = weaponById(Gr.weaponIdFor('grenade', isInteriorHex(landHexId)));
-        damageEach(activeSoldiersIn(landHexId), 0, landWeapon);
+        var landWeapon = weaponById(Gr.weaponIdFor('grenade', M1.isInteriorHex(landHexId)));
+        damageEach(M1.activeSoldiersIn(landHexId), 0, landWeapon);
       });
     }
     // §10/1 step 5: "All soldiers in a hex in which a grenade... explodes suffer damage. Roll
@@ -527,7 +527,7 @@
     // casualty's 2 VP loss. chooseTarget auto-picks a lone candidate without a dialog, which is
     // the right behavior here — carrying costs the player nothing and saves 2 VP, so there is no
     // real decision to interrupt him for until there's more than one body to choose between.
-    var carryable = carryCandidates(s);
+    var carryable = M1.carryCandidates(s);
     if (!carryable.length) { finishExit(s, null); return; }
     chooseTarget(s, carryable, {
       title: 'Carry Off the Map',
@@ -549,7 +549,7 @@
       var el = M1.counterEls[s.id]; if (el) { el.remove(); delete M1.counterEls[s.id]; }
       if (carried) {
         carried.exited = true;
-        markExfiltrated(carried);
+        M1.markExfiltrated(carried);
         var cel = M1.counterEls[carried.id]; if (cel) { cel.remove(); delete M1.counterEls[carried.id]; }
       }
       M1.renderRoster();
@@ -589,7 +589,7 @@
       // assumed — if a future reading says T8 counts too, this is the one line to change.
       M1.state.usSoldiers.filter(function (s) {
         return !s.exited && s.status === 'incapacitated' && (s.hexId === 'K13' || s.hexId === 'L13');
-      }).forEach(markExfiltrated);
+      }).forEach(M1.markExfiltrated);
       endMission('ending1');
     }
   }

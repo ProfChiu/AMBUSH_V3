@@ -177,7 +177,7 @@
       var pickupBtn = document.getElementById('pickupBtn');
       var canTake = !!actor && actor.hexId === hexId && !pickupBtn.disabled && !Dialogs.current &&
         document.getElementById('action-sec').style.display !== 'none';
-      var offers = canTake ? pickupOffers(actor) : [];
+      var offers = canTake ? M1.pickupOffers(actor) : [];
       function gear(t) {
         if (t.side === 'german') return t.weaponId ? [M1.equipmentName(t.weaponId)] : [];
         if (!t.inventory) return [];
@@ -190,11 +190,11 @@
         actor: actor ? { id: actor.id, name: actor.name, here: actor.hexId === hexId } : null,
         takeWhy: !actor ? '' : actor.hexId !== hexId ? actor.name + ' is not in this hex.' :
           canTake ? '' : !upright(actor) ? 'He must be standing or crouching (§6/7).' :
-          (actor.stance === 'standing' && allInHex(hexId).some(function (t) { return t.id !== actor.id && !t.isActive; }))
+          (actor.stance === 'standing' && M1.allInHex(hexId).some(function (t) { return t.id !== actor.id && !t.isActive; }))
             ? 'Taking equipment from an inactive soldier needs him crouching (§6/7).' :
-          allInHex(hexId).some(function (t) { return t.side !== actor.side && t.isActive && t.weaponId; })
+          M1.allInHex(hexId).some(function (t) { return t.side !== actor.side && t.isActive && t.weaponId; })
             ? 'A German keeps his weapon until he is killed, incapacitated or captured (§6/7, §14).' : 'Nothing here he can take.',
-        tokens: allInHex(hexId).filter(function (t) { return !t.exited && (t.side !== 'german' || M1.counterEls[t.id]); }).map(function (t) {
+        tokens: M1.allInHex(hexId).filter(function (t) { return !t.exited && (t.side !== 'german' || M1.counterEls[t.id]); }).map(function (t) {
           var act = M1.state.phase === 'movement' && t.side !== 'german' && t.isActive ? 'select' :
             picking && picking.ids.indexOf(t.id) !== -1 ? 'pick' : '';
           return { id: t.id, name: t.name, letter: t.letter, side: t.side, stance: t.stance, status: t.status,
@@ -214,8 +214,8 @@
     take: function (idx) {
       var actor = M1.findSoldier(M1.state.currentActorId), st = this.stack(actor.hexId);
       if (!st.offers[idx]) return false;
-      disableActionButtons();
-      resolvePickup(actor, pickupOffers(actor)[idx]);
+      M1.disableActionButtons();
+      M1.resolvePickup(actor, M1.pickupOffers(actor)[idx]);
       return true;
     },
     // v2's own start dialog (Normal / Easy / Load): index.html?play=ask, so the bot picks the level

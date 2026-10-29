@@ -372,13 +372,13 @@
     document.getElementById('fireSnap').disabled = !targets.length || !canFire || !crewOk || (crew && !crew.snap);
     // §11/1 + §11/3 reachability, not a bare adjacency test — see assaultCandidates().
     document.getElementById('assaultBtn').disabled = !assaultCandidates(s).length;
-    document.getElementById('grenadeBtn').disabled = !grenadeCandidates(s).length;
-    document.getElementById('dragBtn').disabled = !dragCandidates(s).length || !dragHexCandidates(s).length;
-    document.getElementById('giveTurnBtn').disabled = !giveTurnCandidates(s).length;
-    document.getElementById('makeAwareBtn').disabled = !makeAwareCandidates(s).length;
-    document.getElementById('changeStanceBtn').disabled = !stanceChangeCandidates(s).length;
+    document.getElementById('grenadeBtn').disabled = !M1.grenadeCandidates(s).length;
+    document.getElementById('dragBtn').disabled = !M1.dragCandidates(s).length || !M1.dragHexCandidates(s).length;
+    document.getElementById('giveTurnBtn').disabled = !M1.giveTurnCandidates(s).length;
+    document.getElementById('makeAwareBtn').disabled = !M1.makeAwareCandidates(s).length;
+    document.getElementById('changeStanceBtn').disabled = !M1.stanceChangeCandidates(s).length;
     document.getElementById('prepareWeaponBtn').disabled = !canPrepareWeapon(s);
-    document.getElementById('pickupBtn').disabled = !pickupOffers(s).length;
+    document.getElementById('pickupBtn').disabled = !M1.pickupOffers(s).length;
     document.getElementById('clearJamBtn').disabled = !canClearJam(s);
     document.getElementById('passTurn').disabled = false;
     explainVerbs(s, targets, canFire, crew, crewOk);
@@ -395,7 +395,7 @@
     var s = M1.findSoldier(M1.state.currentActorId);
     var dests = roundLegalDestinations(s);
     if (!Object.keys(dests).length) return;
-    disableActionButtons();
+    M1.disableActionButtons();
     pendingCancelAction = null; // this is a fresh, non-combo Move — default cancel behavior
     document.getElementById('cancelMoveBtn').style.display = '';
     clearDestMarks();
@@ -411,16 +411,16 @@
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
     showActionPanel(M1.state.currentActorId);
   });
-  document.getElementById('fireAimed').addEventListener('click', function () { doPlayerFire('aimed'); });
-  document.getElementById('fireSnap').addEventListener('click', function () { doPlayerFire('snap'); });
-  document.getElementById('assaultBtn').addEventListener('click', function () { doPlayerAssault(); });
-  document.getElementById('grenadeBtn').addEventListener('click', function () { doPlayerGrenade(); });
-  document.getElementById('dragBtn').addEventListener('click', function () { doPlayerDrag(); });
-  document.getElementById('giveTurnBtn').addEventListener('click', function () { doPlayerGiveTurn(); });
-  document.getElementById('makeAwareBtn').addEventListener('click', function () { doPlayerMakeAware(); });
-  document.getElementById('changeStanceBtn').addEventListener('click', function () { doPlayerChangeStance(); });
-  document.getElementById('prepareWeaponBtn').addEventListener('click', function () { doPlayerPrepareWeapon(); });
-  document.getElementById('pickupBtn').addEventListener('click', function () { doPlayerPickup(); });
+  document.getElementById('fireAimed').addEventListener('click', function () { M1.doPlayerFire('aimed'); });
+  document.getElementById('fireSnap').addEventListener('click', function () { M1.doPlayerFire('snap'); });
+  document.getElementById('assaultBtn').addEventListener('click', function () { M1.doPlayerAssault(); });
+  document.getElementById('grenadeBtn').addEventListener('click', function () { M1.doPlayerGrenade(); });
+  document.getElementById('dragBtn').addEventListener('click', function () { M1.doPlayerDrag(); });
+  document.getElementById('giveTurnBtn').addEventListener('click', function () { M1.doPlayerGiveTurn(); });
+  document.getElementById('makeAwareBtn').addEventListener('click', function () { M1.doPlayerMakeAware(); });
+  document.getElementById('changeStanceBtn').addEventListener('click', function () { M1.doPlayerChangeStance(); });
+  document.getElementById('prepareWeaponBtn').addEventListener('click', function () { M1.doPlayerPrepareWeapon(); });
+  document.getElementById('pickupBtn').addEventListener('click', function () { M1.doPlayerPickup(); });
   document.getElementById('passTurn').addEventListener('click', function () {
     var actor = M1.findSoldier(M1.state.currentActorId);
     M1.infoPopup({ actor: actor, title: 'Pass', bodyHtml: actor.name + ' passes.' }, function () { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); });

@@ -1,5 +1,39 @@
-'use strict';
 // mission1/verbs.js (9 of 13) — the player's verbs: grenade, drag, pick up, command, stance, prepare, fire, assault, jam. Stage A cut of mission1.js lines 3468-4134 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (27): activeSoldiersIn, allInHex, carryCandidates, chooseOffer, clearJamRoll, disableActionButtons,
+//   doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn, doPlayerGrenade,
+//   doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates, estimateHitChance,
+//   giveTurnCandidates, grenadeCandidates, grenadeMods, isInteriorHex, makeAwareCandidates, markExfiltrated,
+//   pickupOffers, resolvePickup, stanceChangeCandidates
+// Uses from M1:
+//   core: state
+//   present: actorRowHtml, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
+//   roster: activeGermans, activeUS, allGermans, boxesFor, counterEls, equipmentName, findSoldier, placeEl,
+//   renderRoster, scrollMapTo, updateCounterVisual
+//   contact: estimateHitChanceBreakdown, hitBreakdownText
+//   combat: assaultChain, fireChain, grenadeChain, recordCasualty, toHitCard
+// Still global (their files are not wrapped yet):
+//   core: AR, Asl, CHART, Dialogs, EQ, FC, G, Gr, M, REAL_TERRAIN, Sched, TERRAIN_LABELS, Toasts, V, canClearJam,
+//   canPrepareWeapon, crewFiredThisRound, crewMates, isCrewWeapon, losClear, upright, weaponById
+//   operations: addDestMark, clearDestMarks, completeTurn, finishFireStep, runParagraphCheck, standUpCost
+//   rounds: assaultCandidates, assaultOpts, chooseTarget, driveNext, renderTrack, showActionPanel,
+//   visibleEnemyTargets
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.activeSoldiersIn = activeSoldiersIn; M1.allInHex = allInHex; M1.carryCandidates = carryCandidates;
+  M1.chooseOffer = chooseOffer; M1.clearJamRoll = clearJamRoll;
+  M1.disableActionButtons = disableActionButtons; M1.doPlayerAssault = doPlayerAssault;
+  M1.doPlayerChangeStance = doPlayerChangeStance; M1.doPlayerDrag = doPlayerDrag;
+  M1.doPlayerFire = doPlayerFire; M1.doPlayerGiveTurn = doPlayerGiveTurn;
+  M1.doPlayerGrenade = doPlayerGrenade; M1.doPlayerMakeAware = doPlayerMakeAware;
+  M1.doPlayerPickup = doPlayerPickup; M1.doPlayerPrepareWeapon = doPlayerPrepareWeapon;
+  M1.dragCandidates = dragCandidates; M1.dragHexCandidates = dragHexCandidates;
+  M1.estimateHitChance = estimateHitChance; M1.giveTurnCandidates = giveTurnCandidates;
+  M1.grenadeCandidates = grenadeCandidates; M1.grenadeMods = grenadeMods; M1.isInteriorHex = isInteriorHex;
+  M1.makeAwareCandidates = makeAwareCandidates; M1.markExfiltrated = markExfiltrated;
+  M1.pickupOffers = pickupOffers; M1.resolvePickup = resolvePickup;
+  M1.stanceChangeCandidates = stanceChangeCandidates;
   // ---------------------------------------------------------------------
   // §10 Grenade combat (Task #63, docs/35_GRENADE_COMBAT.md)
   // ---------------------------------------------------------------------
@@ -660,4 +694,4 @@
     var b = M1.estimateHitChanceBreakdown(firer, target, fireType);
     return b ? b.clamped : -Infinity;
   }
-
+})();

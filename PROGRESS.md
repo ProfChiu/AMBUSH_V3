@@ -2,6 +2,17 @@
 
 > New here? Read `CLAUDE.md`, then `docs/00_V3_BRIEF.md`. v2 is frozen in `../AMBUSH_V2/`.
 
+## 2026-10-29 (refactor R1-R4 run back to back)
+- Accomplished: R1 baseline (compare.py, tools/t1.sh ~3 min, t2.sh ~18 min, seed-7000 traces, bugs 12 and 13 reproduced live
+  with tools/repro_save.py); R2 dead code out (36 hooks, presentation chooser) + upright/isOut/finders; R3 mission1.js cut into
+  13 files in apps/v3/mission1/ (check_split.py, check_globals.py); R4 counters.js is the one builder, toHitCard for all 5 chains.
+  T2 green after every session: parity 30/30 Normal + Easy, traces identical, 5 live drives, engine unchanged. Head 211a715.
+- Decisions: `steps` dropped from parity (it counts polling loops); engine checked against a sha256 manifest, not v2 (8c changed
+  3 modules); AMBUSH_V3 interview rule loosened (approved plan = go-ahead to edit and commit).
+- Open: R5 stopped at wrap-up mid Step 6; its unproven partial rename is in `git stash` ("R5 Step 6 partial"), master is clean.
+- Next: R5 (Steps 6-8: M1.state, save fixes, v3 save key), then R6, R7 and the write-up update. Redo Step 6 fresh or
+  `git stash pop` and prove it with T2.
+
 ## 2026-10-29 (rule change: no more one-task-at-a-time)
 - Accomplished: global `__SCAD/_CLAUDE/CLAUDE.md` "Session scope" rewritten: a request for several tasks/phases/items runs them all
   in one go, verifying each, no stop between them; AMBUSH_V3 and AMBUSH_V2 punch-list rules changed to match.

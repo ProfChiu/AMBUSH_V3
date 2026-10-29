@@ -119,7 +119,7 @@
   };
 
   // The console seam for tools/: the automation calls above, plus the hooks tools/bot and
-  // tools/repro_save.py use (R2 removed the 36 *ForTesting hooks nothing called). Each drives the
+  // tools/live_save.py use (R2 removed the 36 *ForTesting hooks nothing called). Each drives the
   // same production function a player's action runs.
   window.__mission1Debug = {
     pendingDecision: automation.pendingDecision, choose: automation.choose, press: automation.press,

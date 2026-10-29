@@ -692,3 +692,17 @@
     cb();
   }
 
+
+  // Bug 13 (docs/REFACTOR_MAP.md 3.4): a load abandons whatever chain was running. applySavedState
+  // calls this so no paragraph-check queue, walk, combo-move cancel or destination pick from the
+  // abandoned position reaches the loaded one.
+  function resetOperationsFlow() {
+    pendingConditionChange = null;
+    pendingSteps = []; currentHex = null; currentParagraph = null;
+    lastCheckQuiet = true;
+    walking = null;
+    pendingCancelAction = null;
+    destPicks = {};
+    clearTimeout(stanceBeatTimer); stanceBeatTimer = null;
+    document.body.classList.remove('stance-beat');
+  }

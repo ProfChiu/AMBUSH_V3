@@ -292,11 +292,12 @@
     e.stopPropagation();
     pickActor(c.dataset.soldierId);
   }, true);
+  var germanTurnTimer = null;
   function beginTurn(na) {
     M1.state.currentActorId = na.soldierId;
     renderTrack();
     highlightActor(M1.state.currentActorId);
-    if (na.side === 'german') { document.getElementById('action-sec').style.display = 'none'; setTimeout(germanAutoTurn, 500); }
+    if (na.side === 'german') { document.getElementById('action-sec').style.display = 'none'; germanTurnTimer = setTimeout(germanAutoTurn, 500); }
     else {
       // §6/7: "an unwounded soldier can, at any point during his turn, make one free stance
       // change" — a fresh opportunity every turn, not a once-per-Round resource. Reset here
@@ -587,3 +588,10 @@
     return out;
   }
 
+
+  // Bug 13: a load drops the Round's in-flight state: an open "who goes next" pick and a German
+  // turn already scheduled for the abandoned position (it would otherwise run on the loaded one).
+  function resetRoundFlow() {
+    picking = null;
+    clearTimeout(germanTurnTimer); germanTurnTimer = null;
+  }

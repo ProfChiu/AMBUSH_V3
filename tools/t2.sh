@@ -1,7 +1,7 @@
 #!/bin/bash
 # T2 full proof for the refactor (docs/REFACTOR_MAP.md 6.1), ~20-25 min:
 #   T1 (tools/t1.sh); bot parity 30/30 Normal and 30/30 Easy against the v3_* baselines;
-#   the five tools/live_*.py (each asserts 0 console errors); the engine check.
+#   the six tools/live_*.py (each asserts 0 console errors; live_save.py since R5); the engine check.
 # Engine check: the 19 rules modules in apps/game/ must match the Step 0 manifest
 # (tools/bot/baselines/refactor/engine.sha256). apps/game differs from v2 by design since Phase 8c
 # in three files (arscheduler, paragraphinterpreter, operationsloop); the other 16 are also
@@ -27,7 +27,9 @@ for d in normal easy; do
   echo "parity 30 $d: $(head -1 "$W/cmp30_$d.txt")"
 done
 
+nl=0
 for f in tools/live_*.py; do
+  nl=$((nl+1))
   python3 "$f" >"$W/$(basename "$f" .py).log" 2>&1 || FAIL+=("$(basename "$f")")
   echo "$(basename "$f"): $(grep -c '^  ok ' "$W/$(basename "$f" .py).log") ok, $(grep -c '^  FAIL' "$W/$(basename "$f" .py).log") fail"
 done
@@ -44,7 +46,7 @@ echo "engine: $(grep -c ': OK' "$W/engine.txt")/19 match manifest; $nv cmp'd wit
 
 S=$(( $(date +%s) - T0 ))
 if [ ${#FAIL[@]} -eq 0 ]; then
-  echo "T2 PASS: T1 + parity 30/30 + 30/30 identical, 5 live drives pass, engine unchanged (${S}s)"
+  echo "T2 PASS: T1 + parity 30/30 + 30/30 identical, $nl live drives pass, engine unchanged (${S}s)"
   [ "$1" = "--keep" ] && echo "work dir: $W" || rm -rf "$W"
   exit 0
 fi

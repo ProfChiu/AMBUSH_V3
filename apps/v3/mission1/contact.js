@@ -385,3 +385,7 @@
   }
   function mapAnyHex() { return 'M10'; }
 
+
+  // Bug 13: a contact paragraph's Round 1 terms belong to the position that rolled them. A load
+  // (applySavedState) drops them, so they are never applied to a Round 1 they did not start.
+  function resetContactFlow() { pendingContact = null; }

@@ -32,10 +32,12 @@
   }
   function serializeState() {
     return {
-      version: 1, savedAt: Date.now(), phase: M1.state.phase, difficulty: M1.state.difficulty,
+      version: 2, savedAt: Date.now(), phase: M1.state.phase, difficulty: M1.state.difficulty,
       usSoldiers: M1.state.usSoldiers, germans: M1.state.germans, opsState: M1.state.opsState, vpState: M1.state.vpState,
       track: M1.state.track, currentActorId: M1.state.currentActorId, roundNum: M1.state.roundNum,
       currentGermanIdsThisRound: M1.state.currentGermanIdsThisRound, entryIndex: M1.state.entryIndex, selectedId: M1.state.selectedId,
+      // version 2 (R5, bug 12): the items lying on the map. A version-1 save has none.
+      groundItems: M1.state.groundItems,
     };
   }
   function loadSaveList() {
@@ -66,6 +68,8 @@
     // time the player clicks Load instead of playing through it) — force-close it so its callback
     // chain can never fire afterward and act on the state we're about to replace.
     Dialogs.reset();
+    // Bug 13: the chains Dialogs.reset() just stopped leave their state behind; drop it too.
+    resetOperationsFlow(); resetContactFlow(); resetRoundFlow();
     Object.keys(counterEls).forEach(function (k) { counterEls[k].remove(); }); counterEls = {};
     clearDestMarks();
     Object.keys(entryEls).forEach(function (k) { entryEls[k].remove(); }); entryEls = {};
@@ -89,6 +93,9 @@
     M1.state.currentActorId = data.currentActorId; M1.state.roundNum = data.roundNum || 0;
     M1.state.currentGermanIdsThisRound = data.currentGermanIdsThisRound || [];
     M1.state.entryIndex = data.entryIndex || 0; M1.state.selectedId = data.selectedId || null;
+    // Bug 12: version 2 saves the ground; a version-1 save has no field, so its ground is empty
+    // (never the previous position's items).
+    M1.state.groundItems = data.groundItems || {};
 
     M1.state.usSoldiers.forEach(function (s) {
       if (s.exited || !s.hexId) return;

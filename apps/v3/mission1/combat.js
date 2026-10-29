@@ -279,17 +279,10 @@
       if (mods.attackerWounded) parts.push('&minus;2 attacker wounded');
       if (easyMod) parts.push(fmtSigned(easyMod) + ' easy mode');
       var breakdown = parts.join(' ') + ' &rarr; Hit Chance <b>' + hitChance.clamped + '</b>.';
-      rollPopup({ actor: { left: attacker, right: defender }, title: 'Assault Hit Chance', kind: 'single', variant: 'wide', contextHtml: breakdown, strip: hitStrip(hitChance.clamped),
-        explain: function (roll) { return FC.resolveHitRoll(hitChance.clamped, roll) === 'hit' ? '<b style="color:var(--clear)">HIT</b>.' : 'Miss.'; },
-        logText: function (roll) { return 'Assault to-hit: <span class="roll">' + roll + '</span> &rarr; ' + (FC.resolveHitRoll(hitChance.clamped, roll) === 'hit' ? '<b>HIT</b>' : 'miss') + '.'; },
-        fxLanded: function (roll) {
-          var hit = FC.resolveHitRoll(hitChance.clamped, roll) === 'hit';
-          lunge.resolve(hit ? 'hit' : 'miss');
-          FX.floatDie(defender.hexId, roll, hit ? 'hit' : 'miss');
-          FX.sound(hit ? 'hit' : 'miss');
-          if (hit) FX.shake(); else FX.badge(defender.hexId, 'MISS', 'neutral');
-        },
-      }, function (roll) { if (FC.resolveHitRoll(hitChance.clamped, roll) === 'hit') damageStep(); else onDone(); });
+      toHitCard({ actor: { left: attacker, right: defender }, title: 'Assault Hit Chance', variant: 'wide', contextHtml: breakdown,
+        chance: hitChance.clamped, log: 'Assault to-hit',
+        fx: { hex: defender.hexId, mark: function () { return lunge; }, loud: true },
+      }, damageStep, onDone);
     }
     function damageStep() {
       rollPopup({ actor: { left: attacker, right: defender }, title: 'Assault Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: damageStrip(weapon),

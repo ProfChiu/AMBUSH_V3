@@ -1,4 +1,4 @@
-<title>Ambush v3 Refactor Plan</title>
+<title>Ambush v3 Refactor</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -125,24 +125,81 @@ a { color: var(--olive); }
 
 <main>
   <header class="top">
-    <span class="stamp">For approval · R1–R7</span>
-    <div class="eyebrow">Ambush! Digital v3 · code review, Phase 7 write-up</div>
-    <h1>Split mission1.js into thirteen files, without changing a single roll</h1>
-    <p class="lede">The Mission 1 controller is one 6,176-line closure that holds the visuals, the game flow and the bot seam together. The plan cuts it into 13 files by section in seven sessions. Every step is proven by bot parity against today's baselines, and the engine's 19 rules modules are not touched. Along the way it fixes two save/load bugs and gives v3 its own save list.</p>
+    <span class="stamp">Done · R1–R7 · 2026-10-29</span>
+    <div class="eyebrow">Ambush! Digital v3 · code review, Phase 7 write-up, updated after R7</div>
+    <h1>mission1.js is thirteen files, and not a single roll changed</h1>
+    <p class="lede">The refactor is complete. The Mission 1 controller was one 6,176-line closure holding the visuals, the game flow and the bot seam together; it is now 13 files in <code>apps/v3/mission1/</code> that share one namespace, <code>AmbushM1</code>. All seven sessions ran on 2026-10-29. Every step was proven by bot parity against the baselines, the engine's 19 rules modules were not touched, two save/load bugs are fixed, v3 has its own save list, and every verb's legality and refusal now come from one function.</p>
     <div class="facts">
       <span>Source <b>docs/REFACTOR_MAP.md</b> (Phases 1–6)</span>
-      <span>Snapshot <b>80af2ba</b> on master</span>
+      <span>Plan <b>80af2ba</b> · last code commit <b>c3ac8a6</b> on master</span>
       <span>Scope <b>apps/v3/</b> only</span>
-      <span>Written <b>2026-10-28</b></span>
+      <span>Written <b>2026-10-28</b> · results <b>2026-10-29</b></span>
     </div>
   </header>
 
+  <section>
+    <div class="eyebrow">Results</div>
+    <h2>What the seven sessions did</h2>
+    <div class="two">
+      <div class="box">
+        <span class="tag">Final proof · T2 on the finished tree</span>
+        <span class="big">PASS · 1,087 s</span>
+        <ul>
+          <li>bot parity <b>30/30 Normal and 30/30 Easy identical</b> to the baselines; seed-7000 traces identical</li>
+          <li>17 engine suites pass; six live drives (chapters 55, drills 55, germans 36, lesson 39, map 47, save 30 checks), 0 failures, 0 console errors</li>
+          <li>engine 19/19 match the sha256 manifest taken at Step 0</li>
+          <li><code>window</code> holds exactly <code>AmbushM1</code>, <code>AmbushMission</code>, <code>__mission1Debug</code> from these files</li>
+        </ul>
+      </div>
+      <div class="box">
+        <span class="tag">Bugs fixed · checked by tools/live_save.py (30 checks)</span>
+        <ul>
+          <li><b>Bug 12, ground items.</b> Saves are <code>version: 2</code> and carry <code>groundItems</code>: a BAR dropped by a wound is still on the ground in I2 after save, reload and load, and not back in his kit; an older save in the same page leaves the ground empty; a version-1 save still loads.</li>
+          <li><b>Bug 13, in-flight state.</b> Loading with paragraph 312's pop-up open, then starting a Round with no paragraph: Initiative rolls and no stale contact term is applied.</li>
+          <li><b>Finding 15, shared saves.</b> v3 saves to <code>ambush.v3.saves</code>; v2's list is imported once and never written.</li>
+        </ul>
+        <p class="muted">The Step 7 version of the drive failed 7 checks on the code before the fix, so it proves the fix.</p>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Session</th><th>Commits</th><th>What it did</th></tr></thead>
+        <tbody>
+          <tr><td>R1</td><td><code>5d98390</code></td><td>Step 0: baselines confirmed, <code>compare.py</code>, <code>t1.sh</code> / <code>t2.sh</code>, the engine's sha256 manifest; bugs 12 and 13 reproduced live.</td></tr>
+          <tr><td>R2</td><td><code>af91b5b</code>, <code>689a433</code></td><td>Steps 1–2: dead code out (36 hooks, the presentation chooser, 19 guards, dice tray, dead aliases and CSS); <code>upright</code>, <code>isOut</code>, the finders.</td></tr>
+          <tr><td>R3</td><td><code>9b9cd8b</code></td><td>Step 3: the cut. 5,869 body lines into 13 scripts, byte for byte, by a script that checks the ranges tile the file.</td></tr>
+          <tr><td>R4</td><td><code>1ea9781</code> … <code>211a715</code> (6)</td><td>Step 4: <code>counters.js</code> is the one counter builder. Step 5: one <code>toHitCard</code> for fire, hidden fire, grenade, assault and clear jam; <code>resolveHitRoll</code> in combat 16 → 1.</td></tr>
+          <tr><td>R5</td><td><code>119cd34</code>, <code>ee88cde</code>, <code>f88009d</code></td><td>Steps 6–8: 13 vars onto <code>M1.state</code> (327 references renamed by a script); bugs 12 and 13 fixed; the v3 save key with a one-time import.</td></tr>
+          <tr><td>R6</td><td><code>93a4efd</code> … <code>bf5384b</code> (14)</td><td>Step 9: each file wrapped and exporting through <code>AmbushM1</code>, T1 after each; 345 top-level names down to three globals; headers generated by <code>tools/exports.py</code>.</td></tr>
+          <tr><td>R7</td><td><code>c692512</code>, <code>c3ac8a6</code>, + this write-up</td><td>Step 10: <code>M1.verbs(s) → {ok, why, cite}</code> feeds the buttons, their <code>data-why</code>, the ring, the stack panel and <code>verbsOffered</code>; refusal wording unchanged, proven by a new probe (<code>tools/verb_probe.py</code>: seed 7000, 229 + 367 decisions, identical). Step 11: <code>mission.css</code> split into <code>mission.css</code> + <code>hud.css</code>; spent tools retired; <code>docs/HANDOFF_V3.md</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="find">
+      <article>
+        <span class="tag">Plan correction · R1</span>
+        <h3><code>steps</code> is not a game field</h3>
+        <p>It counts the harness's polling loops and jitters run to run on unchanged code. Parity ignores it; "the bot made the same decisions" is proven by the trace diff instead.</p>
+      </article>
+      <article>
+        <span class="tag">Plan correction · R1</span>
+        <h3>The engine is checked against a manifest</h3>
+        <p>Phase 8c changed three rules modules by design, so the engine is not byte-identical to v2. T2 checks all 19 against a sha256 manifest taken at Step 0, and <code>cmp</code>s the other 16 against v2.</p>
+      </article>
+      <article class="bug">
+        <span class="tag">Left open · R5</span>
+        <h3>A load mid-card</h3>
+        <p><code>Resolve</code>'s card and hold timers and <code>FX</code> timers are not reset on load, so a load in the middle of a card could still let a pending callback fire. Never reproduced.</p>
+      </article>
+    </div>
+  </section>
+
   <section class="ask">
-    <h2>What you are approving</h2>
+    <h2>What was approved</h2>
     <ol>
       <li><b>The seven refactor sessions, R1 to R7</b>, in the order below, one per session, each ending on a full proof run.</li>
       <li><b>The stop rule:</b> any difference in a quick proof run means roll back with git and redo the step. Nothing is patched forward.</li>
-      <li><b>Three intended behaviour changes</b>, each listed again before its step: ground items survive save and load (Step 7), v3 saves move to their own key with a one-time import (Step 8), and any wording change in refusal reasons (Step 10).</li>
+      <li><b>Three intended behaviour changes</b>, each listed again before its step: ground items survive save and load (Step 7), v3 saves move to their own key with a one-time import (Step 8), and any wording change in refusal reasons (Step 10). In the end Step 10 changed no wording: today's exact strings moved into <code>verbs()</code>.</li>
       <li><b>Chapter 6 (Phase 8d) waits until after R3</b>, so its lesson code lands in the new files.</li>
     </ol>
     <p class="muted">Already decided on 2026-10-25 and not reopened here: split by section into about 12 files, <code>counters.js</code> becomes the one counter builder, saves get key <code>ambush.v3.saves</code>, bug 12 is fixed by the refactor, git as the safety net.</p>
@@ -151,7 +208,7 @@ a { color: var(--olive); }
   <section>
     <div class="eyebrow">Before and after</div>
     <h2>One file becomes thirteen</h2>
-    <p>Widths are to scale by line count. About 290 lines of dead code go first; the rest moves byte for byte, in its original line order, so nothing is retyped.</p>
+    <p>Widths are to scale by line count. About 300 lines of dead code went first; the rest moved byte for byte, in its original line order, so nothing was retyped. The sizes below are the finished files (<code>wc -l</code> after R7), each with its generated Exports / Uses header and its IIFE wrapper.</p>
     <div class="strip-wrap">
       <div class="strip">
         <div class="bar-label"><span>Today: apps/v3/mission1.js</span><span>6,176 lines</span></div>
@@ -159,45 +216,45 @@ a { color: var(--olive); }
           <div class="whole" style="flex: 5886"><span>mission1.js, one IIFE, 351 top-level names</span></div>
           <div class="dead" style="flex: 290"><span>dead</span></div>
         </div>
-        <div class="bar-label"><span>After R3: apps/v3/mission1/</span><span>~5,885 lines in 13 files, none over ~700</span></div>
+        <div class="bar-label"><span>After R7: apps/v3/mission1/</span><span>6,222 lines in 13 files (headers and wrappers included), none over 780</span></div>
         <div class="bar">
-          <div style="flex:370"><span>core</span><span>370</span></div>
-          <div style="flex:590"><span>present</span><span>590</span></div>
-          <div style="flex:325"><span>info</span><span>325</span></div>
-          <div style="flex:275"><span>roster</span><span>275</span></div>
-          <div style="flex:215"><span>setup</span><span>215</span></div>
-          <div style="flex:705"><span>operations</span><span>705</span></div>
-          <div style="flex:380"><span>contact</span><span>380</span></div>
-          <div style="flex:590"><span>rounds</span><span>590</span></div>
-          <div style="flex:675"><span>verbs</span><span>675</span></div>
-          <div style="flex:590"><span>german</span><span>590</span></div>
-          <div style="flex:590"><span>combat</span><span>590</span></div>
-          <div style="flex:290"><span>save</span><span>290</span></div>
-          <div style="flex:290"><span>seams</span><span>290</span></div>
+          <div style="flex:432"><span>core</span><span>432</span></div>
+          <div style="flex:627"><span>present</span><span>627</span></div>
+          <div style="flex:338"><span>info</span><span>338</span></div>
+          <div style="flex:295"><span>roster</span><span>295</span></div>
+          <div style="flex:206"><span>setup</span><span>206</span></div>
+          <div style="flex:740"><span>operations</span><span>740</span></div>
+          <div style="flex:408"><span>contact</span><span>408</span></div>
+          <div style="flex:583"><span>rounds</span><span>583</span></div>
+          <div style="flex:780"><span>verbs</span><span>780</span></div>
+          <div style="flex:618"><span>german</span><span>618</span></div>
+          <div style="flex:620"><span>combat</span><span>620</span></div>
+          <div style="flex:293"><span>save</span><span>293</span></div>
+          <div style="flex:282"><span>seams</span><span>282</span></div>
         </div>
       </div>
     </div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>#</th><th>File</th><th>Holds</th><th style="text-align:right">~Lines</th><th style="text-align:right">Names out / in</th></tr></thead>
+        <thead><tr><th>#</th><th>File</th><th>Holds</th><th style="text-align:right">Lines</th><th style="text-align:right">M1 exports / uses</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td><code>core.js</code></td><td>engine and data aliases, terrain and LOS tables, weapon rules, VP, difficulty, <code>M1.state</code></td><td class="n">370</td><td class="n">70 / 3</td></tr>
-          <tr><td>2</td><td><code>present.js</code></td><td>dice and strips, voice, log, pop-up helpers, <code>Resolve</code>, <code>FX</code></td><td class="n">590</td><td class="n">20 / 14</td></tr>
-          <tr><td>3</td><td><code>info.js</code></td><td><code>Info</code> (the map as information surface), <code>Sight</code></td><td class="n">325</td><td class="n">2 / 32</td></tr>
-          <tr><td>4</td><td><code>roster.js</code></td><td>map rendering, counters via <code>counters.js</code>, finders, kit and token strip, roster and VP</td><td class="n">275</td><td class="n">35 / 15</td></tr>
-          <tr><td>5</td><td><code>setup.js</code></td><td>§4 squad generation, entry placement</td><td class="n">215</td><td class="n">4 / 25</td></tr>
-          <tr><td>6</td><td><code>operations.js</code></td><td>selection, destinations, combo moves, walking, HUD, Paragraph Check, Condition Change</td><td class="n">705</td><td class="n">33 / 73</td></tr>
-          <tr><td>7</td><td><code>contact.js</code></td><td>contact, German activation and card, tooltips, hit breakdown, inspector</td><td class="n">380</td><td class="n">8 / 43</td></tr>
-          <tr><td>8</td><td><code>rounds.js</code></td><td>Action Round start, events, awareness, initiative, track, action panel</td><td class="n">590</td><td class="n">16 / 96</td></tr>
-          <tr><td>9</td><td><code>verbs.js</code></td><td>the player's verbs: grenade, drag, pick up, command, stance, prepare, fire, assault, clear jam</td><td class="n">675</td><td class="n">28 / 64</td></tr>
-          <tr><td>10</td><td><code>german.js</code></td><td>German turn, German actions, movement by reference</td><td class="n">590</td><td class="n">3 / 60</td></tr>
-          <tr><td>11</td><td><code>combat.js</code></td><td>fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory</td><td class="n">590</td><td class="n">12 / 61</td></tr>
-          <tr><td>12</td><td><code>save.js</code></td><td>save and load (new key and import), start screen, game flow</td><td class="n">290</td><td class="n">6 / 48</td></tr>
-          <tr><td>13</td><td><code>seams.js</code></td><td><code>VERBS</code>, <code>verbsOffered</code>, automation, <code>__mission1Debug</code> (live members), <code>AmbushMission</code></td><td class="n">290</td><td class="n">0 / 96</td></tr>
+          <tr><td>1</td><td><code>core.js</code></td><td>engine and data aliases, terrain and LOS tables, weapon rules, VP, difficulty, <code>M1.state</code></td><td class="n">432</td><td class="n">67 / 4</td></tr>
+          <tr><td>2</td><td><code>present.js</code></td><td>dice and strips, voice, log, pop-up helpers, <code>Resolve</code>, <code>FX</code></td><td class="n">627</td><td class="n">17 / 8</td></tr>
+          <tr><td>3</td><td><code>info.js</code></td><td><code>Info</code> (the map as information surface), <code>Sight</code></td><td class="n">338</td><td class="n">2 / 24</td></tr>
+          <tr><td>4</td><td><code>roster.js</code></td><td>map rendering, counters via <code>counters.js</code>, finders, kit and token strip, roster and VP</td><td class="n">295</td><td class="n">25 / 14</td></tr>
+          <tr><td>5</td><td><code>setup.js</code></td><td>§4 squad generation, entry placement</td><td class="n">206</td><td class="n">3 / 16</td></tr>
+          <tr><td>6</td><td><code>operations.js</code></td><td>selection, destinations, combo moves, walking, HUD, Paragraph Check, Condition Change</td><td class="n">740</td><td class="n">31 / 58</td></tr>
+          <tr><td>7</td><td><code>contact.js</code></td><td>contact, German activation and card, tooltips, hit breakdown, inspector</td><td class="n">408</td><td class="n">9 / 30</td></tr>
+          <tr><td>8</td><td><code>rounds.js</code></td><td>Action Round start, events, awareness, initiative, track, action panel</td><td class="n">583</td><td class="n">15 / 70</td></tr>
+          <tr><td>9</td><td><code>verbs.js</code></td><td>the player's verbs: grenade, drag, pick up, command, stance, prepare, fire, assault, clear jam</td><td class="n">780</td><td class="n">29 / 60</td></tr>
+          <tr><td>10</td><td><code>german.js</code></td><td>German turn, German actions, movement by reference</td><td class="n">618</td><td class="n">1 / 49</td></tr>
+          <tr><td>11</td><td><code>combat.js</code></td><td>fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory</td><td class="n">620</td><td class="n">13 / 49</td></tr>
+          <tr><td>12</td><td><code>save.js</code></td><td>save and load (new key and import), start screen, game flow</td><td class="n">293</td><td class="n">5 / 27</td></tr>
+          <tr><td>13</td><td><code>seams.js</code></td><td><code>VERBS</code>, <code>verbsOffered</code>, automation, <code>__mission1Debug</code> (live members), <code>AmbushMission</code></td><td class="n">282</td><td class="n">0 / 47</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="muted">236 of the 351 names cross a file edge. That is why the cut keeps one shared scope at first (Stage A) and namespaces later (Stage C). Two checks make it safe: no load-time code calls forward, and none of the 351 names collides with a browser or engine global.</p>
+    <p class="muted">Exports and uses are counted from each file's generated header (<code>tools/exports.py</code>): 217 names go on <code>M1</code>. At the review, 236 of the 351 names crossed a file edge. That is why the cut keeps one shared scope at first (Stage A) and namespaces later (Stage C). Two checks make it safe: no load-time code calls forward, and none of the 351 names collides with a browser or engine global.</p>
   </section>
 
   <section>
@@ -364,5 +421,5 @@ a { color: var(--olive); }
     </div>
   </section>
 
-  <footer>Ambush! Digital v3 · AMBUSH_V3/docs/REFACTOR_MAP.md is the source of record; this page summarises it for approval. Line numbers and counts are from the review of 2026-10-25.</footer>
+  <footer>Ambush! Digital v3 · AMBUSH_V3/docs/REFACTOR_MAP.md is the source of record; this page summarised it for approval on 2026-10-28 and was updated with the results after R7 (2026-10-29). Line numbers and counts in the plan sections are from the review of 2026-10-25; file sizes are the finished ones. docs/HANDOFF_V3.md is the guide to the new layout.</footer>
 </main>

@@ -4,8 +4,9 @@ Scope: `apps/v3/` only (presentation). The 19 rules modules in `apps/game/` stay
 is used only to run the checks. Phases (agreed 2026-10-25): 0 baseline · 1 inventory · 2 seams ·
 3 shared state · 4 duplication and dead code · 5 split plan · 6 step order and proof · 7 write-up.
 
-Status: Phases 1-6 done (2026-10-25). Phase 7 write-up done (2026-10-28): `docs/refactor_writeup.html`,
-published at https://claude.ai/artifact/9Af9q8R2LXkY8WRjt8ARBa (updated again in R7). Phase 0 (baseline run) not yet run.
+Status: Refactor R1-R7 done (2026-10-29). Phases 1-6 (2026-10-25), Phase 7 write-up (2026-10-28, updated with the
+results after R7): `docs/refactor_writeup.html`, published at https://claude.ai/artifact/9Af9q8R2LXkY8WRjt8ARBa.
+Results per session: §6.6. Guide to the new layout: `docs/HANDOFF_V3.md`.
 
 ---
 
@@ -820,3 +821,38 @@ identical to a baseline recorded on `f88009d`: Normal 239 snapshots / 4,083 fx+s
   `VERBS` (~l.44) and `verbsOffered()` (~l.56, on `__mission1Debug`), and `stack()`'s `takeWhy` (~l.209, in
   `AmbushMission`); `ring.js` reads the buttons' `disabled` + `data-why` (l.79-81, 137). A new `verbs(s)` shared
   across files must be exported on M1 (`M1.verbs`), and `python3 tools/exports.py --check` + `--headers` rerun.
+
+**R7 results (2026-10-29): Steps 10-11. The refactor is done.** Step 10: `verb_probe` identical, T2 green (1,092 s:
+T1 PASS 151 s; parity 30/30 Normal + 30/30 Easy identical; traces identical; live chapters 55, drills 55, germans 36,
+lesson 39, map 47, save 30 ok, 0 fail; engine 19/19 match the manifest). Step 11: T1 PASS, `live_map.py` 47 ok, and the
+closing T2 on `c3ac8a6` green (1,087 s, the same numbers). Commits `c692512` (Step 10), `c3ac8a6` (Step 11), and the commit carrying this entry (write-up).
+- **Step 10, one source.** `M1.verbs(s[, only]) → {name: {ok, why, cite}}` in `verbs.js` holds each Round verb's
+  test and its refusal, today's exact strings moved in (no wording change, no `ok` change). `showActionPanel` draws
+  every button's `disabled` and `data-why` from it (`explainVerbs` gone; Pass keeps ring.js's own `data-why`, as
+  before); `disableActionButtons` and `seams.js`'s `VERBS` iterate `M1.VERB_BUTTONS` (same key order, so
+  `verbsOffered()` is unchanged); `stack().takeWhy` is `verbs(actor, 'pickup').pickup.stackWhy`. A full call also
+  carries `fire` (not enumerable: targets, canFire, crew, crewOk) for the panel's log lines. `cite` is the § list in
+  the refusal, else the verb's base rule. The ring still reads the buttons, and `verbsOffered` still reads them too,
+  on purpose: between turns `disableActionButtons` greys them while a chain runs, which `verbs(s)` (legality) does
+  not know. The buttons are now only a rendering of `verbs()`.
+- **`tools/verb_probe.py`:** seed 7000, both difficulties; before each bot action records `verbsOffered()`, every
+  VERBS button's `disabled` / `data-why` / `title`, and the stack panel's `takeWhy` + offer count at the actor's hex.
+  Baseline `tools/bot/baselines/refactor/verbs_7000.json` (on `bf5384b`, recorded twice, identical: Normal 229
+  decisions, Easy 367). The ring's own list is not recorded: it redraws from the buttons on its own timer and jittered
+  between two runs of unchanged code. The bot never reaches some refusals (crew weapon, broken weapon, the German-weapon
+  `takeWhy`), so a scratch driven check (not kept) compared the old `showActionPanel`/`explainVerbs`/`takeWhy` logic
+  with `verbs()` for every active US soldier at every Round decision of seed 7000, under 18 state mutations (jammed,
+  broken, each stance, commander or not, MMG prepared/unprepared, no ammo, …): 44,190 cases, 0 differences.
+  Side finding, not fixed: a US soldier with `weaponId: null` makes `visibleEnemyTargets` throw (`weaponMaxRange` of
+  undefined), old code and new alike; no soldier is ever unarmed in play.
+- **Step 11, tidy.** `mission.css` (319 lines, v2's lifted styles) + `hud.css` (192: the v3 layout, ring, world
+  space, stacks, kit, tokens), split at the "v3 (Phase 3)" rule; `index.html` loads `hud.css` right after
+  `mission.css`, so the cascade order is unchanged. Proof: `mission.css` + `hud.css` (minus its 2-line header) equals
+  the old file except the one header line that said the v3 layout "is at the end". No other page loads it
+  (`counter_test.html` does not). `tools/split_mission1.py`, `check_split.py`, `rename_state.py` → `tools/retired/`
+  (one-line README). New `docs/HANDOFF_V3.md`: the 13 files, `M1` / `M1.state`, the three globals, saves, the proof
+  tools, the gotchas above.
+- **Final sizes** (`wc -l apps/v3/mission1/*.js`, 6,222 lines): combat 620, contact 408, core 432, german 618, info 338,
+  operations 740, present 627, roster 295, rounds 583, save 293, seams 282, setup 206, verbs 780. 217 names on `M1`.
+- **Left open:** `Resolve`/`FX` timers are not reset on load (R5; never reproduced); the unarmed-soldier throw above.
+  `docs/refactor_writeup.html` now reads "done" with these results; R7 did not re-publish it to the artifact URL.

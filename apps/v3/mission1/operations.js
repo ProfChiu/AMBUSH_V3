@@ -212,7 +212,7 @@
           hitChanceTipFor: function (t) { var b = M1.estimateHitChanceBreakdown(s, t, 'snap'); return b ? M1.hitBreakdownText(b) : ''; },
           onCancel: onEndTurn,
         }, function (target) {
-          fireChain(s, target, 'snap', function () { finishFireStep(s, onEndTurn); });
+          M1.fireChain(s, target, 'snap', function () { finishFireStep(s, onEndTurn); });
         });
         return;
       }
@@ -374,7 +374,7 @@
         : s.name + ' moves ' + fromHexId + ' &rarr; ' + hexId + ' (' + TERRAIN_LABELS[REAL_TERRAIN[hexId]] + ').') +
         (prisoners.length ? '<br>' + prisoners.map(function (g) { return g.name; }).join(', ') + ' (captured) comes along under guard (&sect;11/2).' : ''),
     }, function () {
-      checkCapturedGermanEscapes(); // §11/2: anyone left behind unguarded is freed right now
+      M1.checkCapturedGermanEscapes(); // §11/2: anyone left behind unguarded is freed right now
       if (M1.state.phase !== 'movement') { if (onSettled) onSettled(false); return; } // freeing a German can immediately commence Rounds
       runParagraphCheck(mover, function () {
         // REAL BUG, fixed: checkEndingConditions() was called only when a German left the map,
@@ -385,7 +385,7 @@
         // never noticed: the +4 VP scoring ending was effectively unreachable, which also
         // silently invalidated the reachable-VP ceiling the victory target is scaled from.
         // Found by the automated player (tools/bot/) walking onto T8 and finding nothing happened.
-        checkEndingConditions();
+        M1.checkEndingConditions();
         if (M1.state.phase === 'movement') { renderGroupMoveRow(); renderBringPrisonerRow(); renderDestinations(); renderStatusBanner(); }
         // quiet = the hex produced nothing the player must see: the walk may go on.
         if (onSettled) onSettled(M1.state.phase === 'movement' && lastCheckQuiet);
@@ -402,8 +402,8 @@
     document.getElementById('mc-mp').innerHTML = '<span style="color:var(--text-label);">MPA</span> <b>' + s.mpa + '</b> <span style="color:var(--text-label);font-size:10px;">(Rounds only — Operations tracks no MP, &sect;5/3)</span>';
     ['standing', 'crouching', 'prone'].forEach(function (st) { document.getElementById('stance-' + st).classList.toggle('active', s.stance === st); });
     var exitBtn = document.getElementById('exitMapBtn');
-    exitBtn.disabled = !canExit(s);
-    exitBtn.title = canExit(s) ? s.name + ' can leave the map from ' + s.hexId + '.' : 'Only from a north-edge entry hex (A1–J1).';
+    exitBtn.disabled = !M1.canExit(s);
+    exitBtn.title = M1.canExit(s) ? s.name + ' can leave the map from ' + s.hexId + '.' : 'Only from a north-edge entry hex (A1–J1).';
     var jamBtn = document.getElementById('clearJamOpsBtn');
     jamBtn.disabled = !canClearJam(s);
     jamBtn.title = s.weaponJammed ? (canClearJam(s) ? s.name + '\'s weapon is jammed — attempt to clear it (§9/4).' : 'Must be standing or crouching to clear a jam.') : 'No jammed weapon to clear.';
@@ -684,7 +684,7 @@
       M1.infoPopup({ actor: mover, title: 'Victory Points', bodyHtml: 'This paragraph awards <b>+' + step.amount + ' VP</b>' + (step.note ? ' (' + step.note + ')' : '') + '.' }, cb);
       return;
     }
-    if (step.type === 'hidden_fire') { hiddenFireChain(mover, step.spec, cb); return; }
+    if (step.type === 'hidden_fire') { M1.hiddenFireChain(mover, step.spec, cb); return; }
     if (step.type === 'run_procedure') {
       M1.infoPopup({ actor: mover, title: 'Procedure', bodyHtml: 'Procedure triggered: <b>' + step.name + '</b>.' }, cb);
       return;

@@ -435,7 +435,7 @@
         var fired = crewFiredThisRound(firer);
         if (fired.indexOf(firer.id) === -1) fired.push(firer.id); // §9/7's two-DISTINCT-soldiers cap
       }
-      fireChain(firer, target, fireType, onDone);
+      M1.fireChain(firer, target, fireType, onDone);
     });
     }
   }
@@ -455,7 +455,7 @@
       noteFor: function (t) { return losClear(thrower.hexId, t.hexId) ? '' : 'Not in sight &mdash; &minus;3'; },
       onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (target) {
-      grenadeChain(thrower, target.hexId, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); } });
+      M1.grenadeChain(thrower, target.hexId, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); } });
     });
   }
   // §5/3/§6/7/§7/3 step 1 — choose which inactive soldier (rarely more than one in a hex), then
@@ -528,7 +528,7 @@
         // (usCasualtyVPLoss, victoryrules.js), so update the existing record's outcome rather
         // than pushing a second one, which would double-charge the same soldier.
         var existing = M1.state.vpState.usCasualties.filter(function (c) { return c.soldierId === dragged.id; })[0];
-        if (existing) existing.outcome = 'killed'; else recordCasualty(dragged, 'killed');
+        if (existing) existing.outcome = 'killed'; else M1.recordCasualty(dragged, 'killed');
         M1.updateCounterVisual(dragged);
         M1.logLine(dragged.name + ' dies during the drag.', 'event');
         // A dead body stays where it fell — it isn't moved along with a failed drag.
@@ -597,7 +597,7 @@
     var defender = candidate.german;
     function resolve() {
       if (M1.state.phase === 'over') return;
-      assaultChain(attacker, defender, { capture: capture, charge: candidate.isCharge }, function () {
+      M1.assaultChain(attacker, defender, { capture: capture, charge: candidate.isCharge }, function () {
         if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); }
       });
     }
@@ -635,7 +635,7 @@
   // consume) differs.
   function clearJamRoll(s, cb) {
     var weapon = weaponById(s.weaponId);
-    toHitCard({
+    M1.toHitCard({
       actor: s, title: 'Clear Jammed Weapon',
       contextHtml: 'Weapon: ' + weapon.name + ' &middot; WS ' + M1.fmtSigned(s.WS) + '.',
       result: function (roll) { return FC.resolveClearJammedWeapon(s.WS, false, roll, CHART.CLEAR_JAM_CHART).result; },

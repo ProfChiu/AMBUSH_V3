@@ -125,7 +125,7 @@
     pendingDecision: automation.pendingDecision, choose: automation.choose, press: automation.press,
     clickHex: automation.clickHex, select: automation.select, pickActor: automation.pickActor, board: automation.board,
     dialogLog: automation.dialogLog, setPresentation: automation.setPresentation,
-    tryExit: function () { var s = selectedSoldier(); if (s) tryExit(s); },
+    tryExit: function () { var s = selectedSoldier(); if (s) M1.tryExit(s); },
     // currentActorId matters as much as the track itself for anything driving a Round from
     // outside: the AR Track says whose turn it SHOULD be, this says whose turn the game is
     // actually presenting. Its absence silently broke the automated player (tools/bot/), which
@@ -146,7 +146,7 @@
     // Console-only verification hook for §13/2's Port Box loss on wound (task 61) — drives the
     // real applyDamage('W') path directly, since reaching a specific soldier's wound naturally
     // depends on random fire-combat outcomes.
-    applyWoundForTesting: function (soldierId) { var s = M1.findSoldier(soldierId); if (s) applyDamage(s, 'W', 'test'); },
+    applyWoundForTesting: function (soldierId) { var s = M1.findSoldier(soldierId); if (s) M1.applyDamage(s, 'W', 'test'); },
     groundItemsForTesting: function () { return M1.state.groundItems; },
     // Wall-aware Operations pathfinding, exposed for the automated player. The bot steps toward a
     // goal by picking whichever adjacent hex is nearest by raw hex distance, which walks it

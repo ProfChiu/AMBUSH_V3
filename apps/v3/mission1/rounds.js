@@ -250,9 +250,9 @@
   var picking = null;
   function driveNextNow() {
     if (M1.state.phase !== 'round' || picking) return;
-    if (Sched.isRoundComplete(M1.state.track)) { endRound(); return; }
+    if (Sched.isRoundComplete(M1.state.track)) { M1.endRound(); return; }
     var na = Sched.nextActor(M1.state.track);
-    if (na.done) { endRound(); return; }
+    if (na.done) { M1.endRound(); return; }
     var occ = na.side === 'german' ? [] : Sched.occupantsOf(M1.state.track, na.slot);
     if (occ.length > 1) { offerPick(occ); return; }
     beginTurn(na);
@@ -463,7 +463,7 @@
       // done. Placed after the path is exhausted rather than per hex — the ending is about where
       // the soldier ends up, and endMission() mid-path would leave stepNext half-run.
       if (i >= steps.length) {
-        checkEndingConditions();
+        M1.checkEndingConditions();
         if (M1.state.phase !== 'round') return;
         finishMoveStep(mover, totalCost, onEndTurn);
         return;

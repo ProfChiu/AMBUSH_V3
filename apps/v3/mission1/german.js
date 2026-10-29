@@ -6,6 +6,7 @@
 //   info: Info
 //   roster: activeGermans, activeUS, counterEls, equipmentName, findSoldier, nameFor, placeEl, renderRoster,
 //   renderVP, scrollMapTo, updateCounterVisual
+//   combat: applyCapture, assaultChain, checkEndingConditions, fireChain, grenadeChain
 // Still global (their files are not wrapped yet):
 //   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
 //   Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
@@ -13,7 +14,6 @@
 //   operations: pendingConditionChange, runParagraphCheck
 //   rounds: driveNext, renderTrack, visibleEnemyTargets
 //   verbs: clearJamRoll, estimateHitChance, grenadeCandidates
-//   combat: applyCapture, assaultChain, checkEndingConditions, fireChain, grenadeChain
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -343,11 +343,11 @@
               bodyHtml: g.name + ' and ' + mate.name + ' crew the ' + M1.equipmentName(g.weaponId) + ' together, which is what allows aimed fire (&sect;9/7). ' +
                 actualFirer.name + ' is the firer &mdash; the higher Weapon Skill of the two (' + M1.fmtSigned(actualFirer.WS) + ').',
               logHtml: g.name + ' + ' + mate.name + ' crew the ' + M1.equipmentName(g.weaponId) + '; ' + actualFirer.name + ' fires (higher WS, &sect;9/7).',
-            }, function () { fireChain(actualFirer, target, fireType, next); });
+            }, function () { M1.fireChain(actualFirer, target, fireType, next); });
             return;
           }
         }
-        fireChain(g, target, fireType, next);
+        M1.fireChain(g, target, fireType, next);
       });
       return;
     }
@@ -364,7 +364,7 @@
         M1.infoPopup({ actor: g, title: 'No Target', bodyHtml: g.name + ' has no US soldier within grenade range from ' + g.hexId + '.' }, next);
         return;
       }
-      germanPickTarget(g, gTargets, a.target, function (target) { grenadeChain(g, target.hexId, next); });
+      germanPickTarget(g, gTargets, a.target, function (target) { M1.grenadeChain(g, target.hexId, next); });
       return;
     }
     if (a.action === 'assault') {
@@ -388,7 +388,7 @@
           bodyHtml: g.name + ' charges from ' + fromHex + ' into ' + victim.hexId + ' and assaults ' +
             victim.name + ' (&sect;11/3 &mdash; movement first, then the assault, at &minus;3 to hit).',
           logHtml: g.name + ' charge assaults ' + victim.name + ' (' + fromHex + ' &rarr; ' + victim.hexId + ', &sect;11/3).',
-        }, function () { assaultChain(g, victim, { capture: false, charge: true }, next); });
+        }, function () { M1.assaultChain(g, victim, { capture: false, charge: true }, next); });
         return;
       }
       if (!inHex.length) { next(); return; }
@@ -398,12 +398,12 @@
         : { id: inHex[0].id };
       var defender = inHex.filter(function (s) { return s.id === pick.id; })[0] || inHex[0];
       if (g.stance !== 'standing') { g.stance = 'standing'; M1.updateCounterVisual(g); }
-      assaultChain(g, defender, { capture: false, charge: false }, next);
+      M1.assaultChain(g, defender, { capture: false, charge: false }, next);
       return;
     }
     if (a.action === 'surrender') {
       M1.infoPopup({ actor: g, title: 'Surrender', bodyHtml: '<b>' + g.name + ' surrenders</b> and is taken prisoner (&sect;11/2).' }, function () {
-        applyCapture(g); next();
+        M1.applyCapture(g); next();
       });
       return;
     }
@@ -523,7 +523,7 @@
     Sched.removeFromRound(M1.state.track, g.id);
     if (M1.counterEls[g.id]) { M1.counterEls[g.id].remove(); delete M1.counterEls[g.id]; }
     renderTrack(); M1.renderRoster(); M1.renderVP();
-    checkEndingConditions();
+    M1.checkEndingConditions();
     next();
   }
 

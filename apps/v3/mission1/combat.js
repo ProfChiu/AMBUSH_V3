@@ -1,5 +1,27 @@
-'use strict';
 // mission1/combat.js (11 of 13) — fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory. Stage A cut of mission1.js lines 4734-5323 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (13): applyCapture, applyDamage, assaultChain, canExit, checkCapturedGermanEscapes,
+//   checkEndingConditions, endRound, fireChain, grenadeChain, hiddenFireChain, recordCasualty, toHitCard, tryExit
+// Uses from M1:
+//   core: state
+//   present: Cues, FX, damageStrip, fmtSigned, hitStrip, infoPopup, logHeader, logLine, pad2, rollPopup
+//   roster: activeGermans, activeUS, addGroundItem, allGermans, counterEls, equipmentName, renderRoster, renderVP,
+//   updateCounterVisual
+//   contact: estimateHitChanceBreakdown, hitBreakdownHtml
+// Still global (their files are not wrapped yet):
+//   core: Asl, CHART, D, ENTRY_HEXES, EQ, FC, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_TERRAIN, Sched,
+//   TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, terrainRowFor, vpRequirement, vpTargetNote, weaponById
+//   operations: clearDestMarks, deselect, renderStatusBanner, selectedSoldier
+//   rounds: assaultOpts, chooseTarget, renderTrack, startActionRound, wakeUpUnawareInHex
+//   verbs: activeSoldiersIn, carryCandidates, grenadeMods, isInteriorHex, markExfiltrated
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.applyCapture = applyCapture; M1.applyDamage = applyDamage; M1.assaultChain = assaultChain;
+  M1.canExit = canExit; M1.checkCapturedGermanEscapes = checkCapturedGermanEscapes;
+  M1.checkEndingConditions = checkEndingConditions; M1.endRound = endRound; M1.fireChain = fireChain;
+  M1.grenadeChain = grenadeChain; M1.hiddenFireChain = hiddenFireChain; M1.recordCasualty = recordCasualty;
+  M1.toHitCard = toHitCard; M1.tryExit = tryExit;
   // ---------------------------------------------------------------------
   // One to-hit card (docs/REFACTOR_MAP.md 4.3 item 1): one d10, read once per roll the same way
   // by the card's result line, the log, the board effect and what follows.
@@ -596,4 +618,4 @@
       M1.logHeader('MISSION ' + result.toUpperCase() + ' — ' + totals.total + ' VP (' + reason + ').');
     });
   }
-
+})();

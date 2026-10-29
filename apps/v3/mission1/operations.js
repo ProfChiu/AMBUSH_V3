@@ -52,7 +52,7 @@
     renderGroupMoveRow();
     renderBringPrisonerRow();
     renderDestinations();
-    Info.refresh();
+    M1.Info.refresh();
     renderStatusBanner();
   }
   function clearDestMarks() { Object.keys(destEls).forEach(function (k) { destEls[k].remove(); }); destEls = {}; destPicks = {}; }
@@ -307,7 +307,7 @@
     var s = findSoldier(walking.id);
     if (why && s) logLine(s.name + ' stops at ' + s.hexId + ' &mdash; ' + why + '.');
     walking = null;
-    if (M1.state.phase === 'movement') { renderDestinations(); renderStatusBanner(); Info.refresh(); }
+    if (M1.state.phase === 'movement') { renderDestinations(); renderStatusBanner(); M1.Info.refresh(); }
   }
   function stepWalk() {
     if (!walking) return;

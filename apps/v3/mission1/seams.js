@@ -264,7 +264,7 @@
         }
         return out;
       },
-      sight: function (fromHex, toHex, fromStance, toStance) { return Sight.draw(fromHex, toHex, fromStance, toStance); },
-      unsight: function () { Sight.clear(); },
+      sight: function (fromHex, toHex, fromStance, toStance) { return M1.Sight.draw(fromHex, toHex, fromStance, toStance); },
+      unsight: function () { M1.Sight.clear(); },
     },
   };

@@ -206,7 +206,7 @@
     var resolved = GAct.resolve(paragraphNum, GERMAN_ACTION_PROGRAMS, germanSituation(g));
     var text = PARAGRAPHS[String(paragraphNum)];
     var picked = decisionsText(resolved);
-    Info.noteReason(g, 'paragraph ' + paragraphNum + (picked ? ' &mdash; ' + picked : ''));
+    M1.Info.noteReason(g, 'paragraph ' + paragraphNum + (picked ? ' &mdash; ' + picked : ''));
     var fullHtml = (text || '(no text on file)').replace(/¥/g, '&bull;').replace(/_x000B_/g, '<br>') + decisionsHtml(resolved);
     infoPopup({
       actor: g, title: 'Paragraph ' + paragraphNum, variant: 'wide', bodyIsParagraph: true,

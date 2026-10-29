@@ -53,7 +53,10 @@ def split_top(s):
 def declared_names():
     names = {}
     for f in sorted(V3.glob('mission1/*.js')):
-        for line in f.read_text(encoding='utf-8').splitlines():
+        text = f.read_text(encoding='utf-8')
+        if re.search(r'^\(function \(\) \{$', text, re.M):
+            continue  # Stage C (R6): a wrapped file declares nothing on window; it exports through M1
+        for line in text.splitlines():
             m = re.match(r'^  function ([A-Za-z_$][\w$]*)', line)
             if m:
                 names.setdefault(m.group(1), []).append(f.name)

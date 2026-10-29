@@ -1,5 +1,18 @@
-'use strict';
 // mission1/info.js (3 of 13) — Info (the map as information surface), Sight. Stage A cut of mission1.js lines 980-1305 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (2): Info, Sight
+// Uses from M1:
+//   core: state
+// Still global (their files are not wrapped yet):
+//   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
+//   edgeFeatures, losClear, terrainRowFor, weaponById, weaponUsable
+//   present: FX, fmtSigned
+//   roster: activeGermans, canvas, findSoldier
+//   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute
+//   contact: estimateHitChanceBreakdown
+//   rounds: canFireAt
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
   // ---------------------------------------------------------------------
   // The map as an information surface (v2 task 5; docs/01_PRESENTATION_SPEC.md §4). Cards mode
   // only, like task 4 (Classic stays v1). Read-only by construction: every number here comes from
@@ -18,7 +31,7 @@
   // What it does NOT reveal: what a hex's Paragraph Check would find. The paper player cannot
   // know which hexes hide Germans until he walks in; showing it would change the game.
   // ---------------------------------------------------------------------
-  var Info = (function () {
+  var Info = M1.Info = (function () {
     var NS = 'http://www.w3.org/2000/svg';
     var MW = G.MAP_WIDTH, MH = G.MAP_HEIGHT, R = G.GRID.col_pitch / 1.5; // flat-top: pitch = 1.5 R
     var svg = null, tip = null, lastHex = null, lastReason = {}, hoverRoute = null, lastEnsured = null;
@@ -289,7 +302,7 @@
   // v3 Phase 7b (chapter 3): a sight line drawn on the map, from the same traceLOS the game asks.
   // Clear runs green end to end; blocked runs red to the hex that stops it, which is ringed. Its
   // own layer, so the hover card's redraws never wipe it. Lessons only.
-  var Sight = (function () {
+  var Sight = M1.Sight = (function () {
     var NS = 'http://www.w3.org/2000/svg', svg = null;
     function center(hexId) { var p = G.parseId(hexId); return G.hexToPixel(p.colIdx, p.rowIdx); }
     function layer() {
@@ -324,5 +337,4 @@
     }
     return { draw: draw, clear: clear };
   })();
-
-
+})();

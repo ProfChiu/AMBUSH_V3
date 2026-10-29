@@ -383,7 +383,7 @@
     document.getElementById('passTurn').disabled = false;
     explainVerbs(s, targets, canFire, crew, crewOk);
     document.getElementById('action-sec').style.display = '';
-    Info.refresh(); // task 5: shade this soldier's reachable hexes now that it is his decision
+    M1.Info.refresh(); // task 5: shade this soldier's reachable hexes now that it is his decision
     if (!targets.length) logLine(nameFor(id) + ' has no line of sight to any German this turn.');
     else if (!canFire) logLine(nameFor(id) + '\'s weapon is ' + (s.weaponBroken ? 'broken' : s.weaponJammed ? 'jammed' : 'out of ammo') + ' and cannot fire.');
     else if (crew && !crewWeaponStanceOk(s)) logLine(nameFor(id) + ' must be crouching to fire the ' + equipmentName(s.weaponId) + ' (&sect;9/7).');

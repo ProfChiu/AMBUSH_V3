@@ -9,7 +9,7 @@
   // Number..." — a one-time override for just this re-roll, distinct from (and layered on top
   // of) every other self-preservation trigger below.
   function germanAutoTurn(opts) {
-    var g = findSoldier(currentActorId);
+    var g = findSoldier(M1.state.currentActorId);
     var ignoreSelfPreservation = !!(opts && opts.ignoreSelfPreservation);
     // §11/4 / §6/8: the Self-Preservation column applies "whenever the German is in a hex occupied
     // or adjacent to an active US soldier, regardless of LOS". §11/2 (Task #72): a freed former
@@ -32,7 +32,7 @@
     // the nearest Condition column the card DOES have and say so, instead of leaving the German
     // inert with no explanation.
     function lookup(roll) {
-      var cond = opsState ? opsState.condition : 1;
+      var cond = M1.state.opsState ? M1.state.opsState.condition : 1;
       var opts = { selfPreservationActive: selfPreservationActive, specialReaction: g.specialReaction };
       try { return AR.resolveGermanActionParagraph(g.card, roll, cond, opts); } catch (e) { /* fall through */ }
       var available = ((g.card.table && g.card.table.columns) || [])
@@ -138,7 +138,7 @@
       inActivationHex: g.hexId === g.activationHexId,
       germansSameOrAdjacent: activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 1; }).length,
       germansWithinTwo: activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 2; }).length,
-      germansLost: vpState.germanDefeats.length,
+      germansLost: M1.state.vpState.germanDefeats.length,
       usOccupiesHex: function (hex) { return activeUS().some(function (s) { return s.hexId === hex; }); },
       // Task #63 (docs/35_GRENADE_COMBAT.md): real, from the German's own lightweight grenade
       // inventory (see guessGermanGrenadeCount) — no longer hardcoded false.
@@ -223,7 +223,7 @@
 
   // Carries out the resolved actions in order, one pop-up each, stopping if the mission ends.
   function performGermanActions(g, actions, i) {
-    if (phase === 'over') return;
+    if (M1.state.phase === 'over') return;
     if (i >= actions.length || !g.isActive) { finishGermanTurn(g); return; }
     var a = actions[i];
     var next = function () { performGermanActions(g, actions, i + 1); };
@@ -316,7 +316,7 @@
             var mate = avail.mates[0];
             var firerId = CW.resolveGermanCrewFirer(g, mate);
             fired.push(mate.id);
-            Sched.completeAction(track, mate.id);
+            Sched.completeAction(M1.state.track, mate.id);
             renderTrack();
             var actualFirer = firerId === mate.id ? mate : g;
             infoPopup({
@@ -491,8 +491,8 @@
   // A German already off the Track has no action left to complete — the removal did that job —
   // so the Round simply moves on to whoever is next.
   function finishGermanTurn(g) {
-    if (phase === 'over') return;
-    if (g.isActive) Sched.completeAction(track, g.id);
+    if (M1.state.phase === 'over') return;
+    if (g.isActive) Sched.completeAction(M1.state.track, g.id);
     renderTrack();
     driveNext();
   }
@@ -501,7 +501,7 @@
   // (self-preservation/evasive withdrawal) and hitting an "Exit" Movement Reference (&sect;6/8).
   function germanLeavesMap(g, next) {
     g.isActive = false;
-    Sched.removeFromRound(track, g.id);
+    Sched.removeFromRound(M1.state.track, g.id);
     if (counterEls[g.id]) { counterEls[g.id].remove(); delete counterEls[g.id]; }
     renderTrack(); renderRoster(); renderVP();
     checkEndingConditions();
@@ -526,11 +526,11 @@
   // classification invented for this feature.
   function germanMovementRefFor(hexId) {
     var cartridgeId = G.printedIdToCartridgeId(hexId);
-    var grid = cartridgeId && MISSION_CARDS_MOVEMENT['1'] && MISSION_CARDS_MOVEMENT['1'][String(opsState.condition)];
+    var grid = cartridgeId && MISSION_CARDS_MOVEMENT['1'] && MISSION_CARDS_MOVEMENT['1'][String(M1.state.opsState.condition)];
     return (grid && grid[cartridgeId]) || 'NONE';
   }
   function resolveGermanMoveByReference(g, mpRemaining, onDone) {
-    if (phase === 'over') { onDone(); return; }
+    if (M1.state.phase === 'over') { onDone(); return; }
     if (mpRemaining <= 0) {
       infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' is out of Movement Points and stops at ' + g.hexId + '.' }, onDone);
       return;
@@ -592,7 +592,7 @@
       bodyHtml: g.name + ' ' + (open ? 'runs' : 'crawls') + ' ' + fromHexId + ' &rarr; <b>' + destHexId + '</b> (' + TERRAIN_LABELS[terrain] + ').',
     }, function () {
       runParagraphCheck(g, function () {
-        if (phase === 'over') { onDone(); return; }
+        if (M1.state.phase === 'over') { onDone(); return; }
         if (!open || remaining <= 0) { onDone(); return; } // crawled -> "his movement is over" (§7/4)
         resolveGermanMoveByReference(g, remaining, onDone);
       }, { skipEventCheck: true });

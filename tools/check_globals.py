@@ -9,7 +9,7 @@ loads apps/v3/index.html in Chromium and checks:
      board, counters, ambushdialogs, shell, ring, stack, lessons, lesson, director): the page is
      loaded a second time with the 13 files left out, and its globals are the other scripts';
   3. the listing is complete: the page's own globals minus (2)'s equal exactly the listed names
-     plus AmbushMission and __mission1Debug;
+     plus AmbushMission, __mission1Debug and AmbushM1 (Stage B's state object, R5);
   4. no console error or page error on load.
 Prints one line, "check_globals PASS ..." or "check_globals FAIL: ..."; exit 0/1.
 """
@@ -22,7 +22,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 V3 = ROOT / 'apps/v3'
-ASSIGNED = {'AmbushMission', '__mission1Debug'}  # window.X = ..., not declarations
+ASSIGNED = {'AmbushMission', '__mission1Debug', 'AmbushM1'}  # window.X = ..., not declarations (AmbushM1: Stage B, R5)
 ASSIGNED |= {'__v3stack'}  # stack.js sets it only once AmbushMission exists, so it is absent from (2)
 
 

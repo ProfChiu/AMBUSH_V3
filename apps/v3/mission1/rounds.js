@@ -5,11 +5,11 @@
   // ---------------------------------------------------------------------
   function startActionRound(n) {
     walking = null; // a walk interrupted by Rounds commencing is over, and its continuation
-    phase = 'round';
-    roundNum = n;
+    M1.state.phase = 'round';
+    M1.state.roundNum = n;
     // §9/7's "a maximum of two soldiers can fire a single crew weapon in one Round" is a per-Round
     // cap, so it is cleared here with the Round, not per turn.
-    usSoldiers.forEach(function (s) { s.crewFiredBy = []; });
+    M1.state.usSoldiers.forEach(function (s) { s.crewFiredBy = []; });
     allGermans().forEach(function (g) { g.crewFiredBy = []; });
     document.getElementById('tb-phase').textContent = 'Action Round ' + n;
     if (n === 1) Cues.banner('phase', 'Contact!', 'Action Round 1', 'alert'); else Cues.banner('phase', 'Action Round ' + n);
@@ -23,7 +23,7 @@
     // unaware." startActionRound(1) is called exactly once per fresh Rounds sequence (never
     // again while already mid-Round — see activateGermansSequentially's own comment), so it's
     // the one safe place to reset everyone for real.
-    if (n === 1) usSoldiers.forEach(function (s) { s.aware = false; });
+    if (n === 1) M1.state.usSoldiers.forEach(function (s) { s.aware = false; });
     // "The US soldier who just made his PC check is automatically aware" (289, 312, 316, 333,
     // 602, 606): aware before the Awareness Phase, so he skips its check and is placed normally.
     if (n === 1 && pendingContact) {
@@ -58,8 +58,8 @@
     pendingSteps = []; currentHex = null; currentParagraph = null;
     var ctx = buildOpsCtx(mover);
     var result = Ops.roundEventCheck({
-      mission: '1', missionCards: MISSION_CARDS, condition: opsState.condition, paragraphs: PARAGRAPHS,
-      programs: PROGRAMS, state: opsState, ctx: ctx,
+      mission: '1', missionCards: MISSION_CARDS, condition: M1.state.opsState.condition, paragraphs: PARAGRAPHS,
+      programs: PROGRAMS, state: M1.state.opsState, ctx: ctx,
       rollForEvent: function () {
         var a = d10(), b = d10();
         pendingSteps.push({ type: 'event_roll', hex: null, paragraph: null, a: a, b: b, sum: a + b });
@@ -125,7 +125,7 @@
   function wakeUpUnawareInHex(hexId) {
     activeUS().filter(function (s) { return s.hexId === hexId && !s.aware; }).forEach(function (s) {
       s.aware = true;
-      if (phase === 'round') Sched.applyBecomesAware(track, s.id);
+      if (M1.state.phase === 'round') Sched.applyBecomesAware(M1.state.track, s.id);
       logLine(s.name + ' is now aware (&sect;6/5).');
     });
   }
@@ -174,7 +174,7 @@
       return entry;
     });
     var gList = activeGermans();
-    currentGermanIdsThisRound = gList.map(function (g) { return g.id; });
+    M1.state.currentGermanIdsThisRound = gList.map(function (g) { return g.id; });
     gList.forEach(function (g) {
       roster.push({ id: g.id, side: 'german', IN: g.IN, wounded: g.wounded, isCommander: false, isActive: true, hexId: g.hexId, letter: g.letter,
         receivesTwoTurns: !!(contact && contact.germanIds.indexOf(g.id) !== -1) });
@@ -187,7 +187,7 @@
       rollsById[entry.id] = r;
       classifyById[entry.id] = AR.classifyARRoll(window.AMBUSH_AR_TRACK, entry.IN, r);
     });
-    track = Sched.placeMarkers({ round: n, advantageSide: advantageSide, arTrack: window.AMBUSH_AR_TRACK, roster: roster, rollDie: function (entry) { return rollsById[entry.id]; } });
+    M1.state.track = Sched.placeMarkers({ round: n, advantageSide: advantageSide, arTrack: window.AMBUSH_AR_TRACK, roster: roster, rollDie: function (entry) { return rollsById[entry.id]; } });
 
     roster.forEach(function (entry) {
       if (entry.receivesTwoTurns) logLine(findSoldier(entry.id).name + ' receives ' + (entry.wounded ? 'one turn (wounded)' : '2 turns') + ' this Round, no roll (paragraph ' + contact.paragraph + ').');
@@ -201,8 +201,8 @@
       rollPopup({
         actor: soldier, title: 'Initiative Roll', kind: 'single', presetValue: roll,
         contextHtml: soldier.name + ' (IN ' + entry.IN + ') rolls for the AR Track.',
-        explain: function () { var slot = track.soldiers[entry.id].slot; return 'Rolls <b>' + roll + '</b> &rarr; placed in <b>' + slotLabel(slot) + '</b>.'; },
-        logText: function () { var slot = track.soldiers[entry.id].slot; return 'Initiative for ' + soldier.name + ': <span class="roll">' + roll + '</span> &rarr; ' + slotLabel(slot) + '.'; },
+        explain: function () { var slot = M1.state.track.soldiers[entry.id].slot; return 'Rolls <b>' + roll + '</b> &rarr; placed in <b>' + slotLabel(slot) + '</b>.'; },
+        logText: function () { var slot = M1.state.track.soldiers[entry.id].slot; return 'Initiative for ' + soldier.name + ': <span class="roll">' + roll + '</span> &rarr; ' + slotLabel(slot) + '.'; },
       }, function () { nextEntry(); });
     }
     nextEntry();
@@ -215,7 +215,7 @@
     if (n === 1 && pendingConditionChange !== null) {
       var to = pendingConditionChange;
       pendingConditionChange = null;
-      if (to > opsState.condition) { runRoundsConditionChange(to, driveNext); return; }
+      if (to > M1.state.opsState.condition) { runRoundsConditionChange(to, driveNext); return; }
     }
     driveNext();
   }
@@ -227,10 +227,10 @@
     return ids.map(function (id) { var s = findSoldier(id); return '<span' + (s.side === 'german' ? ' class="g"' : '') + '>' + s.name.split(' ').pop() + '</span>'; }).join(', ');
   }
   function renderTrack() {
-    var cur = Sched.isRoundComplete(track) ? { done: true } : Sched.nextActor(track);
+    var cur = Sched.isRoundComplete(M1.state.track) ? { done: true } : Sched.nextActor(M1.state.track);
     var html = '';
     ['unaware', '2adv', '2disadv', '1adv', '1disadv', 'panic', 'complete'].forEach(function (key) {
-      var occ = Sched.occupantsOf(track, key);
+      var occ = Sched.occupantsOf(M1.state.track, key);
       var isCurrent = !cur.done && key === cur.slot;
       html += '<div class="ar-slot' + (isCurrent ? ' current' : '') + '"><span class="label">' + slotLabel(key) + '</span><span class="occ">' + occStr(occ) + '</span></div>';
     });
@@ -239,7 +239,7 @@
   // v3 Phase 3b (Wan, 2026-10-22): the next turn starts at once; the finished card stays up until
   // the player's next decision closes it (Resolve.awaitDone).
   function driveNext() {
-    if (phase !== 'round') return;
+    if (M1.state.phase !== 'round') return;
     document.getElementById('action-sec').style.display = 'none';
     highlightActor(null);
     Resolve.awaitDone(driveNextNow);
@@ -249,17 +249,17 @@
   // first. While the player chooses, those counters glow and the soldier panel lists them.
   var picking = null;
   function driveNextNow() {
-    if (phase !== 'round' || picking) return;
-    if (Sched.isRoundComplete(track)) { endRound(); return; }
-    var na = Sched.nextActor(track);
+    if (M1.state.phase !== 'round' || picking) return;
+    if (Sched.isRoundComplete(M1.state.track)) { endRound(); return; }
+    var na = Sched.nextActor(M1.state.track);
     if (na.done) { endRound(); return; }
-    var occ = na.side === 'german' ? [] : Sched.occupantsOf(track, na.slot);
+    var occ = na.side === 'german' ? [] : Sched.occupantsOf(M1.state.track, na.slot);
     if (occ.length > 1) { offerPick(occ); return; }
     beginTurn(na);
   }
   function offerPick(ids) {
     picking = { ids: ids };
-    currentActorId = null;
+    M1.state.currentActorId = null;
     renderTrack();
     highlightActor(null);
     document.getElementById('action-sec').style.display = 'none';
@@ -279,7 +279,7 @@
     picking = null;
     document.getElementById('pick-sec').style.display = 'none';
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
-    beginTurn(Sched.nextActor(track, { chooseUS: function () { return id; } }));
+    beginTurn(Sched.nextActor(M1.state.track, { chooseUS: function () { return id; } }));
     return true;
   }
   document.getElementById('pick-list').addEventListener('click', function (e) {
@@ -293,22 +293,22 @@
     pickActor(c.dataset.soldierId);
   }, true);
   function beginTurn(na) {
-    currentActorId = na.soldierId;
+    M1.state.currentActorId = na.soldierId;
     renderTrack();
-    highlightActor(currentActorId);
+    highlightActor(M1.state.currentActorId);
     if (na.side === 'german') { document.getElementById('action-sec').style.display = 'none'; setTimeout(germanAutoTurn, 500); }
     else {
       // §6/7: "an unwounded soldier can, at any point during his turn, make one free stance
       // change" — a fresh opportunity every turn, not a once-per-Round resource. Reset here
       // (a genuinely new turn beginning), not inside showActionPanel, which also re-renders
       // mid-turn after a cancelled Move/Fire/etc. without that being a new turn.
-      var s = findSoldier(currentActorId);
+      var s = findSoldier(M1.state.currentActorId);
       s.usedFreeStanceChange = false;
       // Task #70 (docs/44_SNAP_FIRE_COMBO.md): a fresh combo opportunity every turn, same
       // reasoning as usedFreeStanceChange above.
       s.comboStepsUsed = 0;
       s.comboMoveCostUsed = 0;
-      showActionPanel(currentActorId);
+      showActionPanel(M1.state.currentActorId);
     }
   }
   function canFireAt(firer, target) {
@@ -391,7 +391,7 @@
     else if (crew && !crew.aimed) logLine(nameFor(id) + ' crews the ' + equipmentName(s.weaponId) + ' alone, so it can only snap fire (&sect;9/7).');
   }
   document.getElementById('moveBtn').addEventListener('click', function () {
-    var s = findSoldier(currentActorId);
+    var s = findSoldier(M1.state.currentActorId);
     var dests = roundLegalDestinations(s);
     if (!Object.keys(dests).length) return;
     disableActionButtons();
@@ -408,7 +408,7 @@
   document.getElementById('cancelMoveBtn').addEventListener('click', function () {
     if (pendingCancelAction) { var fn = pendingCancelAction; pendingCancelAction = null; fn(); return; }
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
-    showActionPanel(currentActorId);
+    showActionPanel(M1.state.currentActorId);
   });
   document.getElementById('fireAimed').addEventListener('click', function () { doPlayerFire('aimed'); });
   document.getElementById('fireSnap').addEventListener('click', function () { doPlayerFire('snap'); });
@@ -421,8 +421,8 @@
   document.getElementById('prepareWeaponBtn').addEventListener('click', function () { doPlayerPrepareWeapon(); });
   document.getElementById('pickupBtn').addEventListener('click', function () { doPlayerPickup(); });
   document.getElementById('passTurn').addEventListener('click', function () {
-    var actor = findSoldier(currentActorId);
-    infoPopup({ actor: actor, title: 'Pass', bodyHtml: actor.name + ' passes.' }, function () { Sched.completeAction(track, currentActorId); renderTrack(); driveNext(); });
+    var actor = findSoldier(M1.state.currentActorId);
+    infoPopup({ actor: actor, title: 'Pass', bodyHtml: actor.name + ' passes.' }, function () { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); });
   });
   // §6/7 Move: walk the chosen path one hex at a time, same real Paragraph Check every hex-entry
   // gets in Operations (§5/1's "made during Rounds in this same manner"), except Event Checks are
@@ -456,14 +456,14 @@
       }, next);
     }
     function stepNext() {
-      if (phase !== 'round' || currentActorId !== mover.id) return;
+      if (M1.state.phase !== 'round' || M1.state.currentActorId !== mover.id) return;
       // Same gap as doMove's (see its comment): a Rounds move can be the step that completes
       // Ending 1's four-hex requirement, so the condition has to be re-tested once the move is
       // done. Placed after the path is exhausted rather than per hex — the ending is about where
       // the soldier ends up, and endMission() mid-path would leave stepNext half-run.
       if (i >= steps.length) {
         checkEndingConditions();
-        if (phase !== 'round') return;
+        if (M1.state.phase !== 'round') return;
         finishMoveStep(mover, totalCost, onEndTurn);
         return;
       }

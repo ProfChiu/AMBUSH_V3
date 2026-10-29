@@ -76,25 +76,25 @@
       return true;
     },
     clickHex: function (hexId) {
-      if (phase === 'entry' && entryEls[hexId]) { placeNextSoldier(hexId); return true; }
+      if (M1.state.phase === 'entry' && entryEls[hexId]) { placeNextSoldier(hexId); return true; }
       if (destPicks[hexId]) { destPicks[hexId](); return true; }
       // Task 6: in Operations any hex with a wall-aware route is a destination — the soldier
       // walks it and stops when something happens.
-      if (phase === 'movement' && selectedSoldier() && walkRoute(hexId)) return true;
+      if (M1.state.phase === 'movement' && selectedSoldier() && walkRoute(hexId)) return true;
       throw new Error('clickHex(' + hexId + '): the map offers no decision there');
     },
     pickActor: function (soldierId) { return pickActor(soldierId); },
     select: function (soldierId) {
-      if (phase !== 'movement' || !counterEls[soldierId] || !findSoldier(soldierId)) return false;
-      if (selectedId !== soldierId) selectSoldier(soldierId);
+      if (M1.state.phase !== 'movement' || !counterEls[soldierId] || !findSoldier(soldierId)) return false;
+      if (M1.state.selectedId !== soldierId) selectSoldier(soldierId);
       return true;
     },
     board: function () {
-      var shownSel = selectedId && counterEls[selectedId] && counterEls[selectedId].classList.contains('selected') ? selectedId : null;
+      var shownSel = M1.state.selectedId && counterEls[M1.state.selectedId] && counterEls[M1.state.selectedId].classList.contains('selected') ? M1.state.selectedId : null;
       return {
-        phase: phase, roundNum: roundNum, condition: opsState ? opsState.condition : null,
-        currentActorId: currentActorId, selectedId: shownSel, lastSelectedId: lastSelectedId,
-        us: usSoldiers.map(function (s) {
+        phase: M1.state.phase, roundNum: M1.state.roundNum, condition: M1.state.opsState ? M1.state.opsState.condition : null,
+        currentActorId: M1.state.currentActorId, selectedId: shownSel, lastSelectedId: lastSelectedId,
+        us: M1.state.usSoldiers.map(function (s) {
           return { id: s.id, letter: s.letter, hexId: s.hexId, stance: s.stance, status: s.status,
             isActive: !!s.isActive, exited: !!s.exited, aware: !!s.aware, mpa: s.mpa,
             weaponId: s.weaponId, PC: s.PC, WS: s.WS, IN: s.IN,
@@ -104,9 +104,9 @@
           return { id: g.id, hexId: g.hexId, status: g.status, isActive: !!g.isActive, role: g.card.Role };
         }),
         vp: { gained: shownVP.gained, lost: shownVP.lost, total: shownVP.total, need: shownVP.need },
-        casualties: vpState.usCasualties, activations: vpState.germanActivations.length,
+        casualties: M1.state.vpState.usCasualties, activations: M1.state.vpState.germanActivations.length,
         dests: Object.keys(destPicks),
-        entryHexes: phase === 'entry' ? Object.keys(entryEls) : [],
+        entryHexes: M1.state.phase === 'entry' ? Object.keys(entryEls) : [],
         verbs: verbsOffered(),
         // v3: the soldiers the player may pick (§6/1)
         pickable: picking ? picking.ids.slice() : [],
@@ -131,7 +131,7 @@
     // actually presenting. Its absence silently broke the automated player (tools/bot/), which
     // read undefined and so could never identify the acting soldier — reducing every Rounds turn
     // to "fire or pass" and freezing 27 of 30 test games in an endless firefight.
-    state: function () { return { phase: phase, usSoldiers: usSoldiers, germans: germans, vpState: vpState, opsState: opsState, track: track, roundNum: roundNum, currentActorId: currentActorId }; },
+    state: function () { return { phase: M1.state.phase, usSoldiers: M1.state.usSoldiers, germans: M1.state.germans, vpState: M1.state.vpState, opsState: M1.state.opsState, track: M1.state.track, roundNum: M1.state.roundNum, currentActorId: M1.state.currentActorId }; },
     // Passes hexId straight through as eff.hex, the same shape a real activate_german effect
     // uses — exercises the exact production code path instead of spawning at a placeholder and
     // patching the position afterward, which raced against the reveal pop-up/scroll once
@@ -147,7 +147,7 @@
     // real applyDamage('W') path directly, since reaching a specific soldier's wound naturally
     // depends on random fire-combat outcomes.
     applyWoundForTesting: function (soldierId) { var s = findSoldier(soldierId); if (s) applyDamage(s, 'W', 'test'); },
-    groundItemsForTesting: function () { return groundItems; },
+    groundItemsForTesting: function () { return M1.state.groundItems; },
     // Wall-aware Operations pathfinding, exposed for the automated player. The bot steps toward a
     // goal by picking whichever adjacent hex is nearest by raw hex distance, which walks it
     // straight into a building wall and oscillates for ever — K12 and L12 are both "closer to
@@ -172,7 +172,7 @@
     // player may do from there: pick/select a soldier, or (in a Round) have the current actor take
     // an item, the same Pick Up / Exchange code as v2's button (§5/3, §6/7).
     stack: function (hexId) {
-      var actor = phase === 'round' && currentActorId && !picking ? findSoldier(currentActorId) : null;
+      var actor = M1.state.phase === 'round' && M1.state.currentActorId && !picking ? findSoldier(M1.state.currentActorId) : null;
       if (actor && actor.side === 'german') actor = null;
       var pickupBtn = document.getElementById('pickupBtn');
       var canTake = !!actor && actor.hexId === hexId && !pickupBtn.disabled && !Dialogs.current &&
@@ -195,24 +195,24 @@
           allInHex(hexId).some(function (t) { return t.side !== actor.side && t.isActive && t.weaponId; })
             ? 'A German keeps his weapon until he is killed, incapacitated or captured (§6/7, §14).' : 'Nothing here he can take.',
         tokens: allInHex(hexId).filter(function (t) { return !t.exited && (t.side !== 'german' || counterEls[t.id]); }).map(function (t) {
-          var act = phase === 'movement' && t.side !== 'german' && t.isActive ? 'select' :
+          var act = M1.state.phase === 'movement' && t.side !== 'german' && t.isActive ? 'select' :
             picking && picking.ids.indexOf(t.id) !== -1 ? 'pick' : '';
           return { id: t.id, name: t.name, letter: t.letter, side: t.side, stance: t.stance, status: t.status,
             isActive: !!t.isActive, img: currentImgFor(t), gear: gear(t), act: act,
-            current: t.id === currentActorId, selected: t.id === selectedId };
+            current: t.id === M1.state.currentActorId, selected: t.id === M1.state.selectedId };
         }),
-        ground: (groundItems[hexId] || []).map(function (it) { return equipmentName(it.id); }),
+        ground: (M1.state.groundItems[hexId] || []).map(function (it) { return equipmentName(it.id); }),
         offers: offers.map(function (o, i) { return { idx: i, from: o.from, item: o.item, label: stripTags(o.label) }; }),
       };
     },
     hexOf: function (id) { var t = findSoldier(id); return t ? t.hexId : null; },
     actOn: function (id) {
       if (picking) return pickActor(id);
-      if (phase === 'movement' && counterEls[id] && findSoldier(id).side !== 'german') { selectSoldier(id); return true; }
+      if (M1.state.phase === 'movement' && counterEls[id] && findSoldier(id).side !== 'german') { selectSoldier(id); return true; }
       return false;
     },
     take: function (idx) {
-      var actor = findSoldier(currentActorId), st = this.stack(actor.hexId);
+      var actor = findSoldier(M1.state.currentActorId), st = this.stack(actor.hexId);
       if (!st.offers[idx]) return false;
       disableActionButtons();
       resolvePickup(actor, pickupOffers(actor)[idx]);
@@ -228,7 +228,7 @@
         lessonRng = rng || null;
         applySavedState(JSON.parse(JSON.stringify(data)));
         // v3 opens Operations with nobody selected (punch list 3); a load selects the first soldier
-        if (phase === 'movement') deselect();
+        if (M1.state.phase === 'movement') deselect();
       },
       board: automation.board, pending: automation.pendingDecision,
       // the German side, revealed the way a paragraph's activate_german effect reveals it
@@ -245,16 +245,16 @@
         ['standing', 'crouching', 'prone'].forEach(function (st) {
           mod[st] = FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, st) ? FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, st) : null;
         });
-        var d = s && phase === 'round' ? roundLegalDestinations(s)[hexId] : null;
+        var d = s && M1.state.phase === 'round' ? roundLegalDestinations(s)[hexId] : null;
         var out = { hex: hexId, terrain: terrain, label: TERRAIN_LABELS[terrain] || terrain || 'unknown',
           mp: M.mpCost(terrain), reach: d ? d.cost : null, mpa: s ? s.mpa : null, row: row, mod: mod,
           cover: row === 0 ? 'no cover' : row <= 3 ? 'light cover' : 'good cover',
           adjacent: !!(s && FC.hexDistance(s.hexId, hexId) === 1) };
         // Phase 8b (chapter 5): the hex's cell on the mission card, read by the engine's own parser
-        var cid = G.printedIdToCartridgeId(hexId), grid = opsState && MISSION_CARDS['1'][String(opsState.condition)];
+        var cid = G.printedIdToCartridgeId(hexId), grid = M1.state.opsState && MISSION_CARDS['1'][String(M1.state.opsState.condition)];
         var raw = cid && grid ? grid[cid] : null, cell = Ops.parseCellValue(raw);
         out.cell = { raw: raw, type: cell.type, paragraph: cell.paragraph || null, sighting: cell.sighting || null,
-          occurred: !!(cell.sighting && opsState.sightingsOccurred[cell.sighting]), marker: !!(opsState && opsState.eventMarkers[hexId]) };
+          occurred: !!(cell.sighting && M1.state.opsState.sightingsOccurred[cell.sighting]), marker: !!(M1.state.opsState && M1.state.opsState.eventMarkers[hexId]) };
         if (t) {
           var r = LOS.traceLOS({ fromId: hexId, toId: t.hexId, elevationByHexId: LOS_ELEV, terrainByHexId: LOS_TERRAIN,
             edgeFeatures: edgeFeatures, fromStance: s ? s.stance : 'standing', toStance: t.stance });

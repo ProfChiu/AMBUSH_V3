@@ -17,7 +17,7 @@
   // `kind: 'dual'` reuses the two-dice tray the Initiative roll already uses; on Normal
   // (squadRolls === 1) the single-die path is unchanged.
   function easyRollPopup(opts, cb) {
-    var n = D.squadRolls(difficulty);
+    var n = D.squadRolls(M1.state.difficulty);
     if (n < 2) {
       rollPopup({
         title: opts.title, kind: 'single', contextHtml: opts.contextHtml,
@@ -92,18 +92,18 @@
       // Task #68) — a newly acquired one always starts unprepared.
       s.weaponPrepared = false;
     });
-    usSoldiers = lettered;
+    M1.state.usSoldiers = lettered;
 
     infoPopup({
-      title: 'Squad Assembled', bodyHtml: usSoldiers.length + ' soldiers bought for ' + bought.spentSP + '/' + sp + ' Squad Points: ' +
-        usSoldiers.map(function (s) { return s.letter + ' (IN ' + s.IN + (s.isCommander ? ', Commander' : '') + ')'; }).join(', ') + '.',
+      title: 'Squad Assembled', bodyHtml: M1.state.usSoldiers.length + ' soldiers bought for ' + bought.spentSP + '/' + sp + ' Squad Points: ' +
+        M1.state.usSoldiers.map(function (s) { return s.letter + ' (IN ' + s.IN + (s.isCommander ? ', Commander' : '') + ')'; }).join(', ') + '.',
     }, function () {
       rollRatingsSequentially(0, wp);
     });
   }
   function rollRatingsSequentially(i, wp) {
-    if (i >= usSoldiers.length) { buyEquipment(wp); return; }
-    var s = usSoldiers[i];
+    if (i >= M1.state.usSoldiers.length) { buyEquipment(wp); return; }
+    var s = M1.state.usSoldiers[i];
     rollPopup({
       actor: s, title: 'Ratings — ' + s.name, kind: 'single',
       contextHtml: 'Rolling Perception, Weapon Skill, and Driving Skill for ' + s.letter + ' (IN ' + s.IN + ').',
@@ -114,7 +114,7 @@
         // standing rule is that the player sees the machinery, and these were part of it.
         function rated(firstRoll, resolve) {
             var rolls = [firstRoll];
-            for (var k = 1; k < D.squadRolls(difficulty); k++) rolls.push(d10());
+            for (var k = 1; k < D.squadRolls(M1.state.difficulty); k++) rolls.push(d10());
             var best = D.chooseBest(rolls, resolve);
             return { value: best.value, rolls: rolls, kept: best.roll };
         }
@@ -136,11 +136,11 @@
     }, function () { rollRatingsSequentially(i + 1, wp); });
   }
   function buyEquipment(wp) {
-    var bought = SG.autoBuyEquipment(wp, usSoldiers.length, SQCHART);
+    var bought = SG.autoBuyEquipment(wp, M1.state.usSoldiers.length, SQCHART);
     // Task #61 (docs/33_PORT_BOX.md): assign the aggregate purchase to real per-soldier Port
     // Boxes / Ammo Boxes — this is also where the BAR-to-commander swap actually happens now,
     // via equipmentrules.js's stow/drop rather than just overwriting weaponId.
-    SG.distributeEquipment(usSoldiers, bought, SQCHART, EQ);
+    SG.distributeEquipment(M1.state.usSoldiers, bought, SQCHART, EQ);
     infoPopup({
       title: 'Equipment', bodyHtml: 'Spent ' + bought.spentWP + '/' + wp + ' Weapon Points: ' +
         Object.keys(bought.equipment).map(function (id) { return bought.equipment[id] + '&times; ' + id; }).join(', ') + '.',
@@ -154,9 +154,8 @@
   // Entry placement — "Your soldiers can enter the map in any hexes on the north edge between
   // A1 and J1 (inclusive)."
   // ---------------------------------------------------------------------
-  var entryIndex = 0;
   function startEntryPlacement() {
-    phase = 'entry';
+    M1.state.phase = 'entry';
     document.getElementById('tb-phase').textContent = 'Entry Placement';
     document.getElementById('roster-sec').style.display = '';
     ENTRY_HEXES.forEach(function (hexId) {
@@ -174,19 +173,19 @@
   // Dialogs' full-screen backdrop already blocks the entry-hex markers underneath while it's open,
   // so no extra click-guard is needed.
   function promptPlaceSoldier() {
-    var s = usSoldiers[entryIndex];
+    var s = M1.state.usSoldiers[M1.state.entryIndex];
     document.getElementById('status-banner').textContent = 'Place ' + s.name + ' on the north edge (A1-J1).';
     infoPopup({ actor: s, title: 'Entry Placement', bodyHtml: 'Place ' + s.name + ' on the north edge (A1&ndash;J1).' });
   }
   function placeNextSoldier(hexId) {
-    if (entryIndex >= usSoldiers.length) return;
-    var s = usSoldiers[entryIndex];
+    if (M1.state.entryIndex >= M1.state.usSoldiers.length) return;
+    var s = M1.state.usSoldiers[M1.state.entryIndex];
     s.hexId = hexId;
     makeCounter(s, hexId);
     updateCounterVisual(s);
     logLine(s.name + ' enters the map at ' + hexId + '.');
-    entryIndex++;
-    if (entryIndex >= usSoldiers.length) {
+    M1.state.entryIndex++;
+    if (M1.state.entryIndex >= M1.state.usSoldiers.length) {
       Object.keys(entryEls).forEach(function (id) { entryEls[id].remove(); });
       startOperations();
     } else {

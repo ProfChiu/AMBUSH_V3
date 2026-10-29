@@ -26,16 +26,16 @@
   function popupOpen() { return !!Dialogs.current; }
   function isSafeToSave() {
     if (popupOpen()) return false;
-    if (phase === 'squadgen' || phase === 'over') return false;
-    if (phase === 'round' && document.getElementById('cancelMoveBtn').style.display !== 'none') return false; // mid Move destination-pick
+    if (M1.state.phase === 'squadgen' || M1.state.phase === 'over') return false;
+    if (M1.state.phase === 'round' && document.getElementById('cancelMoveBtn').style.display !== 'none') return false; // mid Move destination-pick
     return true;
   }
   function serializeState() {
     return {
-      version: 1, savedAt: Date.now(), phase: phase, difficulty: difficulty,
-      usSoldiers: usSoldiers, germans: germans, opsState: opsState, vpState: vpState,
-      track: track, currentActorId: currentActorId, roundNum: roundNum,
-      currentGermanIdsThisRound: currentGermanIdsThisRound, entryIndex: entryIndex, selectedId: selectedId,
+      version: 1, savedAt: Date.now(), phase: M1.state.phase, difficulty: M1.state.difficulty,
+      usSoldiers: M1.state.usSoldiers, germans: M1.state.germans, opsState: M1.state.opsState, vpState: M1.state.vpState,
+      track: M1.state.track, currentActorId: M1.state.currentActorId, roundNum: M1.state.roundNum,
+      currentGermanIdsThisRound: M1.state.currentGermanIdsThisRound, entryIndex: M1.state.entryIndex, selectedId: M1.state.selectedId,
     };
   }
   function loadSaveList() {
@@ -71,36 +71,36 @@
     Object.keys(entryEls).forEach(function (k) { entryEls[k].remove(); }); entryEls = {};
     Object.keys(eventMarkerEls).forEach(function (k) { eventMarkerEls[k].remove(); }); eventMarkerEls = {};
 
-    usSoldiers = data.usSoldiers; germans = data.germans; phase = data.phase;
+    M1.state.usSoldiers = data.usSoldiers; M1.state.germans = data.germans; M1.state.phase = data.phase;
     // `aware` (§6/5) postdates this field's introduction — a save written before it has none, so
     // default to already-aware rather than false: the concept didn't exist yet at save time, and
     // those soldiers were already acting normally, not sitting immobile.
-    usSoldiers.forEach(function (s) { if (s.aware === undefined) s.aware = true; });
+    M1.state.usSoldiers.forEach(function (s) { if (s.aware === undefined) s.aware = true; });
     // Saves written before Easy mode existed carry no difficulty; they were all played on the
     // rulebook settings, so Normal is the correct default rather than a guess.
     setDifficulty(data.difficulty === D.EASY ? D.EASY : D.NORMAL);
-    opsState = data.opsState; vpState = data.vpState; track = data.track;
+    M1.state.opsState = data.opsState; M1.state.vpState = data.vpState; M1.state.track = data.track;
     // germanActivations/awards postdate the §2/1 VP fix — a save written before it has neither,
     // so default them rather than letting computeVPTotal reduce over undefined.
-    vpState.germanActivations = vpState.germanActivations || [];
-    vpState.awards = vpState.awards || [];
-    vpState.germanDefeats = vpState.germanDefeats || [];
-    vpState.usCasualties = vpState.usCasualties || [];
-    currentActorId = data.currentActorId; roundNum = data.roundNum || 0;
-    currentGermanIdsThisRound = data.currentGermanIdsThisRound || [];
-    entryIndex = data.entryIndex || 0; selectedId = data.selectedId || null;
+    M1.state.vpState.germanActivations = M1.state.vpState.germanActivations || [];
+    M1.state.vpState.awards = M1.state.vpState.awards || [];
+    M1.state.vpState.germanDefeats = M1.state.vpState.germanDefeats || [];
+    M1.state.vpState.usCasualties = M1.state.vpState.usCasualties || [];
+    M1.state.currentActorId = data.currentActorId; M1.state.roundNum = data.roundNum || 0;
+    M1.state.currentGermanIdsThisRound = data.currentGermanIdsThisRound || [];
+    M1.state.entryIndex = data.entryIndex || 0; M1.state.selectedId = data.selectedId || null;
 
-    usSoldiers.forEach(function (s) {
+    M1.state.usSoldiers.forEach(function (s) {
       if (s.exited || !s.hexId) return;
       makeCounter(s, s.hexId);
       updateCounterVisual(s);
     });
-    Object.keys(germans).forEach(function (cardId) {
-      var g = germans[cardId];
+    Object.keys(M1.state.germans).forEach(function (cardId) {
+      var g = M1.state.germans[cardId];
       makeCounter(g, g.hexId);
       updateCounterVisual(g);
     });
-    Object.keys(opsState.eventMarkers || {}).forEach(function (hexId) { placeEventMarkerEl(hexId); });
+    Object.keys(M1.state.opsState.eventMarkers || {}).forEach(function (hexId) { placeEventMarkerEl(hexId); });
 
     renderRoster();
     renderVP();
@@ -112,7 +112,7 @@
     document.getElementById('round-sec').style.display = 'none';
     document.getElementById('cancelMoveBtn').style.display = 'none';
 
-    if (phase === 'entry') {
+    if (M1.state.phase === 'entry') {
       document.getElementById('tb-phase').textContent = 'Entry Placement';
       ENTRY_HEXES.forEach(function (hexId) {
         var el = document.createElement('div');
@@ -124,17 +124,17 @@
         entryEls[hexId] = el;
       });
       promptPlaceSoldier();
-    } else if (phase === 'movement') {
+    } else if (M1.state.phase === 'movement') {
       document.getElementById('tb-phase').textContent = 'Operations';
       document.getElementById('movement-sec').style.display = '';
-      if (activeUS().length) selectSoldier(selectedId && findSoldier(selectedId) ? selectedId : activeUS()[0].id);
-    } else if (phase === 'round') {
-      document.getElementById('tb-phase').textContent = 'Round ' + roundNum;
+      if (activeUS().length) selectSoldier(M1.state.selectedId && findSoldier(M1.state.selectedId) ? M1.state.selectedId : activeUS()[0].id);
+    } else if (M1.state.phase === 'round') {
+      document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum;
       document.getElementById('track-sec').style.display = '';
-      if (Sched.isRoundComplete(track)) {
+      if (Sched.isRoundComplete(M1.state.track)) {
         renderTrack();
         document.getElementById('round-sec').style.display = '';
-        document.getElementById('tb-phase').textContent = 'Round ' + roundNum + ' complete';
+        document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum + ' complete';
         document.getElementById('status-banner').textContent = 'Round complete. Continue the fight.';
       } else {
         document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';

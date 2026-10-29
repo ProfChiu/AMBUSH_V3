@@ -56,15 +56,15 @@
   // (a click on the one already selected opens the inspector) and inspected in a Round.
   function counterClick(s) {
     if (s.side === 'german') { showSoldierInspector(s.id); return; }
-    if (phase === 'movement') {
+    if (M1.state.phase === 'movement') {
       // Clicking an already-selected soldier opens the inspector instead of re-selecting him
       // (a no-op otherwise) — still "click on him" per the user's own ask, without turning
       // every ordinary movement-planning click into an interrupting modal.
-      if (selectedId === s.id) { showSoldierInspector(s.id); return; }
+      if (M1.state.selectedId === s.id) { showSoldierInspector(s.id); return; }
       selectSoldier(s.id);
       return;
     }
-    if (phase === 'round') showSoldierInspector(s.id);
+    if (M1.state.phase === 'round') showSoldierInspector(s.id);
   }
   // Build a soldier's counter, place it in hexId and put it on the map (US entry, German
   // activation, both on load). The caller runs updateCounterVisual where it always has.
@@ -89,33 +89,20 @@
   // ---------------------------------------------------------------------
   // Roster / state
   // ---------------------------------------------------------------------
-  var usSoldiers = [];       // populated by squad generation
-  var germans = {};          // id -> german object, populated as activate_german fires
-  var phase = 'squadgen';    // squadgen | entry | movement | round | roundEnd | over
-  var opsState = null;
-  var track = null, currentActorId = null, roundNum = 0;
-  // germanActivations: §2/1's Activation VP Award, banked the moment a German activates and kept
-  // "regardless of what happens later". germanDefeats now contributes only the additive
-  // Conditional award. awards: flat VP from paragraphs / ending bonuses. See victoryrules.js.
-  var vpState = { germanActivations: [], germanDefeats: [], usCasualties: [], awards: [] };
-  var currentGermanIdsThisRound = [];
-  // Task #68 (docs/37_PICKUP_EXCHANGE.md): items lying in a hex with no soldier currently
-  // carrying them — hexId -> array of { id, kind: 'port'|'ammo' }. Populated by wound-loss
-  // overflow (§13/2, Task #61) rather than left to vanish as it did before this task.
-  var groundItems = {};
+  // The game state (usSoldiers, germans, phase, ...) lives on M1.state (core.js, Stage B).
 
   function findSoldier(id) {
-    if (germans[id]) return germans[id];
-    return usSoldiers.filter(function (s) { return s.id === id; })[0];
+    if (M1.state.germans[id]) return M1.state.germans[id];
+    return M1.state.usSoldiers.filter(function (s) { return s.id === id; })[0];
   }
   function nameFor(id) { return findSoldier(id).name; }
-  function activeUS() { return usSoldiers.filter(function (s) { return s.isActive && !s.exited; }); }
+  function activeUS() { return M1.state.usSoldiers.filter(function (s) { return s.isActive && !s.exited; }); }
   function activeGermans() { return allGermans().filter(function (g) { return g.isActive; }); }
   // Task #72 (docs/46_CAPTURED_GERMAN.md): every German ever activated, active or not — a
   // captured German has isActive === false (removeFromRound/§11/2's own Inactive-space mechanic,
   // unchanged from Task #27) but must still be found for the §11/2 escape/freeing check below,
   // which activeGermans() would otherwise skip entirely.
-  function allGermans() { return Object.keys(germans).map(function (k) { return germans[k]; }); }
+  function allGermans() { return Object.keys(M1.state.germans).map(function (k) { return M1.state.germans[k]; }); }
   // Out of the fight: incapacitated, killed or captured (wounded and panicked soldiers are not).
   function isOut(s) { return s.status === 'incapacitated' || s.status === 'killed' || s.status === 'captured'; }
 
@@ -140,8 +127,8 @@
     return (e && e.boxes) || GERMAN_ONLY_WEAPON_BOXES[id] || 1;
   }
   function addGroundItem(hexId, id, kind) {
-    if (!groundItems[hexId]) groundItems[hexId] = [];
-    groundItems[hexId].push({ id: id, kind: kind });
+    if (!M1.state.groundItems[hexId]) M1.state.groundItems[hexId] = [];
+    M1.state.groundItems[hexId].push({ id: id, kind: kind });
   }
   // What a soldier carries, spelled out (Wan, 2026-10-25: "not knowing what they are carrying
   // causes me to make bad decisions"): the weapon in hand and whether it will fire (ready, jammed,
@@ -249,7 +236,7 @@
     return html + '</div>';
   }
   function renderRoster() {
-    var html = usSoldiers.map(function (s) {
+    var html = M1.state.usSoldiers.map(function (s) {
       var state = s.exited ? 'exited' : s.isActive ? (s.status && s.status !== 'unharmed' ? s.status : (s.aware === false ? 'unaware' : '')) : s.status;
       return '<div class="roster-slot' + (s.isActive ? '' : ' dead') + '"><span class="letter">' + s.letter + '</span>' +
         '<img src="' + currentImgFor(s) + '"><div class="roster-main"><div class="roster-name">' + s.name +
@@ -263,7 +250,7 @@
   // so automation sees exactly what the player sees.
   var shownVP = { gained: 0, lost: 0, total: 0, need: 0 };
   function renderVP() {
-    var totals = V.computeVPTotal(vpState);
+    var totals = V.computeVPTotal(M1.state.vpState);
     shownVP = { gained: totals.gained, lost: totals.lost, total: totals.total, need: vpRequirement() };
     document.getElementById('vp-gained').textContent = totals.gained;
     document.getElementById('vp-lost').textContent = totals.lost;
@@ -278,9 +265,9 @@
     body.innerHTML =
       '<h4>Victory</h4><p>Score <b>' + vpRequirement() + ' VP</b> or more to win the mission.</p>' +
       (vpTargetNote() ? '<p style="color:var(--text-label); font-size:12px;">' + vpTargetNote() + '</p>' : '') +
-      (D.isEasy(difficulty)
+      (D.isEasy(M1.state.difficulty)
         ? '<h4>Easy Mode</h4><ul style="margin:0 0 12px; padding-left:18px; font-size:12.5px; line-height:1.6;">' +
-          D.describe(difficulty).map(function (line) { return '<li>' + line + '</li>'; }).join('') + '</ul>'
+          D.describe(M1.state.difficulty).map(function (line) { return '<li>' + line + '</li>'; }).join('') + '</ul>'
         : '') +
       '<h4>Current VP</h4><p class="obj-vp">' + totals.gained + ' gained &minus; ' + totals.lost + ' lost = <b>' + totals.total + '</b></p>' +
       '<h4>Ending 1 — Hold the Ground</h4><p>Occupy the T8 building, K13, and L13, plus a SE-heights hex with line of sight to every road, with no active Germans remaining. Awards a further +4 VP.</p>' +

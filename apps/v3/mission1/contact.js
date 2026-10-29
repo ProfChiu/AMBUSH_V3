@@ -22,7 +22,7 @@
   var pendingContact = null;
   function noteContact(mover, chain) {
     var terms = Ops.contactTerms(chain.effects || []);
-    if (!terms || phase === 'round') return;
+    if (!terms || M1.state.phase === 'round') return;
     terms.paragraph = chain.visited[chain.visited.length - 1];
     terms.awareIds = terms.awareSoldiers.map(function (id) { return id === 'mover' ? mover.id : id; });
     terms.germanIds = terms.germanTwoTurns.map(germanInstanceId);
@@ -48,13 +48,13 @@
         // structurally finite (Conditions run 1-6, so at most 5 real transitions are ever
         // possible) rather than relying on every caller getting pendingConditionChange's
         // lifecycle exactly right.
-        if (to <= opsState.condition) { next(); return; }
+        if (to <= M1.state.opsState.condition) { next(); return; }
         // Task #66 (docs/41_CONDITION_CHANGE_ROUNDS.md): §5/5 vs §6/11 are triggered from the
         // same ctx.setCondition hook — this is the one place that already knows whether Rounds
         // are actually in progress (`phase === 'round'`) when the paragraph that requested the
         // change finishes, so it's the natural dispatch point rather than duplicating a phase
         // check at every caller of runParagraphCheck/runGermanParagraph/runEventPhase.
-        if (phase === 'round') runRoundsConditionChange(to, next);
+        if (M1.state.phase === 'round') runRoundsConditionChange(to, next);
         else runConditionChange(to, next);
         return;
       }
@@ -82,7 +82,7 @@
       // insertMidRoundGermans below. Calling startActionRound(1) here instead would wipe the
       // in-progress round's AR Track and re-roll initiative for everyone — a real bug, not a
       // simplification. Only reset to Round 1 when we're not already mid-Round (Operations path).
-      if (phase === 'round') { insertMidRoundGermans(newIds, next); return; }
+      if (M1.state.phase === 'round') { insertMidRoundGermans(newIds, next); return; }
       startActionRound(1); return;
     }
     var eff = effects[i];
@@ -94,11 +94,11 @@
       // Keyed by instance, not by card — see germanInstanceId. Two Germans sharing a substituted
       // card are two soldiers, and "already active" has to mean this one, not his stand-in twin.
       var instanceId = germanInstanceId(numericId);
-      if (germans[instanceId] && germans[instanceId].isActive) { revealNext(); return; } // already active
+      if (M1.state.germans[instanceId] && M1.state.germans[instanceId].isActive) { revealNext(); return; } // already active
       // A German already activated once and since removed does not activate a second time: §2/1's
       // Activation VP is paid "regardless of what happens later with that German", so re-running
       // his activation would pay it twice for one soldier.
-      if (germans[instanceId]) { revealNext(); return; }
+      if (M1.state.germans[instanceId]) { revealNext(); return; }
       var card = GERMAN_ROSTER[cardId];
       var g = {
         id: instanceId, name: 'German (' + instanceId + ', ' + card.Role + ')', side: 'german', card: card,
@@ -131,11 +131,11 @@
       // Remembered for germanactions.js's `in_activation_hex` condition (paragraph 919 branches
       // on whether the German is still standing where he was activated).
       g.activationHexId = g.hexId;
-      germans[instanceId] = g;
+      M1.state.germans[instanceId] = g;
       newIds.push(cardId);
       logHeader('German activated: ' + g.name + ' at ' + g.hexId + '.');
       Cues.banner('activation', 'German Activated', (card.Role ? card.Role + ' · ' : '') + g.hexId);
-      Cues.kranz(Object.keys(germans).length > 1 ? 'smug' : 'confident', '<b>Achtung!</b> ' + g.name +
+      Cues.kranz(Object.keys(M1.state.germans).length > 1 ? 'smug' : 'confident', '<b>Achtung!</b> ' + g.name +
         ' takes his post at <b>' + g.hexId + '</b>. From now on he acts by his own card. He is worth <b>' + V.germanActivationVP(card.VP) +
         ' VP</b> to you for showing himself (&sect;2/1); enjoy them.', g.id);
       presentActivation(g, card, numericId, revealNext);
@@ -151,10 +151,10 @@
   function insertMidRoundGermans(ids, next) {
     function step(idx) {
       if (idx >= ids.length) { renderTrack(); next(); return; }
-      var g = germans[ids[idx]];
+      var g = M1.state.germans[ids[idx]];
       var entry = { id: g.id, IN: g.IN, hexId: g.hexId, letter: g.letter, isCommander: false, receivesTwoTurns: g.receivesTwoTurns };
       if (g.receivesTwoTurns) {
-        var result = Sched.insertMidRoundGerman(track, entry, { arTrack: window.AMBUSH_AR_TRACK });
+        var result = Sched.insertMidRoundGerman(M1.state.track, entry, { arTrack: window.AMBUSH_AR_TRACK });
         infoPopup({
           actor: g, title: 'Mid-Round Activation &mdash; AR Track',
           bodyHtml: g.name + ' joins the current Round&rsquo;s Action Round Track in the <b>' + slotLabel(result.slot) + '</b> space (&sect;6/6, receives two turns). No effect on US awareness.',
@@ -163,7 +163,7 @@
         return;
       }
       var roll = d10();
-      var result2 = Sched.insertMidRoundGerman(track, entry, { rollDie: function () { return roll; }, arTrack: window.AMBUSH_AR_TRACK });
+      var result2 = Sched.insertMidRoundGerman(M1.state.track, entry, { rollDie: function () { return roll; }, arTrack: window.AMBUSH_AR_TRACK });
       rollPopup({
         actor: g, title: 'Mid-Round Activation &mdash; AR Track', kind: 'single', presetValue: roll,
         contextHtml: g.name + ' (IN ' + g.IN + ') joins the current Round&rsquo;s Action Round Track (&sect;6/6). No effect on US awareness.',
@@ -198,9 +198,9 @@
     // is the Activation award, kept "regardless of what happens later with that German."
     function step2() {
       var award = V.germanActivationVP(card.VP);
-      vpState.germanActivations.push({ cardId: g.id, vpText: card.VP || '' });
+      M1.state.vpState.germanActivations.push({ cardId: g.id, vpText: card.VP || '' });
       renderVP();
-      var totals = V.computeVPTotal(vpState);
+      var totals = V.computeVPTotal(M1.state.vpState);
       var conditional = V.parseGermanVP(card.VP || '').conditional;
       infoPopup({
         actor: g, title: 'Victory Points Awarded',
@@ -306,7 +306,7 @@
     var otherMods = firer.status === 'wounded' ? [-1] : [];
     // Easy mode's handicap rides in as an ordinary modifier rather than a post-hoc adjustment, so
     // it clamps with everything else (§9/1 step 4) and shows up in the breakdown as its own term.
-    var easyMod = D.hitChanceMod(difficulty, firer.side);
+    var easyMod = D.hitChanceMod(M1.state.difficulty, firer.side);
     if (easyMod) otherMods.push(easyMod);
     var clamped = FC.computeFinalHitChance({ baseHit: baseHit, terrainMod: terrainMod, fireType: fireType, weaponSkill: firer.WS, otherMods: otherMods }).clamped;
     return { baseHit: baseHit, band: band, terrainMod: terrainMod, ws: firer.WS, fireType: fireType, easyMod: easyMod, clamped: clamped };

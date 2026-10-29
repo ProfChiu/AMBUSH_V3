@@ -54,8 +54,8 @@
 
     // Who the player is acting for right now, if anyone.
     function viewer() {
-      if (phase === 'movement') return selectedSoldier() || null;
-      if (phase === 'round') { var a = findSoldier(currentActorId); return a && a.side !== 'german' ? a : null; }
+      if (M1.state.phase === 'movement') return selectedSoldier() || null;
+      if (M1.state.phase === 'round') { var a = findSoldier(M1.state.currentActorId); return a && a.side !== 'german' ? a : null; }
       return null;
     }
     function decisionPending() { return !Dialogs.current; }
@@ -73,7 +73,7 @@
       var key = v.id + '@' + v.hexId;
       if (key !== lastEnsured) { lastEnsured = key; FX.ensureVisible([v.hexId], true); }
       var reach = [];
-      if (phase === 'movement') reach = legalAdjacentHexIds(v);
+      if (M1.state.phase === 'movement') reach = legalAdjacentHexIds(v);
       else if (document.getElementById('action-sec').style.display !== 'none') {
         reach = Object.keys(roundLegalDestinations(v)).filter(function (h) { return h !== v.hexId; });
       }
@@ -121,7 +121,7 @@
       }
       if (enemyHere) return html; // occupied by the enemy: nobody walks in, nothing more to say
       if (v && hexId !== v.hexId) {
-        if (phase === 'movement') {
+        if (M1.state.phase === 'movement') {
           var route = hoverRoute;
           html += legalAdjacentHexIds(v).indexOf(hexId) !== -1
             ? '<div>' + v.name + ' can step here.</div>'
@@ -134,7 +134,7 @@
         }
       }
       if (v && hexId === v.hexId) return html + watchersHtml(hexId, stance);
-      html += (opsState && opsState.eventMarkers && opsState.eventMarkers[hexId])
+      html += (M1.state.opsState && M1.state.opsState.eventMarkers && M1.state.opsState.eventMarkers[hexId])
         ? '<div class="ih-dim">Event marker: no Paragraph Check here until the Condition changes.</div>'
         : '<div>Entering makes a Paragraph Check.</div>';
       return html + watchersHtml(hexId, stance);
@@ -218,7 +218,7 @@
       if (hx !== lastHex) {
         lastHex = hx;
         var v = viewer();
-        hoverRoute = v && phase === 'movement' && hx !== v.hexId ? operationsRoute(v.hexId, hx) : null;
+        hoverRoute = v && M1.state.phase === 'movement' && hx !== v.hexId ? operationsRoute(v.hexId, hx) : null;
         drawRoute(v, hoverRoute);
       }
     }
@@ -231,7 +231,7 @@
       // own meaning, and the last entry placement switches the phase inside its own click — that
       // click then bubbled here and marched the soldier off across the map.
       if (e.target !== canvas && !e.target.classList.contains('map-image')) return;
-      if (phase !== 'movement' || Dialogs.current || !viewer()) return;
+      if (M1.state.phase !== 'movement' || Dialogs.current || !viewer()) return;
       var r = canvas.getBoundingClientRect();
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
       var hx = G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id;

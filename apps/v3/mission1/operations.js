@@ -3,8 +3,7 @@
   // ---------------------------------------------------------------------
   // Operations phase — real movement + real Paragraph Check (operationsloop.js) per hex entered.
   // ---------------------------------------------------------------------
-  var selectedId = null;
-  function selectedSoldier() { return findSoldier(selectedId); }
+  function selectedSoldier() { return findSoldier(M1.state.selectedId); }
   // §5/3/§7/1 Group Movement (Task #67, docs/42_GROUP_MOVEMENT.md): "any number of soldiers in
   // the same hex in the same stance can move into an adjacent hex together" — the group that a
   // selected soldier could optionally move together with, including himself.
@@ -38,16 +37,16 @@
     selectSoldier(null);
   }
   function endOpsMove() {
-    if (phase !== 'movement') return;
-    var id = selectedId;
-    Resolve.awaitDone(function () { if (phase === 'movement' && selectedId === id && !walking) deselect(id); });
+    if (M1.state.phase !== 'movement') return;
+    var id = M1.state.selectedId;
+    Resolve.awaitDone(function () { if (M1.state.phase === 'movement' && M1.state.selectedId === id && !walking) deselect(id); });
     if (id) document.getElementById('status-banner').textContent = nameFor(id) + '’s move is done. Choose who moves next.';
   }
   function selectSoldier(id) {
     if (walking && walking.id !== id) walking = null; // selecting someone else ends the walk
-    selectedId = id;
+    M1.state.selectedId = id;
     if (id) lastSelectedId = id;
-    if (phase === 'movement') document.getElementById('movement-sec').style.display = id ? '' : 'none';
+    if (M1.state.phase === 'movement') document.getElementById('movement-sec').style.display = id ? '' : 'none';
     Object.keys(counterEls).forEach(function (k) { counterEls[k].classList.toggle('selected', k === id); });
     renderHud();
     renderGroupMoveRow();
@@ -73,12 +72,12 @@
   function destCostClass(cost) { return 'dest-mark ' + (cost <= 1 ? 'cost-1' : cost === 2 ? 'cost-2' : 'cost-3plus'); }
 
   function startOperations() {
-    phase = 'movement';
-    opsState = Ops.createGameState();
+    M1.state.phase = 'movement';
+    M1.state.opsState = Ops.createGameState();
     document.getElementById('tb-phase').textContent = 'Operations';
     document.getElementById('movement-sec').style.display = '';
     Cues.banner('ops', 'Operations', 'Move your squad · no turns until contact');
-    deselect(usSoldiers[0].id); // sets the status banner too
+    deselect(M1.state.usSoldiers[0].id); // sets the status banner too
   }
 
   // §3/1 + §5/3: "no Game-Turns... without keeping track of Turns, Movement Points, or anything
@@ -169,13 +168,13 @@
   // ---------------------------------------------------------------------
   function comboMoveBudget(s) { return Math.floor(s.mpa / 2) - (s.comboMoveCostUsed || 0); }
   function completeTurn(soldierId) {
-    if (phase !== 'over') { Sched.completeAction(track, soldierId); renderTrack(); driveNext(); }
+    if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, soldierId); renderTrack(); driveNext(); }
   }
   // Called once a snap fire resolves. Offers a follow-up (another snap fire, or a move within
   // whatever half-MPA budget remains) if this was the turn's first sub-action and something is
   // actually still available; otherwise just ends the turn.
   function finishFireStep(s, onEndTurn) {
-    if (phase === 'over' || s.comboStepsUsed > 0) { onEndTurn(); return; }
+    if (M1.state.phase === 'over' || s.comboStepsUsed > 0) { onEndTurn(); return; }
     var canFireAgain = weaponUsable(s) && visibleEnemyTargets(s).length > 0;
     var moveDests = legalDestinationsWithBudget(s, comboMoveBudget(s));
     var canMove = Object.keys(moveDests).length > 0;
@@ -187,7 +186,7 @@
   // that used more than that was never combo-eligible to begin with, matching a plain Move.
   function finishMoveStep(s, moveCostSoFar, onEndTurn) {
     var half = Math.floor(s.mpa / 2);
-    if (phase === 'over' || s.comboStepsUsed > 0 || moveCostSoFar > half) { onEndTurn(); return; }
+    if (M1.state.phase === 'over' || s.comboStepsUsed > 0 || moveCostSoFar > half) { onEndTurn(); return; }
     s.comboMoveCostUsed = moveCostSoFar;
     if (!(weaponUsable(s) && visibleEnemyTargets(s).length > 0)) { onEndTurn(); return; }
     offerComboChoice(s, { fire: true, move: false, moveDests: {} }, onEndTurn);
@@ -233,7 +232,7 @@
   }
   function renderDestinations() {
     clearDestMarks();
-    if (phase !== 'movement') return;
+    if (M1.state.phase !== 'movement') return;
     var s = selectedSoldier();
     if (!s) return;
     legalAdjacentHexIds(s).forEach(function (hexId) {
@@ -242,7 +241,7 @@
   }
   // Narrates the same state renderDestinations() just drew — live, not a one-time static string.
   function renderStatusBanner() {
-    if (phase !== 'movement') return;
+    if (M1.state.phase !== 'movement') return;
     var banner = document.getElementById('status-banner');
     var s = selectedSoldier();
     if (!s) { banner.textContent = 'Select a soldier to move.'; return; }
@@ -289,11 +288,11 @@
   // A walk is only live while its own soldier is still the selected one in Operations: anything
   // that ends the phase, the selection or the soldier ends it (a continuation that never arrives —
   // Rounds commencing inside a Paragraph Check, say — must not leave the map unclickable).
-  function walkLive() { return !!walking && phase === 'movement' && selectedId === walking.id; }
+  function walkLive() { return !!walking && M1.state.phase === 'movement' && M1.state.selectedId === walking.id; }
   function walkRoute(goalHexId) {
     if (walking && !walkLive()) walking = null;
     var s = selectedSoldier();
-    if (walking || !s || phase !== 'movement') return false;
+    if (walking || !s || M1.state.phase !== 'movement') return false;
 
     var route = operationsRoute(s.hexId, goalHexId);
     if (!route || !route.length) return false;
@@ -308,14 +307,14 @@
     var s = findSoldier(walking.id);
     if (why && s) logLine(s.name + ' stops at ' + s.hexId + ' &mdash; ' + why + '.');
     walking = null;
-    if (phase === 'movement') { renderDestinations(); renderStatusBanner(); Info.refresh(); }
+    if (M1.state.phase === 'movement') { renderDestinations(); renderStatusBanner(); Info.refresh(); }
   }
   function stepWalk() {
     if (!walking) return;
     var s = findSoldier(walking.id);
-    if (phase !== 'movement') { walking = null; return; }          // Rounds began, or the mission ended
+    if (M1.state.phase !== 'movement') { walking = null; return; }          // Rounds began, or the mission ended
     if (!s || !s.isActive || s.exited) { stopWalk('he can no longer move'); return; }
-    if (selectedId !== walking.id) { stopWalk('another soldier was selected'); return; }
+    if (M1.state.selectedId !== walking.id) { stopWalk('another soldier was selected'); return; }
     var next = walking.route[walking.i];
     if (legalAdjacentHexIds(s).indexOf(next) === -1) { stopWalk('the way is blocked'); return; }
     walking.i++;
@@ -376,7 +375,7 @@
         (prisoners.length ? '<br>' + prisoners.map(function (g) { return g.name; }).join(', ') + ' (captured) comes along under guard (&sect;11/2).' : ''),
     }, function () {
       checkCapturedGermanEscapes(); // §11/2: anyone left behind unguarded is freed right now
-      if (phase !== 'movement') { if (onSettled) onSettled(false); return; } // freeing a German can immediately commence Rounds
+      if (M1.state.phase !== 'movement') { if (onSettled) onSettled(false); return; } // freeing a German can immediately commence Rounds
       runParagraphCheck(mover, function () {
         // REAL BUG, fixed: checkEndingConditions() was called only when a German left the map,
         // when damage was applied, on a capture, and when a US soldier exited — never after an
@@ -387,9 +386,9 @@
         // silently invalidated the reachable-VP ceiling the victory target is scaled from.
         // Found by the automated player (tools/bot/) walking onto T8 and finding nothing happened.
         checkEndingConditions();
-        if (phase === 'movement') { renderGroupMoveRow(); renderBringPrisonerRow(); renderDestinations(); renderStatusBanner(); }
+        if (M1.state.phase === 'movement') { renderGroupMoveRow(); renderBringPrisonerRow(); renderDestinations(); renderStatusBanner(); }
         // quiet = the hex produced nothing the player must see: the walk may go on.
-        if (onSettled) onSettled(phase === 'movement' && lastCheckQuiet);
+        if (onSettled) onSettled(M1.state.phase === 'movement' && lastCheckQuiet);
       });
     });
   }
@@ -424,7 +423,7 @@
   // Action-Round-only "one free change, extra costs 1 MP" mechanic). Always free here.
   ['standing', 'crouching', 'prone'].forEach(function (st) {
     document.getElementById('stance-' + st).addEventListener('click', function () {
-      if (phase !== 'movement') return;
+      if (M1.state.phase !== 'movement') return;
       var s = selectedSoldier();
       if (!s || s.stance === st) return;
       s.stance = st;
@@ -438,7 +437,7 @@
   // (no Turns/MP tracked, so nothing is "spent"), unlike the Rounds version which consumes the
   // soldier's Action for the Round.
   document.getElementById('clearJamOpsBtn').addEventListener('click', function () {
-    if (phase !== 'movement') return;
+    if (M1.state.phase !== 'movement') return;
     var s = selectedSoldier();
     if (!canClearJam(s)) return;
     document.getElementById('clearJamOpsBtn').disabled = true;
@@ -472,14 +471,14 @@
   function buildOpsCtx(pcSoldier) {
     return Ops.buildContext({
       rollDie: d10,
-      activationLevel: MISSION.activation_by_condition[String(opsState.condition)],
+      activationLevel: MISSION.activation_by_condition[String(M1.state.opsState.condition)],
       defaultPcRating: pcSoldier.PC,
-      state: opsState,
+      state: M1.state.opsState,
       // paragraphHex: the incoming id comes straight from a paragraph's `hex` field, so it is
       // hyphenated ("T-8") and must be normalised before it reaches the LOS database.
       // {id, pc}: each soldier in sight rolls his own PC check (Phase 8c; it was the mover's PC).
       soldiersWhoCanSee: function (hexId) { var h = paragraphHex(hexId); return activeUS().filter(function (s) { return losClear(s.hexId, h, s.stance); }).map(function (s) { return { id: s.id, pc: s.PC }; }); },
-      isGermanRemovedOnce: function (numericId) { var g = germans[germanInstanceId(numericId)]; return !!(g && !g.isActive); },
+      isGermanRemovedOnce: function (numericId) { var g = M1.state.germans[germanInstanceId(numericId)]; return !!(g && !g.isActive); },
       onEnterHex: function (hexId) { currentHex = hexId; currentParagraph = null; },
       onEnterParagraph: function (num) { currentParagraph = num; },
       onCheckResolved: function (kind, modifier, roll, result, soldier) {
@@ -514,7 +513,7 @@
     var ctx = buildOpsCtx(mover);
     var result = Ops.paragraphCheck({
       hexId: mover.hexId, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS,
-      programs: PROGRAMS, state: opsState, ctx: ctx, skipEventCheck: !!opts.skipEventCheck,
+      programs: PROGRAMS, state: M1.state.opsState, ctx: ctx, skipEventCheck: !!opts.skipEventCheck,
       rollForEvent: function () {
         var a = d10(), b = d10();
         pendingSteps.push({ type: 'event_roll', hex: mover.hexId, paragraph: null, a: a, b: b, sum: a + b });
@@ -542,7 +541,7 @@
     logHeader('Condition changes to ' + to + '.');
     Cues.banner('condition', 'Condition ' + to, 'The Germans are more alert', 'alert');
     Cues.kranz('stern', '<b>Alarm!</b> Condition ' + to + '. Unless something closer forces his hand, every one of my men now reads the <b>Condition ' + to +
-      '</b> column of his card (' + (phase === 'round' ? '&sect;6/11' : '&sect;5/5') + ').');
+      '</b> column of his card (' + (M1.state.phase === 'round' ? '&sect;6/11' : '&sect;5/5') + ').');
     var pcSoldier = activeUS()[0];
     if (!pcSoldier) { onFinish(); return; }
     pendingSteps = []; currentHex = null; currentParagraph = null;
@@ -552,7 +551,7 @@
     // markers follow.
     Object.keys(eventMarkerEls).forEach(function (id) { eventMarkerEls[id].remove(); });
     eventMarkerEls = {};
-    var result = Ops.conditionChange({ to: to, occupiedHexIds: occupiedHexIds, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS, programs: PROGRAMS, state: opsState, ctx: ctx, stopOnActivation: stopOnActivation });
+    var result = Ops.conditionChange({ to: to, occupiedHexIds: occupiedHexIds, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS, programs: PROGRAMS, state: M1.state.opsState, ctx: ctx, stopOnActivation: stopOnActivation });
 
     var entries = result.log; // every hex's outcome, not just ones with a paragraph chain — a
     // bare Event-marker-placed-no-roll entry (§5/5's own text) is still shown via pendingSteps.
@@ -570,7 +569,7 @@
   // 'movement'), so a resulting activation starts a fresh Round 1.
   function runConditionChange(to, next) {
     runConditionChangeScan(to, true, function () {
-      if (activeGermans().length && phase === 'movement') { startActionRound(1); return; }
+      if (activeGermans().length && M1.state.phase === 'movement') { startActionRound(1); return; }
       next();
     });
   }
@@ -637,7 +636,7 @@
     if (step.type === 'check') {
       var label = step.kind === 'activation' ? 'Activation Check' : 'Perception Check';
       var roller = (step.soldierId && findSoldier(step.soldierId)) || mover;
-      var rating = step.kind === 'activation' ? MISSION.activation_by_condition[String(opsState.condition)] : roller.PC;
+      var rating = step.kind === 'activation' ? MISSION.activation_by_condition[String(M1.state.opsState.condition)] : roller.PC;
       if (step.soldierId) label += ' — ' + roller.name;
       rollPopup({
         actor: roller, title: label, kind: 'single', presetValue: step.roll,
@@ -680,7 +679,7 @@
       return;
     }
     if (step.type === 'award_vp') {
-      vpState.awards.push({ amount: step.amount, note: step.note || 'paragraph award' });
+      M1.state.vpState.awards.push({ amount: step.amount, note: step.note || 'paragraph award' });
       renderVP();
       infoPopup({ actor: mover, title: 'Victory Points', bodyHtml: 'This paragraph awards <b>+' + step.amount + ' VP</b>' + (step.note ? ' (' + step.note + ')' : '') + '.' }, cb);
       return;

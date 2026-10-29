@@ -606,7 +606,7 @@
       if (b) stamp(s.hexId, b[0], b[1]);
       if (s.status === 'killed' || s.status === 'incapacitated') sound('kia');
       // v3 Phase 4b: a US soldier killed is a notable moment for the other side
-      if (s.status === 'killed' && usSoldiers.indexOf(s) >= 0) {
+      if (s.status === 'killed' && M1.state.usSoldiers.indexOf(s) >= 0) {
         Cues.kranz('cheerful', '<b>Ein Amerikaner weniger.</b> ' + nameFor(s.id) + ' is killed at ' + s.hexId + '. His squad-mates cannot bring him back.');
       }
     }

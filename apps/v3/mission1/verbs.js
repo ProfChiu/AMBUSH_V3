@@ -61,7 +61,7 @@
   function dragCandidates(s) {
     if (!s || s.stance !== 'standing') return []; // "A standing soldier... can drag him"
     if (!(s.inventory && EQ.emptyPortBoxCount(s.inventory, s) > 0)) return []; // "has an empty Port Box"
-    return usSoldiers.filter(function (t) { return t.id !== s.id && t.hexId === s.hexId && !t.isActive; });
+    return M1.state.usSoldiers.filter(function (t) { return t.id !== s.id && t.hexId === s.hexId && !t.isActive; });
   }
   // §15's exfiltration exemption, quoted from missions.json's own victory text: "VP loss for an
   // incapacitated US soldier can be avoided by moving him off the map from hex A1 through J1 or,
@@ -77,7 +77,7 @@
   // Killed soldiers deliberately get no exemption — the rule text only ever names "an
   // incapacitated US soldier", and usCasualtyVPLoss already enforces that on its own side.
   function markExfiltrated(soldier) {
-    var record = vpState.usCasualties.filter(function (c) { return c.soldierId === soldier.id; })[0];
+    var record = M1.state.vpState.usCasualties.filter(function (c) { return c.soldierId === soldier.id; })[0];
     if (record) record.wasExfiltrated = true;
   }
   // Who an exiting soldier can carry off with him. Reuses dragCandidates' own §7/3 prerequisites
@@ -112,7 +112,7 @@
   // ever actually wanted.
   // ---------------------------------------------------------------------
   function allInHex(hexId) {
-    return usSoldiers.filter(function (s) { return s.hexId === hexId; })
+    return M1.state.usSoldiers.filter(function (s) { return s.hexId === hexId; })
       .concat(allGermans().filter(function (g) { return g.hexId === hexId; }));
   }
   // §5/3: "A soldier that is standing or crouching can pick up or put down any portable items in
@@ -123,7 +123,7 @@
   function pickupOffers(actor) {
     if (!actor || !upright(actor)) return [];
     var hexId = actor.hexId, offers = [];
-    (groundItems[hexId] || []).forEach(function (item, idx) {
+    (M1.state.groundItems[hexId] || []).forEach(function (item, idx) {
       offers.push({
         from: 'ground', item: equipmentName(item.id),
         label: equipmentName(item.id) + ' (on the ground)',
@@ -162,10 +162,10 @@
     if (!actor.weaponId) { actor.weaponId = weaponId; actor.weaponPrepared = false; }
   }
   function takeGroundItem(actor, hexId, idx) {
-    var item = groundItems[hexId][idx];
+    var item = M1.state.groundItems[hexId][idx];
     var ok = item.kind === 'port' ? EQ.stowItem(actor.inventory, actor, item.id, boxesFor(item.id)) : EQ.stowAmmo(actor.inventory, item.id);
     if (ok) {
-      groundItems[hexId].splice(idx, 1);
+      M1.state.groundItems[hexId].splice(idx, 1);
       if (item.kind === 'port') afterWeaponPickup(actor, item.id);
     }
     return ok;
@@ -224,14 +224,14 @@
     Dialogs.push(spec);
   }
   function doPlayerPickup() {
-    var actor = findSoldier(currentActorId);
+    var actor = findSoldier(M1.state.currentActorId);
     var offers = pickupOffers(actor);
     if (!offers.length) { Toasts.show('Nothing to pick up or exchange here.', { kind: 'error' }); return; }
     disableActionButtons();
     chooseOffer(offers, {
       title: 'Pick Up / Exchange Equipment',
       prompt: actor.name + ' can take any of the following from ' + actor.hexId + ':',
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (offer) { resolvePickup(actor, offer); });
   }
   function resolvePickup(actor, offer) {
@@ -242,7 +242,7 @@
       logHtml: (ok ? actor.name + ' takes ' + offer.label + '.' : actor.name + ' has no room for ' + offer.label + '.'),
     }, function () {
       renderRoster();
-      if (phase !== 'over') { Sched.completeAction(track, currentActorId); renderTrack(); driveNext(); }
+      if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); }
     });
   }
 
@@ -261,7 +261,7 @@
   // Sched.canGiveTurn/AR.canReceiveGivenTurn — this just enumerates who currently passes it.
   function giveTurnCandidates(giver) {
     if (!giver || !giver.isCommander) return [];
-    return activeUS().filter(function (t) { return t.id !== giver.id && Sched.canGiveTurn(track, giver.id, t.id).ok; });
+    return activeUS().filter(function (t) { return t.id !== giver.id && Sched.canGiveTurn(M1.state.track, giver.id, t.id).ok; });
   }
   // §6/5: "An aware commander can spend one of his Turns to make an unaware soldier within his
   // Command Radius aware... A wounded soldier can never be made aware in this manner."
@@ -271,16 +271,16 @@
     return activeUS().filter(function (t) { return t.id !== giver.id && !t.aware && !t.wounded && radius.indexOf(t.hexId) !== -1; });
   }
   function doPlayerGiveTurn() {
-    var giver = findSoldier(currentActorId);
+    var giver = findSoldier(M1.state.currentActorId);
     var candidates = giveTurnCandidates(giver);
     if (!candidates.length) { Toasts.show('No eligible soldier within Command Radius to give a turn to.', { kind: 'error' }); return; }
     disableActionButtons();
     chooseTarget(giver, candidates, {
       title: 'Give Turn',
       prompt: giver.name + ' can give his turn to any of the following (within his Command Radius, in the 1-Turn or Complete space):',
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (recipient) {
-      Sched.giveTurn(track, giver.id, recipient.id);
+      Sched.giveTurn(M1.state.track, giver.id, recipient.id);
       infoPopup({
         actor: { left: giver, right: recipient }, title: 'Give Turn',
         bodyHtml: giver.name + ' gives his turn to ' + recipient.name + '.',
@@ -289,24 +289,24 @@
     });
   }
   function doPlayerMakeAware() {
-    var giver = findSoldier(currentActorId);
+    var giver = findSoldier(M1.state.currentActorId);
     var candidates = makeAwareCandidates(giver);
     if (!candidates.length) { Toasts.show('No unaware soldier within Command Radius.', { kind: 'error' }); return; }
     disableActionButtons();
     chooseTarget(giver, candidates, {
       title: 'Make Aware',
       prompt: giver.name + ' can spend his turn to make any of the following aware (within his Command Radius):',
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (recipient) {
       recipient.aware = true;
-      Sched.applyBecomesAware(track, recipient.id);
+      Sched.applyBecomesAware(M1.state.track, recipient.id);
       infoPopup({
         actor: { left: giver, right: recipient }, title: 'Make Aware',
         bodyHtml: giver.name + ' spends his turn to make ' + recipient.name + ' aware.',
         logHtml: recipient.name + ' is now aware (&sect;6/5), made aware by ' + giver.name + '.',
       }, function () {
         updateCounterVisual(recipient);
-        if (phase !== 'over') { Sched.completeAction(track, giver.id); renderTrack(); driveNext(); }
+        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, giver.id); renderTrack(); driveNext(); }
       });
     });
   }
@@ -337,7 +337,7 @@
     return ['standing', 'crouching', 'prone'].filter(function (st) { return st !== s.stance; });
   }
   function doPlayerChangeStance() {
-    var s = findSoldier(currentActorId);
+    var s = findSoldier(M1.state.currentActorId);
     var options = stanceChangeCandidates(s);
     if (!options.length) { Toasts.show('No stance change available this turn.', { kind: 'error' }); return; }
     var free = stanceChangeIsFree(s);
@@ -348,7 +348,7 @@
         ? s.name + ' can make one free stance change this turn:'
         : s.name + ' has no free stance change' + (s.wounded ? ' (wounded)' : ' left this turn') +
           ', so this costs 1 MP as a Movement Action (&sect;6/7):',
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (offer) {
       s.stance = offer.stance;
       if (free) s.usedFreeStanceChange = true;
@@ -359,14 +359,14 @@
         bodyHtml: s.name + ' goes <b>' + offer.stance + '</b> (' + how + ').',
         logHtml: s.name + ' goes ' + offer.stance + ' (' + how + ', &sect;6/7).',
       }, function () {
-        if (phase !== 'over') { Sched.completeAction(track, s.id); renderTrack(); driveNext(); }
+        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, s.id); renderTrack(); driveNext(); }
       });
     });
   }
 
   // §5/3/§6/7 Prepare Weapon (Task #69, docs/43_PREPARE_WEAPON.md).
   function doPlayerPrepareWeapon() {
-    var s = findSoldier(currentActorId);
+    var s = findSoldier(M1.state.currentActorId);
     if (!canPrepareWeapon(s)) { Toasts.show('Nothing to prepare.', { kind: 'error' }); return; }
     disableActionButtons();
     s.weaponPrepared = true;
@@ -375,12 +375,12 @@
       bodyHtml: s.name + ' prepares the ' + equipmentName(s.weaponId) + '.',
       logHtml: s.name + ' prepares the ' + equipmentName(s.weaponId) + ' (&sect;5/3/&sect;6/7).',
     }, function () {
-      if (phase !== 'over') { Sched.completeAction(track, s.id); renderTrack(); driveNext(); }
+      if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, s.id); renderTrack(); driveNext(); }
     });
   }
 
   function doPlayerFire(fireType) {
-    var firer = findSoldier(currentActorId);
+    var firer = findSoldier(M1.state.currentActorId);
     var targets = visibleEnemyTargets(firer);
     if (!targets.length) { Toasts.show('No line of sight to a German.', { kind: 'error' }); return; }
     // §9/7 (Task A1): aimed fire from a crew weapon is two soldiers combining their actions, so
@@ -394,7 +394,7 @@
         title: 'Combine Actions',
         prompt: firer.name + ' can only aim the ' + equipmentName(firer.weaponId) +
           ' with a second crewman. Whoever helps spends his own turn doing it (&sect;9/7):',
-        onCancel: function () { showActionPanel(currentActorId); },
+        onCancel: function () { showActionPanel(M1.state.currentActorId); },
       }, function (offer) {
         var mate = findSoldier(offer.id);
         infoPopup({
@@ -408,7 +408,7 @@
           // The mate has spent his action helping. Doing this BEFORE the fire resolves matters:
           // if the fire kills the firer's target and ends the Round, the mate must still be
           // recorded as having acted, not left holding an unspent turn.
-          Sched.completeAction(track, mate.id);
+          Sched.completeAction(M1.state.track, mate.id);
           renderTrack();
           continueFire();
         });
@@ -423,7 +423,7 @@
       prompt: firer.name + ' has line of sight to ' + targets.length + (targets.length === 1 ? ' German' : ' Germans') + '. Choose a target.',
       hitChanceFor: function (t) { return estimateHitChance(firer, t, fireType); },
       hitChanceTipFor: function (t) { var b = estimateHitChanceBreakdown(firer, t, fireType); return b ? hitBreakdownText(b) : ''; },
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (target) {
       // Task #70 (docs/44_SNAP_FIRE_COMBO.md): only a snap fire can lead into a combo follow-up
       // (Aimed has none) — fireType is fixed for the lifetime of this call, so branching once
@@ -443,7 +443,7 @@
   // range), not a specific soldier — §10/1 step 5 rolls damage separately for everyone actually
   // in the hex once it's picked (see grenadeChain's damageAtHex).
   function doPlayerGrenade() {
-    var thrower = findSoldier(currentActorId);
+    var thrower = findSoldier(M1.state.currentActorId);
     var candidates = grenadeCandidates(thrower);
     if (!candidates.length) { Toasts.show('No German within grenade range.', { kind: 'error' }); return; }
     disableActionButtons();
@@ -453,15 +453,15 @@
         ' with a grenade (range ' + Gr.maxThrowRange('grenade', thrower.stance) + ' while ' + thrower.stance + ').',
       hitChanceFor: function (t) { return estimateGrenadeHitChance(thrower, t.hexId); },
       noteFor: function (t) { return losClear(thrower.hexId, t.hexId) ? '' : 'Not in sight &mdash; &minus;3'; },
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (target) {
-      grenadeChain(thrower, target.hexId, function () { if (phase !== 'over') { Sched.completeAction(track, currentActorId); renderTrack(); driveNext(); } });
+      grenadeChain(thrower, target.hexId, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); } });
     });
   }
   // §5/3/§6/7/§7/3 step 1 — choose which inactive soldier (rarely more than one in a hex), then
   // an adjacent destination hex, reusing the same dest-mark click UI the Move action uses.
   function doPlayerDrag() {
-    var dragger = findSoldier(currentActorId);
+    var dragger = findSoldier(M1.state.currentActorId);
     var candidates = dragCandidates(dragger);
     var destHexes = dragHexCandidates(dragger);
     if (!candidates.length || !destHexes.length) { Toasts.show('No inactive soldier here to drag, or nowhere to drag him.', { kind: 'error' }); return; }
@@ -478,7 +478,7 @@
     chooseTarget(dragger, candidates, {
       title: 'Select Soldier — Drag',
       prompt: 'Choose which inactive soldier ' + dragger.name + ' drags.',
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, pickDestination);
   }
   function performDrag(dragger, dragged, destHexId) {
@@ -504,7 +504,7 @@
         bodyHtml: dragger.name + ' drags ' + dragged.name + ' from ' + fromHexId + ' to <b>' + destHexId + '</b>.',
       }, function () {
         runParagraphCheck(dragger, function () {
-          if (phase !== 'over') { Sched.completeAction(track, dragger.id); renderTrack(); driveNext(); }
+          if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, dragger.id); renderTrack(); driveNext(); }
         }, { skipEventCheck: true });
       });
     }
@@ -527,7 +527,7 @@
         // applyDamage) — VP loss is identical for incapacitated vs. killed
         // (usCasualtyVPLoss, victoryrules.js), so update the existing record's outcome rather
         // than pushing a second one, which would double-charge the same soldier.
-        var existing = vpState.usCasualties.filter(function (c) { return c.soldierId === dragged.id; })[0];
+        var existing = M1.state.vpState.usCasualties.filter(function (c) { return c.soldierId === dragged.id; })[0];
         if (existing) existing.outcome = 'killed'; else recordCasualty(dragged, 'killed');
         updateCounterVisual(dragged);
         logLine(dragged.name + ' dies during the drag.', 'event');
@@ -540,7 +540,7 @@
     });
   }
   function doPlayerAssault() {
-    var firer = findSoldier(currentActorId);
+    var firer = findSoldier(M1.state.currentActorId);
     var candidates = assaultCandidates(firer);
     if (!candidates.length) { Toasts.show('No German this soldier can reach and assault.', { kind: 'error' }); return; }
     var byId = {};
@@ -558,7 +558,7 @@
           ? 'Charge assault &mdash; move in for ' + c.cost + ' MP (of ' + c.budget + ' allowed), <b>&minus;3 to hit</b>'
           : 'Same hex &mdash; no charge penalty';
       },
-      onCancel: function () { showActionPanel(currentActorId); },
+      onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (target) { chooseCaptureOrKill(firer, byId[target.id]); });
   }
 
@@ -585,7 +585,7 @@
       },
       onButton: function (id, ctx) { ctx.close(id); },
       onClose: function (id) {
-        if (id !== 'kill' && id !== 'capture') { showActionPanel(currentActorId); return; }
+        if (id !== 'kill' && id !== 'capture') { showActionPanel(M1.state.currentActorId); return; }
         startAssault(attacker, candidate, id === 'capture');
       },
     });
@@ -596,9 +596,9 @@
   function startAssault(attacker, candidate, capture) {
     var defender = candidate.german;
     function resolve() {
-      if (phase === 'over') return;
+      if (M1.state.phase === 'over') return;
       assaultChain(attacker, defender, { capture: capture, charge: candidate.isCharge }, function () {
-        if (phase !== 'over') { Sched.completeAction(track, currentActorId); renderTrack(); driveNext(); }
+        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); }
       });
     }
     if (!candidate.isCharge) { resolve(); return; }
@@ -650,10 +650,10 @@
     });
   }
   document.getElementById('clearJamBtn').addEventListener('click', function () {
-    var s = findSoldier(currentActorId);
+    var s = findSoldier(M1.state.currentActorId);
     if (!canClearJam(s)) return;
     disableActionButtons();
-    clearJamRoll(s, function () { if (phase !== 'over') { Sched.completeAction(track, currentActorId); renderTrack(); driveNext(); } });
+    clearJamRoll(s, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); } });
   });
 
   function estimateHitChance(firer, target, fireType) {

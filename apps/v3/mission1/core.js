@@ -71,6 +71,32 @@
   var Ops = window.AmbushOperations;
   var GAct = window.AmbushGermanActions;
 
+  // Stage B (docs/REFACTOR_MAP.md 5.3): the shared game state, one object. Group A (what the save
+  // holds) plus groundItems. Every file reads and writes M1.state.x; save.js serializes it.
+  var M1 = window.AmbushM1 = {
+    state: {
+      phase: 'squadgen',         // squadgen | entry | movement | round | roundEnd | over
+      usSoldiers: [],            // populated by squad generation
+      germans: {},               // id -> german object, populated as activate_german fires
+      opsState: null,
+      // germanActivations: §2/1's Activation VP Award, banked the moment a German activates and kept
+      // "regardless of what happens later". germanDefeats now contributes only the additive
+      // Conditional award. awards: flat VP from paragraphs / ending bonuses. See victoryrules.js.
+      vpState: { germanActivations: [], germanDefeats: [], usCasualties: [], awards: [] },
+      track: null,
+      currentActorId: null,
+      roundNum: 0,
+      currentGermanIdsThisRound: [],
+      entryIndex: 0,
+      selectedId: null,
+      difficulty: D.NORMAL,
+      // Task #68 (docs/37_PICKUP_EXCHANGE.md): items lying in a hex with no soldier currently
+      // carrying them: hexId -> array of { id, kind: 'port'|'ammo' }. Populated by wound-loss
+      // overflow (§13/2, Task #61).
+      groundItems: {}
+    }
+  };
+
   var CHART = window.AMBUSH_WEAPON_CHART;
   var SQCHART = window.AMBUSH_SQUAD_GEN;
   var TERRAIN = window.AMBUSH_TERRAIN_A;
@@ -344,13 +370,12 @@
   // a fixed value computed here — it is recomputed whenever the level changes. The reachable
   // CEILING above is difficulty-independent (it is a property of the paragraph data); only the
   // margin below it moves.
-  var difficulty = D.NORMAL;
-  var vpTarget = V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(difficulty));
+  var vpTarget = V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(M1.state.difficulty));
   function setDifficulty(level) {
-    difficulty = level;
-    vpTarget = V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(difficulty));
+    M1.state.difficulty = level;
+    vpTarget = V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(M1.state.difficulty));
     var badge = document.getElementById('tb-difficulty');
-    if (badge) badge.textContent = D.label(difficulty);
+    if (badge) badge.textContent = D.label(M1.state.difficulty);
     renderVP();
   }
   function vpRequirement() { return vpTarget.requirement; }

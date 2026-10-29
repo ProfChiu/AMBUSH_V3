@@ -80,8 +80,8 @@
         fxLanded: function (roll) { FX.floatDie(target.hexId, roll, 'bad'); },
       }, function (roll) {
         var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-        applyDamage(target, D.consumeFieldDressing(difficulty, target, dmg.code), 'killed');
-        if (phase === 'over') { onDone(); return; }
+        applyDamage(target, D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
+        if (M1.state.phase === 'over') { onDone(); return; }
         ammoStep();
       });
     }
@@ -114,7 +114,7 @@
       infoPopup({ actor: target, title: 'Hidden rifleman', bodyHtml: 'A shot cracks out of nowhere, but ' + target.name + ' cannot be fired at where he lies.' }, onDone);
       return;
     }
-    var easyMod = D.hitChanceMod(difficulty, 'german');
+    var easyMod = D.hitChanceMod(M1.state.difficulty, 'german');
     var b = {
       baseHit: CHART.BASE_HIT[spec.range], band: spec.range, terrainMod: FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, target.stance),
       ws: spec.weaponSkill, fireType: spec.fireType, easyMod: easyMod,
@@ -144,7 +144,7 @@
         fxLanded: function (roll) { FX.floatDie(target.hexId, roll, 'bad'); },
       }, function (roll) {
         var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-        applyDamage(target, D.consumeFieldDressing(difficulty, target, dmg.code), 'killed');
+        applyDamage(target, D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
         onDone();
       });
     }
@@ -167,7 +167,7 @@
     var mods = grenadeMods(thrower, targetHexId);
     var baseHit = CHART.BASE_HIT[band];
     // Gr.computeHitChance takes a flat list of modifiers, so Easy mode's is just another entry.
-    var easyMod = D.hitChanceMod(difficulty, thrower.side);
+    var easyMod = D.hitChanceMod(M1.state.difficulty, thrower.side);
     if (easyMod) mods = mods.concat([easyMod]);
     var hitChance = Gr.computeHitChance(baseHit, mods);
     // §11/4/§6/5's "even an attempted attack wakes the hex" rule, already applied the same way
@@ -239,8 +239,8 @@
       }, function (roll) {
         var dmg = FC.resolveDamage(landWeapon, roll, CHART.DAMAGE_LEGEND);
         var code = dmg.code === 'X' ? FC.resolveXCode(victim.stance === 'prone') : dmg.code;
-        applyDamage(victim, D.consumeFieldDressing(difficulty, victim, code), 'grenade');
-        if (phase === 'over') { onDone(); return; }
+        applyDamage(victim, D.consumeFieldDressing(M1.state.difficulty, victim, code), 'grenade');
+        if (M1.state.phase === 'over') { onDone(); return; }
         damageEach(occupants, i + 1, landWeapon);
       });
     }
@@ -270,7 +270,7 @@
       var hitChance = Asl.computeHitChance(CHART.BASE_HIT.assault, mods);
       // assaultrules.js clamps before Easy mode's modifier exists, so it is applied and re-clamped
       // here rather than by teaching that tested module about a non-rulebook concept.
-      var easyMod = D.hitChanceMod(difficulty, attacker.side);
+      var easyMod = D.hitChanceMod(M1.state.difficulty, attacker.side);
       if (easyMod) hitChance = D.applyHitMod(hitChance, easyMod);
       // Spell out every §11/4 modifier that actually applied, so the number is auditable.
       var parts = ['Base ' + CHART.BASE_HIT.assault, fmtSigned(attacker.WS) + ' attacker WS'];
@@ -309,7 +309,7 @@
         var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
         var code = dmg.code === 'Z' ? FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
         if (code === 'C') applyCapture(defender);
-        else if (code !== '*') applyDamage(defender, D.consumeFieldDressing(difficulty, defender, code), 'captured');
+        else if (code !== '*') applyDamage(defender, D.consumeFieldDressing(M1.state.difficulty, defender, code), 'captured');
         onDone();
       });
     }
@@ -319,7 +319,7 @@
   // applied and has to announce exactly what the commit will do, so the question (does it apply?)
   // is asked without mutating and the allowance is only spent on commit — see difficulty.js.
   function fieldDressNote(target, code) {
-    return D.fieldDressingApplies(difficulty, target, code)
+    return D.fieldDressingApplies(M1.state.difficulty, target, code)
       ? '<br><br><b style="color:var(--clear);">Field dressing (easy mode)</b> &mdash; ' + target.name +
         ' is <b>INCAPACITATED</b> instead of killed. This is his one second chance; he is still out of ' +
         'the fight and still costs 2 VP unless you carry him off the map (&sect;15).'
@@ -327,7 +327,7 @@
   }
   // The code that will actually be applied, for display purposes only. Never mutates.
   function displayCode(target, code) {
-    return D.fieldDressingApplies(difficulty, target, code) ? 'I' : code;
+    return D.fieldDressingApplies(M1.state.difficulty, target, code) ? 'I' : code;
   }
 
   // ---------------------------------------------------------------------
@@ -345,7 +345,7 @@
     // §12 hazard would trip over on its first run.
     if (newStatus === 'incapacitated' || newStatus === 'killed') {
       target.isActive = false;
-      if (track) Sched.removeFromRound(track, target.id);
+      if (M1.state.track) Sched.removeFromRound(M1.state.track, target.id);
       recordCasualty(target, newStatus === 'killed' ? 'killed' : 'incapacitated');
       updateCounterVisual(target); renderTrack(); renderRoster(); renderVP();
       checkEndingConditions();
@@ -353,7 +353,7 @@
       if (!activeUS().length) { endMission('all-us-down'); return; }
     } else if (newStatus === 'wounded') {
       target.wounded = true; target.stance = 'prone';
-      if (track) Sched.applyWoundedStatus(track, target.id);
+      if (M1.state.track) Sched.applyWoundedStatus(M1.state.track, target.id);
       // §13/2 (docs/39_WOUND_EFFECTS.md, Task #58): "A wounded soldier has his Movement Point
       // Allowance reduced to 2 for the rest of the mission." Permanent, not just this Round —
       // roundLegalDestinations/dragCandidates/etc. all read s.mpa directly, so this one
@@ -373,7 +373,7 @@
       }
       updateCounterVisual(target); renderTrack();
     } else if (newStatus === 'panicked') {
-      if (track) Sched.applyPanicStatus(track, target.id);
+      if (M1.state.track) Sched.applyPanicStatus(M1.state.track, target.id);
       renderTrack();
     }
   }
@@ -382,7 +382,7 @@
     FX.status(target);
     target.stance = 'prone';
     target.isActive = false;
-    Sched.removeFromRound(track, target.id);
+    Sched.removeFromRound(M1.state.track, target.id);
     recordCasualty(target, 'captured');
     updateCounterVisual(target); renderTrack(); renderRoster(); renderVP();
     checkEndingConditions();
@@ -403,7 +403,7 @@
   // Assault (a Rounds-only action, §11/1), so a captured German can only ever be left unguarded
   // once Rounds has already ended and control has returned to Operations.
   function checkCapturedGermanEscapes() {
-    if (phase !== 'movement') return;
+    if (M1.state.phase !== 'movement') return;
     allGermans().filter(function (g) { return g.status === 'captured'; }).forEach(function (g) {
       var guarded = activeUS().some(function (s) { return s.hexId === g.hexId; });
       if (!guarded) freeGerman(g);
@@ -431,10 +431,10 @@
   }
   function recordCasualty(soldier, outcome) {
     if (soldier.side === 'german') {
-      vpState.germanDefeats.push({ vpText: soldier.card.VP || '+1 VP', outcome: outcome });
+      M1.state.vpState.germanDefeats.push({ vpText: soldier.card.VP || '+1 VP', outcome: outcome });
       logLine(soldier.name + ' is out of the fight (' + outcome + ').', 'event');
     } else {
-      vpState.usCasualties.push({ soldierId: soldier.id, outcome: outcome, wasExfiltrated: false });
+      M1.state.vpState.usCasualties.push({ soldierId: soldier.id, outcome: outcome, wasExfiltrated: false });
       logLine(soldier.name + ' is a casualty (' + outcome + ').', 'event');
     }
   }
@@ -460,11 +460,11 @@
   function endRound() {
     document.getElementById('action-sec').style.display = 'none';
     fallPronePanickedSoldiers();
-    Cues.banner('round', 'Round ' + roundNum + ' Complete');
-    infoPopup({ title: 'Round ' + roundNum + ' Complete', bodyHtml: 'Round ' + roundNum + ' complete.' }, function () {
+    Cues.banner('round', 'Round ' + M1.state.roundNum + ' Complete');
+    infoPopup({ title: 'Round ' + M1.state.roundNum + ' Complete', bodyHtml: 'Round ' + M1.state.roundNum + ' complete.' }, function () {
       if (!activeGermans().length) {
         // All Germans down or captured — back to Operations, matching §6's Rounds-end rule.
-        phase = 'movement';
+        M1.state.phase = 'movement';
         document.getElementById('tb-phase').textContent = 'Operations';
         document.getElementById('status-banner').textContent = 'No active Germans — back to Operations.';
         Cues.banner('ops', 'Operations', 'No active Germans');
@@ -473,17 +473,17 @@
         // §11/2 (Task #72): a captured German whose captor didn't survive/stay in his hex through
         // the rest of the Round is immediately unguarded the moment Operations resumes.
         checkCapturedGermanEscapes();
-        if (phase === 'movement') deselect(activeUS().length ? activeUS()[0].id : null);
+        if (M1.state.phase === 'movement') deselect(activeUS().length ? activeUS()[0].id : null);
         return;
       }
       document.getElementById('round-sec').style.display = '';
-      document.getElementById('tb-phase').textContent = 'Round ' + roundNum + ' complete';
+      document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum + ' complete';
       document.getElementById('status-banner').textContent = 'Round complete. Continue the fight.';
     });
   }
   document.getElementById('newRoundBtn').addEventListener('click', function () {
     document.getElementById('round-sec').style.display = 'none';
-    startActionRound(roundNum + 1);
+    startActionRound(M1.state.roundNum + 1);
   });
 
   // ---------------------------------------------------------------------
@@ -496,7 +496,7 @@
   // movement off the map edge, and Operations is where free movement happens (§5).
   // ---------------------------------------------------------------------
   function canExit(s) {
-    return !!s && phase === 'movement' && !s.exited && s.isActive && ENTRY_HEXES.indexOf(s.hexId) !== -1;
+    return !!s && M1.state.phase === 'movement' && !s.exited && s.isActive && ENTRY_HEXES.indexOf(s.hexId) !== -1;
   }
   function tryExit(s) {
     if (!s || s.exited || !s.isActive) return;
@@ -533,16 +533,16 @@
       renderRoster();
       renderVP(); // an exfiltrated casualty changes the VP total the moment he's off the map
       checkEndingConditions();
-      if (phase === 'over') return;
+      if (M1.state.phase === 'over') return;
       checkCapturedGermanEscapes(); // §11/2: exiting can leave a captured German unguarded
-      if (phase !== 'movement') return; // freeing a German can immediately commence Rounds
+      if (M1.state.phase !== 'movement') return; // freeing a German can immediately commence Rounds
       var left = activeUS();
       if (left.length) deselect(left[0].id);
       else { clearDestMarks(); renderStatusBanner(); }
     });
   }
   document.getElementById('exitMapBtn').addEventListener('click', function () {
-    if (phase !== 'movement') return;
+    if (M1.state.phase !== 'movement') return;
     tryExit(selectedSoldier());
   });
 
@@ -550,8 +550,8 @@
   // Victory — Mission 1's two real ending conditions
   // ---------------------------------------------------------------------
   function checkEndingConditions() {
-    if (phase === 'over') return;
-    var allExited = activeUS().every(function (s) { return s.exited; }) && usSoldiers.some(function (s) { return s.isActive; });
+    if (M1.state.phase === 'over') return;
+    var allExited = activeUS().every(function (s) { return s.exited; }) && M1.state.usSoldiers.some(function (s) { return s.isActive; });
     if (V.checkEnding2(allExited)) { endMission('ending2'); return; }
 
     var t8 = activeUS().some(function (s) { return !s.exited && s.hexId === 'T8'; });
@@ -559,13 +559,13 @@
     var l13 = activeUS().some(function (s) { return !s.exited && s.hexId === 'L13'; });
     var heights = activeUS().some(function (s) { return !s.exited && HEIGHTS_CANDIDATE_HEXES[s.hexId]; });
     if (V.checkEnding1({ t8Occupied: t8, k13Occupied: k13, l13Occupied: l13, heightsHexWithFullRoadLOS: heights, activeGermanCount: activeGermans().length })) {
-      vpState.awards.push({ amount: 4, note: 'Ending 1 — Hold the Ground' });
+      M1.state.vpState.awards.push({ amount: 4, note: 'Ending 1 — Hold the Ground' });
       // §15's second exfiltration clause: "or, if mission ending 1 is accomplished, by moving him
       // into either building hex." JUDGMENT CALL on "either": the same victory paragraph calls T8
       // "the building hex" (singular) and K13/L13 "the building hexes" (a pair), so "either"
       // reads as that pair, not as a three-way choice including T8. Flagged rather than silently
       // assumed — if a future reading says T8 counts too, this is the one line to change.
-      usSoldiers.filter(function (s) {
+      M1.state.usSoldiers.filter(function (s) {
         return !s.exited && s.status === 'incapacitated' && (s.hexId === 'K13' || s.hexId === 'L13');
       }).forEach(markExfiltrated);
       endMission('ending1');
@@ -573,7 +573,7 @@
   }
 
   function endMission(reason) {
-    phase = 'over';
+    M1.state.phase = 'over';
     document.getElementById('action-sec').style.display = 'none';
     document.getElementById('round-sec').style.display = 'none';
     document.getElementById('movement-sec').style.display = 'none';

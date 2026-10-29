@@ -1,15 +1,13 @@
 // mission1/info.js (3 of 13) — Info (the map as information surface), Sight. Stage A cut of mission1.js lines 980-1305 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (2): Info, Sight
 // Uses from M1:
-//   core: state
+//   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
+//   edgeFeatures, losClear, state, terrainRowFor, weaponById, weaponUsable
 //   present: FX, fmtSigned
 //   roster: activeGermans, canvas, findSoldier
 //   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute
 //   contact: estimateHitChanceBreakdown
 //   rounds: canFireAt
-// Still global (their files are not wrapped yet):
-//   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
-//   edgeFeatures, losClear, terrainRowFor, weaponById, weaponUsable
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -33,7 +31,7 @@
   // ---------------------------------------------------------------------
   var Info = M1.Info = (function () {
     var NS = 'http://www.w3.org/2000/svg';
-    var MW = G.MAP_WIDTH, MH = G.MAP_HEIGHT, R = G.GRID.col_pitch / 1.5; // flat-top: pitch = 1.5 R
+    var MW = M1.G.MAP_WIDTH, MH = M1.G.MAP_HEIGHT, R = M1.G.GRID.col_pitch / 1.5; // flat-top: pitch = 1.5 R
     var svg = null, tip = null, lastHex = null, lastReason = {}, hoverRoute = null, lastEnsured = null;
     function layer() {
       if (svg && svg.parentNode) return svg;
@@ -44,7 +42,7 @@
       M1.canvas.insertBefore(svg, M1.canvas.children[1] || null); // above the map scan, below counters
       return svg;
     }
-    function center(hexId) { var p = G.parseId(hexId); return G.hexToPixel(p.colIdx, p.rowIdx); }
+    function center(hexId) { var p = M1.G.parseId(hexId); return M1.G.hexToPixel(p.colIdx, p.rowIdx); }
     function hexPoints(hexId, shrink) {
       var c = center(hexId), r = R * (shrink || 0.94), pts = [];
       for (var k = 0; k < 6; k++) { var a = Math.PI / 3 * k; pts.push((c.x + r * Math.cos(a)).toFixed(1) + ',' + (c.y + r * Math.sin(a)).toFixed(1)); }
@@ -57,11 +55,11 @@
       return { x1: mx - dy / len * h, y1: my + dx / len * h, x2: mx + dy / len * h, y2: my - dx / len * h };
     }
     function coverClass(hexId) {
-      var row = terrainRowFor(hexId);
+      var row = M1.terrainRowFor(hexId);
       return row === 0 ? 'cov-open' : row <= 3 ? 'cov-light' : 'cov-good';
     }
     function coverLabel(hexId) {
-      var row = terrainRowFor(hexId);
+      var row = M1.terrainRowFor(hexId);
       return row === 0 ? 'no cover' : row <= 3 ? 'light cover' : 'good cover';
     }
 
@@ -71,7 +69,7 @@
       if (M1.state.phase === 'round') { var a = M1.findSoldier(M1.state.currentActorId); return a && a.side !== 'german' ? a : null; }
       return null;
     }
-    function decisionPending() { return !Dialogs.current; }
+    function decisionPending() { return !M1.Dialogs.current; }
 
     // ---- shading -----------------------------------------------------------------------------
     function clear() { if (svg) svg.innerHTML = ''; }
@@ -101,11 +99,11 @@
       var area = {}; reach.concat([v.hexId]).forEach(function (h) { area[h] = true; });
       var seen = {};
       Object.keys(area).forEach(function (h) {
-        var p = G.parseId(h);
-        G.neighbors(p.colIdx, p.rowIdx).forEach(function (n) {
+        var p = M1.G.parseId(h);
+        M1.G.neighbors(p.colIdx, p.rowIdx).forEach(function (n) {
           var key = h < n.id ? h + '|' + n.id : n.id + '|' + h;
           if (seen[key]) return; seen[key] = true;
-          var f = edgeFeatureBetween(h, n.id);
+          var f = M1.edgeFeatureBetween(h, n.id);
           if (!f) return;
           var s = sideSegment(h, n.id), l = document.createElementNS(NS, 'line');
           l.setAttribute('x1', s.x1); l.setAttribute('y1', s.y1); l.setAttribute('x2', s.x2); l.setAttribute('y2', s.y2);
@@ -121,13 +119,13 @@
     function pct(c) { return '<b>' + c + '</b> <span class="ih-dim">(' + (c + 1) * 10 + '%)</span>'; }
     function hexHtml(hexId, v) {
       var enemyHere = M1.activeGermans().some(function (g) { return g.hexId === hexId; });
-      var terrain = LOS_TERRAIN[hexId] || REAL_TERRAIN[hexId];
-      var label = TERRAIN_LABELS[terrain] || TERRAIN_LABELS[REAL_TERRAIN[hexId]] || terrain || 'unknown';
+      var terrain = M1.LOS_TERRAIN[hexId] || M1.REAL_TERRAIN[hexId];
+      var label = M1.TERRAIN_LABELS[terrain] || M1.TERRAIN_LABELS[M1.REAL_TERRAIN[hexId]] || terrain || 'unknown';
       var html = '<div class="ih-head"><b>' + hexId + '</b> &middot; ' + label + ' <span class="ih-cov ' + coverClass(hexId) + '">' + coverLabel(hexId) + '</span></div>';
       // What the terrain does to a shot at someone standing here, in the viewer's stance.
-      var stance = v ? v.stance : 'standing', row = terrainRowFor(hexId);
-      if (FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, stance)) {
-        var mod = FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, stance);
+      var stance = v ? v.stance : 'standing', row = M1.terrainRowFor(hexId);
+      if (M1.FC.canBeFiredAt(M1.CHART.FIRE_MODS_TERRAIN, row, stance)) {
+        var mod = M1.FC.resolveTerrainMod(M1.CHART.FIRE_MODS_TERRAIN, row, stance);
         html += '<div>Shots at a ' + stance + ' soldier here: <b>' + M1.fmtSigned(mod) + '</b> to hit (terrain row ' + row + ').</div>';
       } else {
         html += '<div>A ' + stance + ' soldier here cannot be fired at except through his aperture.</div>';
@@ -153,22 +151,22 @@
       return html + watchersHtml(hexId, stance);
     }
     function watchersHtml(hexId, stance) {
-      var watchers = M1.activeGermans().filter(function (g) { return g.hexId && g.hexId !== hexId && losClear(g.hexId, hexId, g.stance, stance); });
+      var watchers = M1.activeGermans().filter(function (g) { return g.hexId && g.hexId !== hexId && M1.losClear(g.hexId, hexId, g.stance, stance); });
       return watchers.length
         ? '<div class="ih-warn">Seen by ' + watchers.map(function (g) { return g.name; }).join(', ') + '.</div>'
         : (M1.activeGermans().length ? '<div class="ih-dim">No German on the map can see it.</div>' : '');
     }
     function germanHtml(g, v) {
-      var w = weaponById(g.weaponId);
+      var w = M1.weaponById(g.weaponId);
       var html = '<div class="ih-head"><b>' + g.name + '</b> &middot; ' + g.stance + (w ? ' &middot; ' + w.name : '') + '</div>';
       if (v) {
-        if (!weaponUsable(v)) html += '<div class="ih-dim">' + v.name + '&rsquo;s weapon cannot fire now.</div>';
+        if (!M1.weaponUsable(v)) html += '<div class="ih-dim">' + v.name + '&rsquo;s weapon cannot fire now.</div>';
         else if (!M1.canFireAt(v, g)) html += '<div class="ih-dim">' + v.name + ' has no shot at him (sight, range or cover).</div>';
         else {
           var aim = M1.estimateHitChanceBreakdown(v, g, 'aimed'), snap = M1.estimateHitChanceBreakdown(v, g, 'snap');
           html += '<div>' + v.name + ' &rarr; him: aimed ' + pct(aim.clamped) + ', snap ' + pct(snap.clamped) + '</div>';
         }
-        if (g.weaponId && weaponUsable(g) && M1.canFireAt(g, v)) {
+        if (g.weaponId && M1.weaponUsable(g) && M1.canFireAt(g, v)) {
           html += '<div class="ih-warn">He &rarr; ' + v.name + ': aimed ' + pct(M1.estimateHitChanceBreakdown(g, v, 'aimed').clamped) + '</div>';
         } else html += '<div class="ih-dim">He has no shot at ' + v.name + '.</div>';
       }
@@ -203,7 +201,7 @@
     function hexAt(e) {
       var r = M1.canvas.getBoundingClientRect();
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return null;
-      return G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id || null;
+      return M1.G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id || null;
     }
     // The walk the player would get by clicking, drawn hex to hex (task 6).
     function drawRoute(v, route) {
@@ -225,7 +223,7 @@
       layer().appendChild(g);
     }
     function onMove(e) {
-      if (document.body.classList.contains('resolving') || Dialogs.current) { hide(); return; }
+      if (document.body.classList.contains('resolving') || M1.Dialogs.current) { hide(); return; }
       var hx = hexAt(e);
       if (!hx) { hide(); return; }
       if (hx !== lastHex) {
@@ -244,10 +242,10 @@
       // own meaning, and the last entry placement switches the phase inside its own click — that
       // click then bubbled here and marched the soldier off across the map.
       if (e.target !== M1.canvas && !e.target.classList.contains('map-image')) return;
-      if (M1.state.phase !== 'movement' || Dialogs.current || !viewer()) return;
+      if (M1.state.phase !== 'movement' || M1.Dialogs.current || !viewer()) return;
       var r = M1.canvas.getBoundingClientRect();
       if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
-      var hx = G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id;
+      var hx = M1.G.pixelToHex((e.clientX - r.left) / r.width * MW, (e.clientY - r.top) / r.height * MH).id;
       if (!hx) return;
       hide(); closePin();
       // A click just outside a destination marker still means that hex: do the ordinary one-hex
@@ -277,7 +275,7 @@
       if (e.button !== 2 || !rDown) return;
       var moved = Math.abs(e.clientX - rDown.x) + Math.abs(e.clientY - rDown.y) > 6;
       rDown = null;
-      if (moved || (Dialogs.current && !Dialogs.current.modeless)) return;
+      if (moved || (M1.Dialogs.current && !M1.Dialogs.current.modeless)) return;
       var hx = hexAt(e);
       if (!hx || (pinned && pinned.hex === hx)) { closePin(); return; }
       pinned = { hex: hx, x: e.clientX, y: e.clientY };
@@ -292,7 +290,7 @@
       try { renderPin(); } catch (err) { closePin(); console.error('[Ambush info]', err); }
     }
     // A decision closes it (a modal would sit under it); resolution lines keep it, refreshed.
-    Dialogs.onPresent(function (spec) { hide(); if (spec && !spec.modeless) closePin(); safeRefresh(); });
+    M1.Dialogs.onPresent(function (spec) { hide(); if (spec && !spec.modeless) closePin(); safeRefresh(); });
     return {
       refresh: safeRefresh,
       noteReason: function (g, html) { lastReason[g.id] = html; },
@@ -304,12 +302,12 @@
   // own layer, so the hover card's redraws never wipe it. Lessons only.
   var Sight = M1.Sight = (function () {
     var NS = 'http://www.w3.org/2000/svg', svg = null;
-    function center(hexId) { var p = G.parseId(hexId); return G.hexToPixel(p.colIdx, p.rowIdx); }
+    function center(hexId) { var p = M1.G.parseId(hexId); return M1.G.hexToPixel(p.colIdx, p.rowIdx); }
     function layer() {
       if (svg && svg.parentNode) return svg;
       svg = document.createElementNS(NS, 'svg');
       svg.setAttribute('id', 'sight-layer');
-      svg.setAttribute('viewBox', '0 0 ' + G.MAP_WIDTH + ' ' + G.MAP_HEIGHT);
+      svg.setAttribute('viewBox', '0 0 ' + M1.G.MAP_WIDTH + ' ' + M1.G.MAP_HEIGHT);
       svg.setAttribute('preserveAspectRatio', 'none');
       M1.canvas.insertBefore(svg, M1.canvas.children[2] || null); // over the hover layer, under the counters
       return svg;
@@ -321,8 +319,8 @@
     }
     function clear() { if (svg) while (svg.firstChild) svg.removeChild(svg.firstChild); }
     function draw(fromHex, toHex, fromStance, toStance) {
-      var r = LOS.traceLOS({ fromId: fromHex, toId: toHex, elevationByHexId: LOS_ELEV, terrainByHexId: LOS_TERRAIN,
-        edgeFeatures: edgeFeatures, fromStance: fromStance, toStance: toStance });
+      var r = M1.LOS.traceLOS({ fromId: fromHex, toId: toHex, elevationByHexId: M1.LOS_ELEV, terrainByHexId: M1.LOS_TERRAIN,
+        edgeFeatures: M1.edgeFeatures, fromStance: fromStance, toStance: toStance });
       clear();
       var g = layer(), a = center(fromHex), b = center(r.blocked && r.hexId ? r.hexId : toHex);
       var cls = r.blocked ? 'sight blocked' : 'sight clear';
@@ -330,7 +328,7 @@
       if (r.blocked && r.hexId) {
         var e = center(toHex);
         g.appendChild(node('line', { x1: b.x, y1: b.y, x2: e.x, y2: e.y, 'class': 'sight beyond' }));
-        g.appendChild(node('circle', { cx: b.x, cy: b.y, r: G.GRID.col_pitch / 1.5 * 0.62, 'class': 'sight-block' }));
+        g.appendChild(node('circle', { cx: b.x, cy: b.y, r: M1.G.GRID.col_pitch / 1.5 * 0.62, 'class': 'sight-block' }));
       }
       g.appendChild(node('circle', { cx: a.x, cy: a.y, r: 14, 'class': cls + ' end' }));
       return r;

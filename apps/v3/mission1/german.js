@@ -1,7 +1,9 @@
 // mission1/german.js (10 of 13) — German turn, German actions, German movement by reference. Stage A cut of mission1.js lines 4135-4733 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (1): germanAutoTurn
 // Uses from M1:
-//   core: state
+//   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
+//   Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
+//   edgeFeatureBetween, isCrewWeapon, losClearBetween, state, unprepareWeaponOnMove, weaponById, weaponUsable
 //   present: Cues, FX, d10, fmtSigned, infoPopup, rollPopup
 //   info: Info
 //   roster: activeGermans, activeUS, counterEls, equipmentName, findSoldier, nameFor, placeEl, renderRoster,
@@ -10,10 +12,6 @@
 //   rounds: driveNext, renderTrack, visibleEnemyTargets
 //   verbs: clearJamRoll, estimateHitChance, grenadeCandidates
 //   combat: applyCapture, assaultChain, checkEndingConditions, fireChain, grenadeChain
-// Still global (their files are not wrapped yet):
-//   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
-//   Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
-//   edgeFeatureBetween, isCrewWeapon, losClearBetween, unprepareWeaponOnMove, weaponById, weaponUsable
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -43,7 +41,7 @@
     var selfPreservationActive = !ignoreSelfPreservation && (
       !!g.forcedSelfPreservation ||
       (!(g.specialReaction && g.specialReactionIgnoresSelfPreservation) &&
-        M1.activeUS().some(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= 1; }))
+        M1.activeUS().some(function (s) { return M1.FC.hexDistance(g.hexId, s.hexId) <= 1; }))
     );
     // A card only carries columns for the Conditions its scenario expects (GE 33/V, for instance,
     // has CONDITION 4 and SPECIAL S and nothing else). If the mission is in a Condition his card
@@ -53,14 +51,14 @@
     function lookup(roll) {
       var cond = M1.state.opsState ? M1.state.opsState.condition : 1;
       var opts = { selfPreservationActive: selfPreservationActive, specialReaction: g.specialReaction };
-      try { return AR.resolveGermanActionParagraph(g.card, roll, cond, opts); } catch (e) { /* fall through */ }
+      try { return M1.AR.resolveGermanActionParagraph(g.card, roll, cond, opts); } catch (e) { /* fall through */ }
       var available = ((g.card.table && g.card.table.columns) || [])
         .map(function (c) { return /^CONDITION\s+(\d+)/i.exec(c); })
         .filter(Boolean).map(function (m) { return parseInt(m[1], 10); });
       if (!available.length) return null;
       var nearest = available.reduce(function (best, c) { return Math.abs(c - cond) < Math.abs(best - cond) ? c : best; }, available[0]);
       try {
-        var res = AR.resolveGermanActionParagraph(g.card, roll, nearest, opts);
+        var res = M1.AR.resolveGermanActionParagraph(g.card, roll, nearest, opts);
         res.fallbackFrom = cond; res.fallbackTo = nearest;
         return res;
       } catch (e2) { return null; }
@@ -77,7 +75,7 @@
         if (g.forcedSelfPreservation) {
           why = 'he was freed after being captured, so he uses Self-Preservation for the rest of the mission (&sect;11/2)';
         } else {
-          var near = M1.activeUS().filter(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= 1; });
+          var near = M1.activeUS().filter(function (s) { return M1.FC.hexDistance(g.hexId, s.hexId) <= 1; });
           why = near.length
             ? M1.nameFor(near[0].id) + ' is ' + (near[0].hexId === g.hexId ? 'in his hex' : 'adjacent') +
               ' at ' + near[0].hexId + (near.length > 1 ? ' (and ' + (near.length - 1) + ' more)' : '') +
@@ -143,7 +141,7 @@
   // the German acts (his instructions are evaluated against the situation in front of him).
   function germanSituation(g) {
     var visible = M1.visibleEnemyTargets(g);
-    var terrainKey = REAL_TERRAIN[g.hexId];
+    var terrainKey = M1.REAL_TERRAIN[g.hexId];
     var openish = { clear1: 1, clear2: 1, clear3: 1, road: 1, dirt_road: 1, bridge: 1, ford: 1, stream: 1, railroad: 1 };
     var terrain = terrainKey === 'building' || terrainKey === 'second_story' || terrainKey === 'interior' ? 'building'
       : terrainKey === 'woods' ? 'woods'
@@ -151,17 +149,17 @@
     return {
       targetsInSight: visible.length,
       targetsInHex: M1.activeUS().filter(function (s) { return s.hexId === g.hexId; }).length,
-      targetsWithin: function (n) { return M1.activeUS().filter(function (s) { return FC.hexDistance(g.hexId, s.hexId) <= n && losClearBetween(g, s); }).length; },
-      inUsSight: M1.activeUS().some(function (s) { return losClearBetween(s, g); }),
+      targetsWithin: function (n) { return M1.activeUS().filter(function (s) { return M1.FC.hexDistance(g.hexId, s.hexId) <= n && M1.losClearBetween(g, s); }).length; },
+      inUsSight: M1.activeUS().some(function (s) { return M1.losClearBetween(s, g); }),
       terrain: terrain,
       inActivationHex: g.hexId === g.activationHexId,
-      germansSameOrAdjacent: M1.activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 1; }).length,
-      germansWithinTwo: M1.activeGermans().filter(function (o) { return o.id !== g.id && FC.hexDistance(g.hexId, o.hexId) <= 2; }).length,
+      germansSameOrAdjacent: M1.activeGermans().filter(function (o) { return o.id !== g.id && M1.FC.hexDistance(g.hexId, o.hexId) <= 1; }).length,
+      germansWithinTwo: M1.activeGermans().filter(function (o) { return o.id !== g.id && M1.FC.hexDistance(g.hexId, o.hexId) <= 2; }).length,
       germansLost: M1.state.vpState.germanDefeats.length,
       usOccupiesHex: function (hex) { return M1.activeUS().some(function (s) { return s.hexId === hex; }); },
       // Task #63 (docs/35_GRENADE_COMBAT.md): real, from the German's own lightweight grenade
       // inventory (see guessGermanGrenadeCount) — no longer hardcoded false.
-      hasGrenade: !!(g.inventory && EQ.hasGrenade(g.inventory)),
+      hasGrenade: !!(g.inventory && M1.EQ.hasGrenade(g.inventory)),
       // §7/3 "traversable hexside" (paragraph 833 option 2). A wall cannot be crossed at any
       // cost; an aperture can, at +1 MP, so a window or doorway is traversable. Un-modelled until
       // Map A's buildings gave the map any hexsides at all (docs/53) — before that this was the
@@ -176,8 +174,8 @@
   // Active US soldiers in a hex adjacent to `g` that he could actually reach — i.e. not walled off.
   function adjacentTraversableUS(g) {
     return M1.activeUS().filter(function (s) {
-      if (FC.hexDistance(g.hexId, s.hexId) !== 1) return false;
-      return M.hexsideCost(edgeFeatureBetween(g.hexId, s.hexId)) !== Infinity;
+      if (M1.FC.hexDistance(g.hexId, s.hexId) !== 1) return false;
+      return M1.M.hexsideCost(M1.edgeFeatureBetween(g.hexId, s.hexId)) !== Infinity;
     });
   }
 
@@ -215,15 +213,15 @@
   // of his paragraph that sent him to it (germanactions.js's own clause).
   function kranzOnGrenade(g, paragraphNum, resolved) {
     if (!(resolved.actions || []).some(function (a) { return a.action === 'grenade'; })) return;
-    if (!(g.inventory && EQ.hasGrenade(g.inventory))) return;
+    if (!(g.inventory && M1.EQ.hasGrenade(g.inventory))) return;
     var d = (resolved.decisions || []).filter(function (x) { return x.option !== null && x.because; }).pop();
     M1.Cues.kranz('smug', '<b>Granate!</b> ' + g.name + ' throws. ' + (d
       ? 'Paragraph ' + d.paragraph + ', option ' + d.option + ' of ' + d.of + ': ' + d.because + '.'
       : 'Paragraph ' + paragraphNum + ' tells him to.'), g.id);
   }
   function runGermanParagraph(g, paragraphNum) {
-    var resolved = GAct.resolve(paragraphNum, GERMAN_ACTION_PROGRAMS, germanSituation(g));
-    var text = PARAGRAPHS[String(paragraphNum)];
+    var resolved = M1.GAct.resolve(paragraphNum, M1.GERMAN_ACTION_PROGRAMS, germanSituation(g));
+    var text = M1.PARAGRAPHS[String(paragraphNum)];
     var picked = decisionsText(resolved);
     M1.Info.noteReason(g, 'paragraph ' + paragraphNum + (picked ? ' &mdash; ' + picked : ''));
     var fullHtml = (text || '(no text on file)').replace(/¥/g, '&bull;').replace(/_x000B_/g, '<br>') + decisionsHtml(resolved);
@@ -260,14 +258,14 @@
       // he will attempt to unjam his weapon. When a German Action Paragraph requires him to fire,
       // he attempts to unjam his weapon instead." Both halves are real now; this used to be a
       // loud stub that fired about twice a game (docs/52's pacing count is what flagged it).
-      if (!weaponUsable(g)) {
-        var second = !g.usedSecondWeapon && GAct.secondWeaponIdForCard(g.card);
+      if (!M1.weaponUsable(g)) {
+        var second = !g.usedSecondWeapon && M1.GAct.secondWeaponIdForCard(g.card);
         if (second) {
           // The switch is permanent for the rest of the mission: the jammed primary is not
           // magically un-jammed by drawing a pistol, and `usedSecondWeapon` stops him switching
           // again when the pistol itself jams.
           g.usedSecondWeapon = true;
-          var wasJammed = g.weaponJammed, brokenWeapon = weaponById(g.weaponId);
+          var wasJammed = g.weaponJammed, brokenWeapon = M1.weaponById(g.weaponId);
           g.weaponId = second;
           g.weaponJammed = false; g.weaponBroken = false; g.weaponPrepared = true;
           M1.infoPopup({
@@ -286,7 +284,7 @@
           // so it goes through the same resolver rather than a German-only copy of it.
           M1.infoPopup({
             actor: g, title: 'Unjam Instead of Fire',
-            bodyHtml: g.name + ' is ordered to fire, but his ' + weaponById(g.weaponId).name +
+            bodyHtml: g.name + ' is ordered to fire, but his ' + M1.weaponById(g.weaponId).name +
               ' is jammed and he has no second weapon. &sect;9/4: he attempts to unjam it instead.',
             logHtml: g.name + ': ordered to fire with a jammed weapon and no second weapon &mdash; attempts to unjam (&sect;9/4).',
           }, function () { M1.clearJamRoll(g, next); });
@@ -312,7 +310,7 @@
       // he must be crouching, and alone he can only snap fire. The paragraph may have asked for
       // aimed fire, so this can downgrade it — deliberately, and it says so rather than silently
       // firing the mode the paragraph named.
-      if (isCrewWeapon(g.weaponId) && !crewWeaponStanceOk(g)) {
+      if (M1.isCrewWeapon(g.weaponId) && !M1.crewWeaponStanceOk(g)) {
         M1.infoPopup({
           actor: g, title: 'Cannot Fire',
           bodyHtml: g.name + ' is ' + g.stance + ', and a crew weapon can only be fired crouching (&sect;9/7). He holds his fire.',
@@ -321,11 +319,11 @@
         return;
       }
       germanPickTarget(g, targets, a.target, function (target) {
-        var fireType = a.mode === 'snap' ? 'snap' : a.mode === 'aimed' ? 'aimed' : FC.resolveBestFireType(true);
-        if (isCrewWeapon(g.weaponId)) {
-          var avail = crewFireAvailability(g);
+        var fireType = a.mode === 'snap' ? 'snap' : a.mode === 'aimed' ? 'aimed' : M1.FC.resolveBestFireType(true);
+        if (M1.isCrewWeapon(g.weaponId)) {
+          var avail = M1.crewFireAvailability(g);
           if (fireType === 'aimed' && !avail.aimed) fireType = 'snap'; // solo crew = snap only
-          var fired = crewFiredThisRound(g);
+          var fired = M1.crewFiredThisRound(g);
           if (fired.indexOf(g.id) === -1) fired.push(g.id);
           // §9/7: "when two Germans are firing a crew weapon, the German with the higher WS is
           // the firer." With a mate available, the pair's fire resolves with whichever of them
@@ -333,9 +331,9 @@
           // trigger to his crewmate.
           if (fireType === 'aimed' && avail.mates.length) {
             var mate = avail.mates[0];
-            var firerId = CW.resolveGermanCrewFirer(g, mate);
+            var firerId = M1.CW.resolveGermanCrewFirer(g, mate);
             fired.push(mate.id);
-            Sched.completeAction(M1.state.track, mate.id);
+            M1.Sched.completeAction(M1.state.track, mate.id);
             M1.renderTrack();
             var actualFirer = firerId === mate.id ? mate : g;
             M1.infoPopup({
@@ -355,7 +353,7 @@
       // Task #63 (docs/35_GRENADE_COMBAT.md): real now — germanSituation()'s hasGrenade
       // condition already gates most paragraph branches into this action, but a paragraph can
       // still call it unconditionally, so the same "does he actually have one" check applies here.
-      if (!(g.inventory && EQ.hasGrenade(g.inventory))) {
+      if (!(g.inventory && M1.EQ.hasGrenade(g.inventory))) {
         M1.infoPopup({ actor: g, title: 'No Grenade', bodyHtml: g.name + ' would throw a grenade, but has none left.' }, next);
         return;
       }
@@ -382,7 +380,7 @@
         g.hexId = victim.hexId;
         M1.placeEl(M1.counterEls[g.id], g.hexId);
         M1.updateCounterVisual(g);
-        unprepareWeaponOnMove(g);
+        M1.unprepareWeaponOnMove(g);
         M1.infoPopup({
           actor: g, title: 'Charge Assault',
           bodyHtml: g.name + ' charges from ' + fromHex + ' into ' + victim.hexId + ' and assaults ' +
@@ -393,8 +391,8 @@
       }
       if (!inHex.length) { next(); return; }
       // §11/1: "A German soldier must assault the US soldier in the most disadvantageous stance."
-      var pick = Asl.resolveGermanAssaultTarget
-        ? Asl.resolveGermanAssaultTarget(inHex.map(function (s) { return { id: s.id, stance: s.stance, wounded: s.status === 'wounded' }; }), M1.d10)
+      var pick = M1.Asl.resolveGermanAssaultTarget
+        ? M1.Asl.resolveGermanAssaultTarget(inHex.map(function (s) { return { id: s.id, stance: s.stance, wounded: s.status === 'wounded' }; }), M1.d10)
         : { id: inHex[0].id };
       var defender = inHex.filter(function (s) { return s.id === pick.id; })[0] || inHex[0];
       if (g.stance !== 'standing') { g.stance = 'standing'; M1.updateCounterVisual(g); }
@@ -417,12 +415,12 @@
       g.hexId = a.toHex;
       if (M1.counterEls[g.id]) M1.placeEl(M1.counterEls[g.id], a.toHex);
       M1.scrollMapTo(a.toHex);
-      unprepareWeaponOnMove(g); // Task #69 (docs/43_PREPARE_WEAPON.md)
+      M1.unprepareWeaponOnMove(g); // Task #69 (docs/43_PREPARE_WEAPON.md)
       M1.infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' ' + (a.style === 'crawl' ? 'crawls' : 'moves') + ' ' + fromHexId + ' &rarr; <b>' + a.toHex + '</b>.' }, next);
       return;
     }
     if (a.action === 'move_by_reference') {
-      unprepareWeaponOnMove(g); // Task #69 (docs/43_PREPARE_WEAPON.md) — applies once movement begins
+      M1.unprepareWeaponOnMove(g); // Task #69 (docs/43_PREPARE_WEAPON.md) — applies once movement begins
       resolveGermanMoveByReference(g, g.mpa || 0, next);
       return;
     }
@@ -480,14 +478,14 @@
   function germanPickTarget(g, targets, rule, cb) {
     if (targets.length === 1) { cb(targets[0]); return; }
     var candidates = targets.map(function (s) {
-      return { id: s.id, distance: FC.hexDistance(g.hexId, s.hexId), hitChance: M1.estimateHitChance(g, s, 'aimed') };
+      return { id: s.id, distance: M1.FC.hexDistance(g.hexId, s.hexId), hitChance: M1.estimateHitChance(g, s, 'aimed') };
     });
     if (rule === 'easiest') {
       candidates.sort(function (a, b) { return b.hitChance - a.hitChance || a.distance - b.distance; });
     }
     var tieRoll = null;
     var picked = rule === 'easiest' ? candidates[0]
-      : FC.resolveClosestTarget(candidates, function () { tieRoll = M1.d10(); return tieRoll; });
+      : M1.FC.resolveClosestTarget(candidates, function () { tieRoll = M1.d10(); return tieRoll; });
     var target = targets.filter(function (s) { return s.id === picked.id; })[0];
     if (tieRoll === null) { cb(target); return; }
     M1.rollPopup({
@@ -511,7 +509,7 @@
   // so the Round simply moves on to whoever is next.
   function finishGermanTurn(g) {
     if (M1.state.phase === 'over') return;
-    if (g.isActive) Sched.completeAction(M1.state.track, g.id);
+    if (g.isActive) M1.Sched.completeAction(M1.state.track, g.id);
     M1.renderTrack();
     M1.driveNext();
   }
@@ -520,7 +518,7 @@
   // (self-preservation/evasive withdrawal) and hitting an "Exit" Movement Reference (&sect;6/8).
   function germanLeavesMap(g, next) {
     g.isActive = false;
-    Sched.removeFromRound(M1.state.track, g.id);
+    M1.Sched.removeFromRound(M1.state.track, g.id);
     if (M1.counterEls[g.id]) { M1.counterEls[g.id].remove(); delete M1.counterEls[g.id]; }
     M1.renderTrack(); M1.renderRoster(); M1.renderVP();
     M1.checkEndingConditions();
@@ -544,8 +542,8 @@
   // Fire Combat Modifiers Chart's "Open (clear/stream/bridge/road/ford)" bucket), not a new
   // classification invented for this feature.
   function germanMovementRefFor(hexId) {
-    var cartridgeId = G.printedIdToCartridgeId(hexId);
-    var grid = cartridgeId && MISSION_CARDS_MOVEMENT['1'] && MISSION_CARDS_MOVEMENT['1'][String(M1.state.opsState.condition)];
+    var cartridgeId = M1.G.printedIdToCartridgeId(hexId);
+    var grid = cartridgeId && M1.MISSION_CARDS_MOVEMENT['1'] && M1.MISSION_CARDS_MOVEMENT['1'][String(M1.state.opsState.condition)];
     return (grid && grid[cartridgeId]) || 'NONE';
   }
   function resolveGermanMoveByReference(g, mpRemaining, onDone) {
@@ -554,7 +552,7 @@
       M1.infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' is out of Movement Points and stops at ' + g.hexId + '.' }, onDone);
       return;
     }
-    var kind = GAct.classifyMovementReference(germanMovementRefFor(g.hexId));
+    var kind = M1.GAct.classifyMovementReference(germanMovementRefFor(g.hexId));
 
     if (kind.type === 'none') {
       M1.infoPopup({
@@ -575,7 +573,7 @@
       // germanactions.js's — "visible from the doorway," "east of hex row O") isn't modelled;
       // shown in full so the player can see exactly what's being skipped, same convention as
       // every other documented gap (grenades, Give Turn, unannotated paragraphs).
-      var text = PARAGRAPHS[kind.paragraph];
+      var text = M1.PARAGRAPHS[kind.paragraph];
       M1.infoPopup({
         actor: g, title: 'Movement Reference Paragraph Not Modelled',
         bodyHtml: 'The Movement Reference at ' + g.hexId + ' is paragraph <b>' + kind.paragraph + '</b>, not a hex. ' +
@@ -591,9 +589,9 @@
     // so a plain dash-strip converts it (never G.cartridgeIdToPrintedId, see mission1demo.js's
     // header trap notes — that function expects the zero-padded cartridge-key format instead).
     var destHexId = kind.hex.replace('-', '');
-    var terrain = REAL_TERRAIN[destHexId];
-    var open = TERRAIN_ROW[terrain] === 0;
-    var cost = open ? M.mpCost(terrain) : mpRemaining;
+    var terrain = M1.REAL_TERRAIN[destHexId];
+    var open = M1.TERRAIN_ROW[terrain] === 0;
+    var cost = open ? M1.M.mpCost(terrain) : mpRemaining;
     if (open && cost > mpRemaining) {
       M1.infoPopup({ actor: g, title: 'Move', bodyHtml: g.name + ' lacks the Movement Points to enter ' + destHexId + ' and stops at ' + g.hexId + '.' }, onDone);
       return;
@@ -608,7 +606,7 @@
     var remaining = mpRemaining - cost;
     M1.infoPopup({
       actor: g, title: 'Move',
-      bodyHtml: g.name + ' ' + (open ? 'runs' : 'crawls') + ' ' + fromHexId + ' &rarr; <b>' + destHexId + '</b> (' + TERRAIN_LABELS[terrain] + ').',
+      bodyHtml: g.name + ' ' + (open ? 'runs' : 'crawls') + ' ' + fromHexId + ' &rarr; <b>' + destHexId + '</b> (' + M1.TERRAIN_LABELS[terrain] + ').',
     }, function () {
       M1.runParagraphCheck(g, function () {
         if (M1.state.phase === 'over') { onDone(); return; }

@@ -3,7 +3,10 @@
 //   picking, renderTrack, resetRoundFlow, showActionPanel, slotLabel, startActionRound, visibleEnemyTargets,
 //   wakeUpUnawareInHex
 // Uses from M1:
-//   core: state
+//   core: AR, Asl, CHART, Checks, Dialogs, FC, M, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
+//   TERRAIN_LABELS, WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability,
+//   crewWeaponStanceOk, guardsAPrisoner, isCrewWeapon, losClearBetween, state, terrainRowForTarget,
+//   unprepareWeaponOnMove, weaponById, weaponMaxRange, weaponUsable
 //   present: Cues, FX, Resolve, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
 //   info: Info
 //   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, equipmentName, findSoldier,
@@ -17,11 +20,6 @@
 //   giveTurnCandidates, grenadeCandidates, makeAwareCandidates, pickupOffers, stanceChangeCandidates
 //   german: germanAutoTurn
 //   combat: checkEndingConditions, endRound
-// Still global (their files are not wrapped yet):
-//   core: AR, Asl, CHART, Checks, Dialogs, FC, M, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
-//   TERRAIN_LABELS, WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability,
-//   crewWeaponStanceOk, guardsAPrisoner, isCrewWeapon, losClearBetween, terrainRowForTarget, unprepareWeaponOnMove,
-//   weaponById, weaponMaxRange, weaponUsable
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -88,9 +86,9 @@
     if (!mover) { next(); return; } // no active US soldier left — the mission has surely ended by now
     M1.pendingSteps = []; M1.currentHex = null; M1.currentParagraph = null;
     var ctx = M1.buildOpsCtx(mover);
-    var result = Ops.roundEventCheck({
-      mission: '1', missionCards: MISSION_CARDS, condition: M1.state.opsState.condition, paragraphs: PARAGRAPHS,
-      programs: PROGRAMS, state: M1.state.opsState, ctx: ctx,
+    var result = M1.Ops.roundEventCheck({
+      mission: '1', missionCards: M1.MISSION_CARDS, condition: M1.state.opsState.condition, paragraphs: M1.PARAGRAPHS,
+      programs: M1.PROGRAMS, state: M1.state.opsState, ctx: ctx,
       rollForEvent: function () {
         var a = M1.d10(), b = M1.d10();
         M1.pendingSteps.push({ type: 'event_roll', hex: null, paragraph: null, a: a, b: b, sum: a + b });
@@ -126,7 +124,7 @@
       // A paragraph activating more than one German at once isn't addressed by the rule text
       // (which assumes one) — checked against seeing ANY of them, the natural reading.
       var justActivated = M1.activeGermans();
-      candidates = M1.activeUS().filter(function (s) { return !s.aware && justActivated.some(function (g) { return losClearBetween(s, g); }); });
+      candidates = M1.activeUS().filter(function (s) { return !s.aware && justActivated.some(function (g) { return M1.losClearBetween(s, g); }); });
     } else {
       // Round 2: "each active US soldier ON THE MAP that is not yet aware", regardless of LOS.
       candidates = M1.activeUS().filter(function (s) { return !s.aware; });
@@ -139,13 +137,13 @@
     M1.rollPopup({
       actor: s, title: 'US Awareness Check', kind: 'single',
       contextHtml: s.name + ' (PC ' + s.PC + ') checks for awareness of the German activation (&sect;6/5).',
-      explain: function (roll) { return Checks.resolvePerceptionCheck(s.PC, 0, roll) === 'success' ? '<b style="color:var(--clear)">AWARE</b>.' : 'Still <b>unaware</b>.'; },
-      logText: function (roll) { var ok = Checks.resolvePerceptionCheck(s.PC, 0, roll) === 'success'; return 'Awareness check for ' + s.name + ': <span class="roll">' + roll + '</span> vs PC ' + s.PC + ' &rarr; ' + (ok ? 'AWARE' : 'unaware') + '.'; },
+      explain: function (roll) { return M1.Checks.resolvePerceptionCheck(s.PC, 0, roll) === 'success' ? '<b style="color:var(--clear)">AWARE</b>.' : 'Still <b>unaware</b>.'; },
+      logText: function (roll) { var ok = M1.Checks.resolvePerceptionCheck(s.PC, 0, roll) === 'success'; return 'Awareness check for ' + s.name + ': <span class="roll">' + roll + '</span> vs PC ' + s.PC + ' &rarr; ' + (ok ? 'AWARE' : 'unaware') + '.'; },
     }, function (roll) {
       // Placed straight in Complete by placeMarkersChain below, not given a normal turn slot —
       // the rulebook places a just-passed Awareness Check's soldier in Complete directly (same
       // wording used for the "unaware soldier who is attacked" case, wakeUpUnawareInHex).
-      if (Checks.resolvePerceptionCheck(s.PC, 0, roll) === 'success') { s.aware = true; s.justBecameAware = true; }
+      if (M1.Checks.resolvePerceptionCheck(s.PC, 0, roll) === 'success') { s.aware = true; s.justBecameAware = true; }
       runAwarenessChecks(list, i + 1, next);
     });
   }
@@ -156,7 +154,7 @@
   function wakeUpUnawareInHex(hexId) {
     M1.activeUS().filter(function (s) { return s.hexId === hexId && !s.aware; }).forEach(function (s) {
       s.aware = true;
-      if (M1.state.phase === 'round') Sched.applyBecomesAware(M1.state.track, s.id);
+      if (M1.state.phase === 'round') M1.Sched.applyBecomesAware(M1.state.track, s.id);
       M1.logLine(s.name + ' is now aware (&sect;6/5).');
     });
   }
@@ -166,7 +164,7 @@
     var fixed = n === 1 && M1.pendingContact && M1.pendingContact.advantage ? M1.pendingContact : null;
     function sideOf(rolls) {
       if (fixed) return fixed.advantage;
-      return AR.resolveAdvantage(rolls.a, rolls.b) === 'german' ? 'german' : 'US';
+      return M1.AR.resolveAdvantage(rolls.a, rolls.b) === 'german' ? 'german' : 'US';
     }
     M1.rollPopup({
       title: 'Initiative — Round ' + n, kind: 'dual', diceLabels: ['US', 'GERMAN'],
@@ -216,9 +214,9 @@
       if (entry.placement || entry.receivesTwoTurns) return;
       var r = M1.d10();
       rollsById[entry.id] = r;
-      classifyById[entry.id] = AR.classifyARRoll(window.AMBUSH_AR_TRACK, entry.IN, r);
+      classifyById[entry.id] = M1.AR.classifyARRoll(window.AMBUSH_AR_TRACK, entry.IN, r);
     });
-    M1.state.track = Sched.placeMarkers({ round: n, advantageSide: advantageSide, arTrack: window.AMBUSH_AR_TRACK, roster: roster, rollDie: function (entry) { return rollsById[entry.id]; } });
+    M1.state.track = M1.Sched.placeMarkers({ round: n, advantageSide: advantageSide, arTrack: window.AMBUSH_AR_TRACK, roster: roster, rollDie: function (entry) { return rollsById[entry.id]; } });
 
     roster.forEach(function (entry) {
       if (entry.receivesTwoTurns) M1.logLine(M1.findSoldier(entry.id).name + ' receives ' + (entry.wounded ? 'one turn (wounded)' : '2 turns') + ' this Round, no roll (paragraph ' + contact.paragraph + ').');
@@ -258,10 +256,10 @@
     return ids.map(function (id) { var s = M1.findSoldier(id); return '<span' + (s.side === 'german' ? ' class="g"' : '') + '>' + s.name.split(' ').pop() + '</span>'; }).join(', ');
   }
   function renderTrack() {
-    var cur = Sched.isRoundComplete(M1.state.track) ? { done: true } : Sched.nextActor(M1.state.track);
+    var cur = M1.Sched.isRoundComplete(M1.state.track) ? { done: true } : M1.Sched.nextActor(M1.state.track);
     var html = '';
     ['unaware', '2adv', '2disadv', '1adv', '1disadv', 'panic', 'complete'].forEach(function (key) {
-      var occ = Sched.occupantsOf(M1.state.track, key);
+      var occ = M1.Sched.occupantsOf(M1.state.track, key);
       var isCurrent = !cur.done && key === cur.slot;
       html += '<div class="ar-slot' + (isCurrent ? ' current' : '') + '"><span class="label">' + slotLabel(key) + '</span><span class="occ">' + occStr(occ) + '</span></div>';
     });
@@ -281,10 +279,10 @@
   M1.picking = null;
   function driveNextNow() {
     if (M1.state.phase !== 'round' || M1.picking) return;
-    if (Sched.isRoundComplete(M1.state.track)) { M1.endRound(); return; }
-    var na = Sched.nextActor(M1.state.track);
+    if (M1.Sched.isRoundComplete(M1.state.track)) { M1.endRound(); return; }
+    var na = M1.Sched.nextActor(M1.state.track);
     if (na.done) { M1.endRound(); return; }
-    var occ = na.side === 'german' ? [] : Sched.occupantsOf(M1.state.track, na.slot);
+    var occ = na.side === 'german' ? [] : M1.Sched.occupantsOf(M1.state.track, na.slot);
     if (occ.length > 1) { offerPick(occ); return; }
     beginTurn(na);
   }
@@ -310,7 +308,7 @@
     M1.picking = null;
     document.getElementById('pick-sec').style.display = 'none';
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
-    beginTurn(Sched.nextActor(M1.state.track, { chooseUS: function () { return id; } }));
+    beginTurn(M1.Sched.nextActor(M1.state.track, { chooseUS: function () { return id; } }));
     return true;
   }
   document.getElementById('pick-list').addEventListener('click', function (e) {
@@ -344,11 +342,11 @@
     }
   }
   function canFireAt(firer, target) {
-    if (!target.isActive || !losClearBetween(firer, target)) return false;
-    if (FC.hexDistance(firer.hexId, target.hexId) > weaponMaxRange(weaponById(firer.weaponId))) return false;
+    if (!target.isActive || !M1.losClearBetween(firer, target)) return false;
+    if (M1.FC.hexDistance(firer.hexId, target.hexId) > M1.weaponMaxRange(M1.weaponById(firer.weaponId))) return false;
     // §8/2 / the chart's one impossible cell: a prone soldier inside a building, shot at from a
     // hex that is not one of his apertures, cannot be hit at all.
-    return FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, terrainRowForTarget(firer, target), target.stance);
+    return M1.FC.canBeFiredAt(M1.CHART.FIRE_MODS_TERRAIN, M1.terrainRowForTarget(firer, target), target.stance);
   }
   function visibleEnemyTargets(firer) {
     return (firer.side === 'german' ? M1.activeUS() : M1.activeGermans()).filter(function (t) { return canFireAt(firer, t); });
@@ -366,7 +364,7 @@
     why('fireSnap', fireWhy('snap'));
     function fireWhy(kind) {
       if (!canFire) return s.weaponBroken ? 'His weapon is broken (§9/4).' : s.weaponJammed ? 'His weapon is jammed: clear it first (§9/4).' :
-        (WEAPONS_REQUIRING_PREPARATION[s.weaponId] && !s.weaponPrepared) ? 'His weapon must be prepared before it fires (§6/7).' :
+        (M1.WEAPONS_REQUIRING_PREPARATION[s.weaponId] && !s.weaponPrepared) ? 'His weapon must be prepared before it fires (§6/7).' :
         !s.weaponId ? 'He has no weapon.' : 'He is out of ammunition (§9/5).';
       if (!targets.length) return 'No German in line of sight and in range (§8).';
       if (!crewOk) return 'A crew weapon is fired crouching (§9/7).';
@@ -380,7 +378,7 @@
     why('giveTurnBtn', !s.isCommander ? 'Only a commander can give a Turn (§6/3).' : 'No soldier on the 1-Turn or Complete space can take one (§6/3).');
     why('makeAwareBtn', !s.isCommander ? 'Only a commander can make a soldier aware (§6/5).' : 'No unaware, unwounded soldier within his Command Radius (§6/5).');
     why('changeStanceBtn', 'His free change is used and he has no MP to pay for another (§6/7).');
-    why('prepareWeaponBtn', !WEAPONS_REQUIRING_PREPARATION[s.weaponId] ? 'His weapon needs no preparation.' :
+    why('prepareWeaponBtn', !M1.WEAPONS_REQUIRING_PREPARATION[s.weaponId] ? 'His weapon needs no preparation.' :
       s.weaponPrepared ? 'His weapon is already prepared.' : 'He must be standing or crouching to prepare it (§6/7).');
     why('pickupBtn', 'Nothing in his hex to pick up or exchange (§14).');
     why('clearJamBtn', !s.weaponJammed ? 'His weapon is not jammed.' : 'He must be standing or crouching to clear a jam (§9/4).');
@@ -393,12 +391,12 @@
     document.getElementById('act-name').textContent = s.name;
     document.getElementById('act-stats').innerHTML = 'IN:' + s.IN + ' WS:' + M1.fmtSigned(s.WS) + ' \u00b7 ' + s.stance + ' at ' + s.hexId + (s.status !== 'unharmed' ? ' \u00b7 ' + s.status : '') + M1.kitHtml(s, true);
     var targets = visibleEnemyTargets(s);
-    var canFire = weaponUsable(s);
+    var canFire = M1.weaponUsable(s);
     document.getElementById('moveBtn').disabled = !Object.keys(M1.roundLegalDestinations(s)).length;
     // §9/7 (Task A1): a crew weapon needs a crouching firer, is snap-only when he crews it alone,
     // and only offers aimed fire when a second crouching soldier in the hex can combine actions.
-    var crew = isCrewWeapon(s.weaponId) ? crewFireAvailability(s) : null;
-    var crewOk = !crew || crewWeaponStanceOk(s);
+    var crew = M1.isCrewWeapon(s.weaponId) ? M1.crewFireAvailability(s) : null;
+    var crewOk = !crew || M1.crewWeaponStanceOk(s);
     document.getElementById('fireAimed').disabled = !targets.length || !canFire || !crewOk || (crew && !crew.aimed);
     document.getElementById('fireSnap').disabled = !targets.length || !canFire || !crewOk || (crew && !crew.snap);
     // §11/1 + §11/3 reachability, not a bare adjacency test — see assaultCandidates().
@@ -408,17 +406,17 @@
     document.getElementById('giveTurnBtn').disabled = !M1.giveTurnCandidates(s).length;
     document.getElementById('makeAwareBtn').disabled = !M1.makeAwareCandidates(s).length;
     document.getElementById('changeStanceBtn').disabled = !M1.stanceChangeCandidates(s).length;
-    document.getElementById('prepareWeaponBtn').disabled = !canPrepareWeapon(s);
+    document.getElementById('prepareWeaponBtn').disabled = !M1.canPrepareWeapon(s);
     document.getElementById('pickupBtn').disabled = !M1.pickupOffers(s).length;
-    document.getElementById('clearJamBtn').disabled = !canClearJam(s);
+    document.getElementById('clearJamBtn').disabled = !M1.canClearJam(s);
     document.getElementById('passTurn').disabled = false;
     explainVerbs(s, targets, canFire, crew, crewOk);
     document.getElementById('action-sec').style.display = '';
     M1.Info.refresh(); // task 5: shade this soldier's reachable hexes now that it is his decision
     if (!targets.length) M1.logLine(M1.nameFor(id) + ' has no line of sight to any German this turn.');
     else if (!canFire) M1.logLine(M1.nameFor(id) + '\'s weapon is ' + (s.weaponBroken ? 'broken' : s.weaponJammed ? 'jammed' : 'out of ammo') + ' and cannot fire.');
-    else if (crew && !crewWeaponStanceOk(s)) M1.logLine(M1.nameFor(id) + ' must be crouching to fire the ' + M1.equipmentName(s.weaponId) + ' (&sect;9/7).');
-    else if (crew && guardsAPrisoner(s)) M1.logLine(M1.nameFor(id) + ' is guarding a prisoner and so cannot fire a crew weapon (&sect;11/2).');
+    else if (crew && !M1.crewWeaponStanceOk(s)) M1.logLine(M1.nameFor(id) + ' must be crouching to fire the ' + M1.equipmentName(s.weaponId) + ' (&sect;9/7).');
+    else if (crew && M1.guardsAPrisoner(s)) M1.logLine(M1.nameFor(id) + ' is guarding a prisoner and so cannot fire a crew weapon (&sect;11/2).');
     else if (crew && !crew.snap) M1.logLine(M1.nameFor(id) + ' cannot fire the ' + M1.equipmentName(s.weaponId) + ' again this Round &mdash; two soldiers have already crewed it (&sect;9/7).');
     else if (crew && !crew.aimed) M1.logLine(M1.nameFor(id) + ' crews the ' + M1.equipmentName(s.weaponId) + ' alone, so it can only snap fire (&sect;9/7).');
   }
@@ -454,7 +452,7 @@
   document.getElementById('pickupBtn').addEventListener('click', function () { M1.doPlayerPickup(); });
   document.getElementById('passTurn').addEventListener('click', function () {
     var actor = M1.findSoldier(M1.state.currentActorId);
-    M1.infoPopup({ actor: actor, title: 'Pass', bodyHtml: actor.name + ' passes.' }, function () { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); });
+    M1.infoPopup({ actor: actor, title: 'Pass', bodyHtml: actor.name + ' passes.' }, function () { M1.Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); });
   });
   // §6/7 Move: walk the chosen path one hex at a time, same real Paragraph Check every hex-entry
   // gets in Operations (§5/1's "made during Rounds in this same manner"), except Event Checks are
@@ -504,10 +502,10 @@
       mover.hexId = hexId;
       M1.placeEl(M1.counterEls[mover.id], hexId);
       // Task #69 (docs/43_PREPARE_WEAPON.md). No-op for anyone but a crew-weapon carrier.
-      var unprepared = unprepareWeaponOnMove(mover);
+      var unprepared = M1.unprepareWeaponOnMove(mover);
       M1.infoPopup({
         actor: mover, title: 'Move',
-        bodyHtml: mover.name + ' moves ' + fromHexId + ' &rarr; ' + hexId + ' (' + TERRAIN_LABELS[REAL_TERRAIN[hexId]] + ').' +
+        bodyHtml: mover.name + ' moves ' + fromHexId + ' &rarr; ' + hexId + ' (' + M1.TERRAIN_LABELS[M1.REAL_TERRAIN[hexId]] + ').' +
           (unprepared ? ' The ' + M1.equipmentName(mover.weaponId) + ' is no longer prepared.' : ''),
         fx: function () { M1.FX.trail(fromHexId, hexId); M1.FX.ensureVisible([hexId]); },
       }, function () { M1.runParagraphCheck(mover, stepNext, { skipEventCheck: true }); });
@@ -538,7 +536,7 @@
         // reports and choose(i) picks, so automation never reads the row markup.
         spec.choices = [];
         var html = targets.map(function (t, i) {
-          var dist = FC.hexDistance(actor.hexId, t.hexId);
+          var dist = M1.FC.hexDistance(actor.hexId, t.hexId);
           var note = opts.noteFor ? opts.noteFor(t) : '';
           var odds = opts.hitChanceFor ? opts.hitChanceFor(t) : null;
           var distText = dist === 0 ? 'same hex' : dist + ' hex' + (dist === 1 ? '' : 'es');
@@ -553,15 +551,15 @@
           var oddsHtml = isNaN(oddsNum) || oddsNum === null ? String(odds)
             : Math.max(0, Math.min(100, (oddsNum + 1) * 10)) + '%';
           spec.choices.push({
-            text: M1.stripTags(t.name + ' ' + t.hexId + ' &middot; ' + (TERRAIN_LABELS[REAL_TERRAIN[t.hexId]] || 'unknown') +
+            text: M1.stripTags(t.name + ' ' + t.hexId + ' &middot; ' + (M1.TERRAIN_LABELS[M1.REAL_TERRAIN[t.hexId]] || 'unknown') +
               ' &middot; ' + t.stance + ' &middot; ' + distText + (note ? ' ' + note : '')),
             odds: isNaN(oddsNum) ? null : oddsNum,
-            pick: function () { Dialogs.reset(); cb(t); }, // close without firing onClose — a real pick is not a cancel
+            pick: function () { M1.Dialogs.reset(); cb(t); }, // close without firing onClose — a real pick is not a cancel
           });
           return '<div class="target-row" data-idx="' + i + '">' +
             '<img src="' + M1.currentImgFor(t) + '">' +
             '<span class="target-id"><b>' + t.name + '</b><span class="target-meta">' + t.hexId +
-              ' &middot; ' + (TERRAIN_LABELS[REAL_TERRAIN[t.hexId]] || 'unknown') + ' &middot; ' + t.stance +
+              ' &middot; ' + (M1.TERRAIN_LABELS[M1.REAL_TERRAIN[t.hexId]] || 'unknown') + ' &middot; ' + t.stance +
               ' &middot; ' + distText + '</span>' +
               (note ? '<span class="target-note">' + note + '</span>' : '') +
               (why ? '<span class="target-why">' + why.replace('->', '&rarr;') + '</span>' : '') + '</span>' +
@@ -576,7 +574,7 @@
       onButton: function (id, ctx) { ctx.close(); },
       onClose: function () { if (opts.onCancel) opts.onCancel(); }, // Cancel/Escape only
     };
-    Dialogs.push(spec);
+    M1.Dialogs.push(spec);
   }
   // Shared by the target picker and assaultChain's own resolution so the two can never drift.
   function assaultOpts(attacker, defender, isCharge) {
@@ -604,15 +602,15 @@
   // and isChargeAssault was hardcoded false so the -3 never applied.
   function assaultCandidates(s) {
     if (!s || s.stance !== 'standing') return []; // §11/1: "the attacking soldier must be standing"
-    var budget = Asl.chargeAssaultMaxMP(s.mpa);
+    var budget = M1.Asl.chargeAssaultMaxMP(s.mpa);
     var out = [];
     M1.activeGermans().forEach(function (g) {
-      var dist = FC.hexDistance(s.hexId, g.hexId);
+      var dist = M1.FC.hexDistance(s.hexId, g.hexId);
       if (dist === 0) { out.push({ german: g, isCharge: false, cost: 0, budget: budget }); return; }
       if (dist !== 1) return;
-      var terrain = REAL_TERRAIN[g.hexId];
-      if (terrain && M.isProhibited(terrain)) return;
-      var cost = M.mpCost(terrain);
+      var terrain = M1.REAL_TERRAIN[g.hexId];
+      if (terrain && M1.M.isProhibited(terrain)) return;
+      var cost = M1.M.mpCost(terrain);
       if (cost > budget) return; // can't reach him on half MPA — not a legal target this turn
       out.push({ german: g, isCharge: true, cost: cost, budget: budget });
     });

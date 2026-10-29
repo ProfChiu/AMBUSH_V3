@@ -1,5 +1,20 @@
-'use strict';
 // mission1/core.js (1 of 13) — engine and data aliases, constants, terrain/LOS tables, weapon rules, VP target, difficulty. Stage A cut of mission1.js lines 1-22, 25-365 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (67): AR, Asl, CHART, CW, Checks, D, Dialogs, ENTRY_HEXES, EQ, FC, FloatDialogs, G, GAct,
+//   GERMAN_ACTION_PROGRAMS, GERMAN_ROSTER, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_DB, LOS_ELEV, LOS_TERRAIN, M,
+//   MISSION, MISSION_CARDS, MISSION_CARDS_MOVEMENT, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, SG, SQCHART, Sched,
+//   TERRAIN_LABELS, TERRAIN_ROW, TERRAIN_ROW_INTERIOR_FAR, Toasts, V, VP_REQUIREMENT_RULEBOOK,
+//   WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability, crewFiredThisRound,
+//   crewMates, crewWeaponStanceOk, dialogLog, edgeFeatureBetween, edgeFeatures, germanInstanceId, guardsAPrisoner,
+//   img, isCrewWeapon, losClear, losClearBetween, paragraphHex, resolveGermanCardId, setDifficulty, terrainRowFor,
+//   terrainRowForTarget, unprepareWeaponOnMove, upright, vpReachable, vpRequirement, vpTargetNote, weaponById,
+//   weaponMaxRange, weaponUsable
+// Uses from M1:
+//   core: state
+//   present: logLine, voiceMuted
+//   roster: activeGermans, activeUS, renderVP
+//   operations: capturedGermansAt
+(function () {
+  'use strict';
 /*
  * mission1.js — Ambush! Digital v3, Mission 1: the presentation and game flow over v2's rules engine
  *
@@ -388,3 +403,29 @@
       vpTarget.requirement + ' — leaving ' + vpTarget.margin + ' VP of headroom, about three casualties\' worth.';
   }
 
+  // Exports. core.js creates M1 part-way down (after the engine aliases its state needs),
+  // so everything it shares goes on M1 here, before any other file loads. None is reassigned.
+  M1.AR = AR; M1.Asl = Asl; M1.CHART = CHART; M1.CW = CW; M1.Checks = Checks; M1.D = D; M1.Dialogs = Dialogs;
+  M1.ENTRY_HEXES = ENTRY_HEXES; M1.EQ = EQ; M1.FC = FC; M1.FloatDialogs = FloatDialogs; M1.G = G;
+  M1.GAct = GAct; M1.GERMAN_ACTION_PROGRAMS = GERMAN_ACTION_PROGRAMS; M1.GERMAN_ROSTER = GERMAN_ROSTER;
+  M1.Gr = Gr; M1.HEIGHTS_CANDIDATE_HEXES = HEIGHTS_CANDIDATE_HEXES; M1.LOS = LOS; M1.LOS_DB = LOS_DB;
+  M1.LOS_ELEV = LOS_ELEV; M1.LOS_TERRAIN = LOS_TERRAIN; M1.M = M; M1.MISSION = MISSION;
+  M1.MISSION_CARDS = MISSION_CARDS; M1.MISSION_CARDS_MOVEMENT = MISSION_CARDS_MOVEMENT; M1.Ops = Ops;
+  M1.PARAGRAPHS = PARAGRAPHS; M1.PROGRAMS = PROGRAMS; M1.REAL_TERRAIN = REAL_TERRAIN; M1.SG = SG;
+  M1.SQCHART = SQCHART; M1.Sched = Sched; M1.TERRAIN_LABELS = TERRAIN_LABELS; M1.TERRAIN_ROW = TERRAIN_ROW;
+  M1.TERRAIN_ROW_INTERIOR_FAR = TERRAIN_ROW_INTERIOR_FAR; M1.Toasts = Toasts; M1.V = V;
+  M1.VP_REQUIREMENT_RULEBOOK = VP_REQUIREMENT_RULEBOOK;
+  M1.WEAPONS_REQUIRING_PREPARATION = WEAPONS_REQUIRING_PREPARATION; M1.canClearJam = canClearJam;
+  M1.canPrepareWeapon = canPrepareWeapon; M1.crewFireAvailability = crewFireAvailability;
+  M1.crewFiredThisRound = crewFiredThisRound; M1.crewMates = crewMates;
+  M1.crewWeaponStanceOk = crewWeaponStanceOk; M1.dialogLog = dialogLog;
+  M1.edgeFeatureBetween = edgeFeatureBetween; M1.edgeFeatures = edgeFeatures;
+  M1.germanInstanceId = germanInstanceId; M1.guardsAPrisoner = guardsAPrisoner; M1.img = img;
+  M1.isCrewWeapon = isCrewWeapon; M1.losClear = losClear; M1.losClearBetween = losClearBetween;
+  M1.paragraphHex = paragraphHex; M1.resolveGermanCardId = resolveGermanCardId;
+  M1.setDifficulty = setDifficulty; M1.terrainRowFor = terrainRowFor;
+  M1.terrainRowForTarget = terrainRowForTarget; M1.unprepareWeaponOnMove = unprepareWeaponOnMove;
+  M1.upright = upright; M1.vpReachable = vpReachable; M1.vpRequirement = vpRequirement;
+  M1.vpTargetNote = vpTargetNote; M1.weaponById = weaponById; M1.weaponMaxRange = weaponMaxRange;
+  M1.weaponUsable = weaponUsable;
+})();

@@ -6,7 +6,9 @@
 //   runParagraphCheck, runRoundsConditionChange, selectSoldier, selectedSoldier, standUpCost, startOperations,
 //   walkRoute, walking
 // Uses from M1:
-//   core: state
+//   core: G, LOS_DB, LOS_TERRAIN, M, MISSION, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
+//   TERRAIN_LABELS, canClearJam, edgeFeatureBetween, edgeFeatures, germanInstanceId, losClear, paragraphHex, state,
+//   weaponUsable
 //   present: Cues, FX, Resolve, d10, fmtSigned, infoPopup, logHeader, logLine, pad2, rollPopup, stripTags
 //   info: Info
 //   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, destEls, eventMarkerEls,
@@ -15,10 +17,6 @@
 //   rounds: chooseTarget, doRoundMove, driveNext, renderTrack, startActionRound, visibleEnemyTargets
 //   verbs: chooseOffer, clearJamRoll, estimateHitChance
 //   combat: canExit, checkCapturedGermanEscapes, checkEndingConditions, fireChain, hiddenFireChain
-// Still global (their files are not wrapped yet):
-//   core: G, LOS_DB, LOS_TERRAIN, M, MISSION, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
-//   TERRAIN_LABELS, canClearJam, edgeFeatureBetween, edgeFeatures, germanInstanceId, losClear, paragraphHex,
-//   weaponUsable
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -106,7 +104,7 @@
 
   function startOperations() {
     M1.state.phase = 'movement';
-    M1.state.opsState = Ops.createGameState();
+    M1.state.opsState = M1.Ops.createGameState();
     document.getElementById('tb-phase').textContent = 'Operations';
     document.getElementById('movement-sec').style.display = '';
     M1.Cues.banner('ops', 'Operations', 'Move your squad · no turns until contact');
@@ -122,15 +120,15 @@
   // Shared by renderDestinations() (what to draw) and renderStatusBanner() (what to say).
   function legalAdjacentHexIds(s) {
     if (!s || s.side === 'german' || s.stance === 'prone') return []; // "Prone soldiers cannot move at all" (§5/3)
-    var start = G.parseId(s.hexId);
+    var start = M1.G.parseId(s.hexId);
     var out = [];
-    G.neighbors(start.colIdx, start.rowIdx).forEach(function (n) {
-      var terrain = REAL_TERRAIN[n.id];
-      if (terrain && M.isProhibited(terrain)) return;
+    M1.G.neighbors(start.colIdx, start.rowIdx).forEach(function (n) {
+      var terrain = M1.REAL_TERRAIN[n.id];
+      if (terrain && M1.M.isProhibited(terrain)) return;
       // §7/3: a wall hexside cannot be crossed at all. Operations tracks no Movement Points, so
       // the aperture surcharge has nothing to be charged against here — but "you may not walk
       // through the wall of a building" holds in both phases.
-      if (M.hexsideCost(edgeFeatureBetween(s.hexId, n.id)) === Infinity) return;
+      if (M1.M.hexsideCost(M1.edgeFeatureBetween(s.hexId, n.id)) === Infinity) return;
       out.push(n.id);
     });
     return out;
@@ -158,13 +156,13 @@
   // crawl. It is legal by the same sentence, but it turns every crouching Move into a two-mode
   // choice for a case the crawl already covers, and no stalemate depends on it.
   function standUpCost(s) {
-    return M.stanceChangeCost(!!s.usedFreeStanceChange, !!s.wounded);
+    return M1.M.stanceChangeCost(!!s.usedFreeStanceChange, !!s.wounded);
   }
   function legalDestinationsWithBudget(s, mpaBudget) {
     if (!s || mpaBudget <= 0) return {};
     var occupiedByEnemy = M1.activeGermans().map(function (g) { return g.hexId; });
     if (s.stance !== 'prone') {
-      return M.legalDestinations({ startHexId: s.hexId, mpa: mpaBudget, stance: s.stance, terrainByHexId: REAL_TERRAIN, occupiedByEnemy: occupiedByEnemy, edgeFeatures: edgeFeatures });
+      return M1.M.legalDestinations({ startHexId: s.hexId, mpa: mpaBudget, stance: s.stance, terrainByHexId: M1.REAL_TERRAIN, occupiedByEnemy: occupiedByEnemy, edgeFeatures: M1.edgeFeatures });
     }
     // Prone: the Movement Action buys the stance change first, then moves standing on the rest.
     var upfront = standUpCost(s);
@@ -175,7 +173,7 @@
     out[s.hexId] = { cost: upfront, path: [s.hexId], standUp: true };
     var remaining = mpaBudget - upfront;
     if (remaining > 0) {
-      var onward = M.legalDestinations({ startHexId: s.hexId, mpa: remaining, stance: 'standing', terrainByHexId: REAL_TERRAIN, occupiedByEnemy: occupiedByEnemy, edgeFeatures: edgeFeatures });
+      var onward = M1.M.legalDestinations({ startHexId: s.hexId, mpa: remaining, stance: 'standing', terrainByHexId: M1.REAL_TERRAIN, occupiedByEnemy: occupiedByEnemy, edgeFeatures: M1.edgeFeatures });
       Object.keys(onward).forEach(function (hexId) {
         out[hexId] = { cost: onward[hexId].cost + upfront, path: onward[hexId].path, standUp: true };
       });
@@ -201,14 +199,14 @@
   // ---------------------------------------------------------------------
   function comboMoveBudget(s) { return Math.floor(s.mpa / 2) - (s.comboMoveCostUsed || 0); }
   function completeTurn(soldierId) {
-    if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, soldierId); M1.renderTrack(); M1.driveNext(); }
+    if (M1.state.phase !== 'over') { M1.Sched.completeAction(M1.state.track, soldierId); M1.renderTrack(); M1.driveNext(); }
   }
   // Called once a snap fire resolves. Offers a follow-up (another snap fire, or a move within
   // whatever half-MPA budget remains) if this was the turn's first sub-action and something is
   // actually still available; otherwise just ends the turn.
   function finishFireStep(s, onEndTurn) {
     if (M1.state.phase === 'over' || s.comboStepsUsed > 0) { onEndTurn(); return; }
-    var canFireAgain = weaponUsable(s) && M1.visibleEnemyTargets(s).length > 0;
+    var canFireAgain = M1.weaponUsable(s) && M1.visibleEnemyTargets(s).length > 0;
     var moveDests = legalDestinationsWithBudget(s, comboMoveBudget(s));
     var canMove = Object.keys(moveDests).length > 0;
     if (!canFireAgain && !canMove) { onEndTurn(); return; }
@@ -221,7 +219,7 @@
     var half = Math.floor(s.mpa / 2);
     if (M1.state.phase === 'over' || s.comboStepsUsed > 0 || moveCostSoFar > half) { onEndTurn(); return; }
     s.comboMoveCostUsed = moveCostSoFar;
-    if (!(weaponUsable(s) && M1.visibleEnemyTargets(s).length > 0)) { onEndTurn(); return; }
+    if (!(M1.weaponUsable(s) && M1.visibleEnemyTargets(s).length > 0)) { onEndTurn(); return; }
     offerComboChoice(s, { fire: true, move: false, moveDests: {} }, onEndTurn);
   }
   function offerComboChoice(s, avail, onEndTurn) {
@@ -294,15 +292,15 @@
     seen[fromHexId] = true;
     while (queue.length) {
       var entry = queue.shift(), hexId = entry[0], path = entry[1];
-      var parsed = G.parseId(hexId);
+      var parsed = M1.G.parseId(hexId);
       if (!parsed) continue;
-      var nbrs = G.neighbors(parsed.colIdx, parsed.rowIdx);
+      var nbrs = M1.G.neighbors(parsed.colIdx, parsed.rowIdx);
       for (var i = 0; i < nbrs.length; i++) {
         var nid = nbrs[i].id;
         if (seen[nid]) continue;
-        var terrain = REAL_TERRAIN[nid];
-        if (terrain && M.isProhibited(terrain)) continue;
-        if (M.hexsideCost(edgeFeatureBetween(hexId, nid)) === Infinity) continue; // wall
+        var terrain = M1.REAL_TERRAIN[nid];
+        if (terrain && M1.M.isProhibited(terrain)) continue;
+        if (M1.M.hexsideCost(M1.edgeFeatureBetween(hexId, nid)) === Infinity) continue; // wall
         var next = path.concat([nid]);
         if (nid === goalHexId) return next;
         seen[nid] = true;
@@ -403,8 +401,8 @@
     M1.infoPopup({
       actor: mover, title: group.length > 1 ? 'Group Move' : 'Move',
       bodyHtml: (group.length > 1
-        ? names + ' move together ' + fromHexId + ' &rarr; ' + hexId + ' (' + TERRAIN_LABELS[REAL_TERRAIN[hexId]] + ') &mdash; one Paragraph Check for the group (&sect;5/3).'
-        : s.name + ' moves ' + fromHexId + ' &rarr; ' + hexId + ' (' + TERRAIN_LABELS[REAL_TERRAIN[hexId]] + ').') +
+        ? names + ' move together ' + fromHexId + ' &rarr; ' + hexId + ' (' + M1.TERRAIN_LABELS[M1.REAL_TERRAIN[hexId]] + ') &mdash; one Paragraph Check for the group (&sect;5/3).'
+        : s.name + ' moves ' + fromHexId + ' &rarr; ' + hexId + ' (' + M1.TERRAIN_LABELS[M1.REAL_TERRAIN[hexId]] + ').') +
         (prisoners.length ? '<br>' + prisoners.map(function (g) { return g.name; }).join(', ') + ' (captured) comes along under guard (&sect;11/2).' : ''),
     }, function () {
       M1.checkCapturedGermanEscapes(); // §11/2: anyone left behind unguarded is freed right now
@@ -438,8 +436,8 @@
     exitBtn.disabled = !M1.canExit(s);
     exitBtn.title = M1.canExit(s) ? s.name + ' can leave the map from ' + s.hexId + '.' : 'Only from a north-edge entry hex (A1–J1).';
     var jamBtn = document.getElementById('clearJamOpsBtn');
-    jamBtn.disabled = !canClearJam(s);
-    jamBtn.title = s.weaponJammed ? (canClearJam(s) ? s.name + '\'s weapon is jammed — attempt to clear it (§9/4).' : 'Must be standing or crouching to clear a jam.') : 'No jammed weapon to clear.';
+    jamBtn.disabled = !M1.canClearJam(s);
+    jamBtn.title = s.weaponJammed ? (M1.canClearJam(s) ? s.name + '\'s weapon is jammed — attempt to clear it (§9/4).' : 'Must be standing or crouching to clear a jam.') : 'No jammed weapon to clear.';
   }
   // A stance change is a finished action, and it reads as one: the stance stamps onto his counter
   // with what it allows, the ring closes, and the move markers fade in only after (Wan, 2026-10-23).
@@ -472,7 +470,7 @@
   document.getElementById('clearJamOpsBtn').addEventListener('click', function () {
     if (M1.state.phase !== 'movement') return;
     var s = selectedSoldier();
-    if (!canClearJam(s)) return;
+    if (!M1.canClearJam(s)) return;
     document.getElementById('clearJamOpsBtn').disabled = true;
     M1.clearJamRoll(s, function () { renderHud(); renderStatusBanner(); });
   });
@@ -502,16 +500,16 @@
   // the caller. JUDGMENT CALL: use the given soldier's PC for the whole scan pass rather than
   // deriving a per-hex PC, documented in docs/31_VICTORY.md.
   function buildOpsCtx(pcSoldier) {
-    return Ops.buildContext({
+    return M1.Ops.buildContext({
       rollDie: M1.d10,
-      activationLevel: MISSION.activation_by_condition[String(M1.state.opsState.condition)],
+      activationLevel: M1.MISSION.activation_by_condition[String(M1.state.opsState.condition)],
       defaultPcRating: pcSoldier.PC,
       state: M1.state.opsState,
       // paragraphHex: the incoming id comes straight from a paragraph's `hex` field, so it is
       // hyphenated ("T-8") and must be normalised before it reaches the LOS database.
       // {id, pc}: each soldier in sight rolls his own PC check (Phase 8c; it was the mover's PC).
-      soldiersWhoCanSee: function (hexId) { var h = paragraphHex(hexId); return M1.activeUS().filter(function (s) { return losClear(s.hexId, h, s.stance); }).map(function (s) { return { id: s.id, pc: s.PC }; }); },
-      isGermanRemovedOnce: function (numericId) { var g = M1.state.germans[germanInstanceId(numericId)]; return !!(g && !g.isActive); },
+      soldiersWhoCanSee: function (hexId) { var h = M1.paragraphHex(hexId); return M1.activeUS().filter(function (s) { return M1.losClear(s.hexId, h, s.stance); }).map(function (s) { return { id: s.id, pc: s.PC }; }); },
+      isGermanRemovedOnce: function (numericId) { var g = M1.state.germans[M1.germanInstanceId(numericId)]; return !!(g && !g.isActive); },
       onEnterHex: function (hexId) { M1.currentHex = hexId; M1.currentParagraph = null; },
       onEnterParagraph: function (num) { M1.currentParagraph = num; },
       onCheckResolved: function (kind, modifier, roll, result, soldier) {
@@ -522,15 +520,15 @@
       // soldier is never "under" one; a hex is a bridge when the LOS data notes a crossing.
       moverIs: function (test) {
         var h = pcSoldier.hexId;
-        if (test === 'in_clear') return /^clear/.test(LOS_TERRAIN[h] || '');
-        if (test === 'on_bridge') return /bridge/i.test((LOS_DB.hexes[h] || {}).notes || '');
+        if (test === 'in_clear') return /^clear/.test(M1.LOS_TERRAIN[h] || '');
+        if (test === 'on_bridge') return /bridge/i.test((M1.LOS_DB.hexes[h] || {}).notes || '');
         return false;
       },
       onHiddenFire: function (spec) { M1.pendingSteps.push({ type: 'hidden_fire', hex: M1.currentHex, paragraph: M1.currentParagraph, spec: spec }); },
       // A "place_event_marker"/"place_landmark" op with no explicit hex in its paragraph data
       // means "this hex" (the one whose Paragraph Check is running) — fall back to currentHex.
       onPlaceEventMarker: function (hexId) { M1.pendingSteps.push({ type: 'event_marker', hex: M1.currentHex, paragraph: M1.currentParagraph, hexId: hexId || M1.currentHex }); },
-      onPlaceLandmark: function (hexId) { M1.pendingSteps.push({ type: 'landmark', hex: M1.currentHex, paragraph: M1.currentParagraph, hexId: paragraphHex(hexId) || M1.currentHex }); },
+      onPlaceLandmark: function (hexId) { M1.pendingSteps.push({ type: 'landmark', hex: M1.currentHex, paragraph: M1.currentParagraph, hexId: M1.paragraphHex(hexId) || M1.currentHex }); },
       onSetCondition: function (to) { M1.pendingConditionChange = to; },
       onAwardVP: function (amount, note) { M1.pendingSteps.push({ type: 'award_vp', hex: M1.currentHex, paragraph: M1.currentParagraph, amount: amount, note: note }); },
       onRunProcedure: function (name) { M1.pendingSteps.push({ type: 'run_procedure', hex: M1.currentHex, paragraph: M1.currentParagraph, name: name }); },
@@ -544,9 +542,9 @@
     opts = opts || {};
     M1.pendingSteps = []; M1.currentHex = mover.hexId; M1.currentParagraph = null;
     var ctx = buildOpsCtx(mover);
-    var result = Ops.paragraphCheck({
-      hexId: mover.hexId, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS,
-      programs: PROGRAMS, state: M1.state.opsState, ctx: ctx, skipEventCheck: !!opts.skipEventCheck,
+    var result = M1.Ops.paragraphCheck({
+      hexId: mover.hexId, mission: '1', missionCards: M1.MISSION_CARDS, paragraphs: M1.PARAGRAPHS,
+      programs: M1.PROGRAMS, state: M1.state.opsState, ctx: ctx, skipEventCheck: !!opts.skipEventCheck,
       rollForEvent: function () {
         var a = M1.d10(), b = M1.d10();
         M1.pendingSteps.push({ type: 'event_roll', hex: mover.hexId, paragraph: null, a: a, b: b, sum: a + b });
@@ -584,7 +582,7 @@
     // markers follow.
     Object.keys(M1.eventMarkerEls).forEach(function (id) { M1.eventMarkerEls[id].remove(); });
     M1.eventMarkerEls = {};
-    var result = Ops.conditionChange({ to: to, occupiedHexIds: occupiedHexIds, mission: '1', missionCards: MISSION_CARDS, paragraphs: PARAGRAPHS, programs: PROGRAMS, state: M1.state.opsState, ctx: ctx, stopOnActivation: stopOnActivation });
+    var result = M1.Ops.conditionChange({ to: to, occupiedHexIds: occupiedHexIds, mission: '1', missionCards: M1.MISSION_CARDS, paragraphs: M1.PARAGRAPHS, programs: M1.PROGRAMS, state: M1.state.opsState, ctx: ctx, stopOnActivation: stopOnActivation });
 
     var entries = result.log; // every hex's outcome, not just ones with a paragraph chain — a
     // bare Event-marker-placed-no-roll entry (§5/5's own text) is still shown via pendingSteps.
@@ -650,7 +648,7 @@
       if (i >= plan.length) { M1.noteContact(mover, chain); M1.afterParagraphChain(chain, next); return; }
       var step = plan[i]; i++;
       if (step.type === 'paragraph_text') {
-        var text = PARAGRAPHS[step.num];
+        var text = M1.PARAGRAPHS[step.num];
         M1.infoPopup({
           actor: mover, title: 'Paragraph ' + step.num, variant: 'wide', bodyIsParagraph: true,
           bodyHtml: text || '(no text on file)', logHtml: 'Paragraph <b>' + step.num + '</b> read.',
@@ -669,7 +667,7 @@
     if (step.type === 'check') {
       var label = step.kind === 'activation' ? 'Activation Check' : 'Perception Check';
       var roller = (step.soldierId && M1.findSoldier(step.soldierId)) || mover;
-      var rating = step.kind === 'activation' ? MISSION.activation_by_condition[String(M1.state.opsState.condition)] : roller.PC;
+      var rating = step.kind === 'activation' ? M1.MISSION.activation_by_condition[String(M1.state.opsState.condition)] : roller.PC;
       if (step.soldierId) label += ' — ' + roller.name;
       M1.rollPopup({
         actor: roller, title: label, kind: 'single', presetValue: step.roll,

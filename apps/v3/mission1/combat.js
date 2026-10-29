@@ -2,7 +2,9 @@
 // Exports to M1 (13): applyCapture, applyDamage, assaultChain, canExit, checkCapturedGermanEscapes,
 //   checkEndingConditions, endRound, fireChain, grenadeChain, hiddenFireChain, recordCasualty, toHitCard, tryExit
 // Uses from M1:
-//   core: state
+//   core: Asl, CHART, D, ENTRY_HEXES, EQ, FC, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_TERRAIN, Sched,
+//   TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, state, terrainRowFor, vpRequirement, vpTargetNote,
+//   weaponById
 //   present: Cues, FX, damageStrip, fmtSigned, hitStrip, infoPopup, logHeader, logLine, pad2, rollPopup
 //   roster: activeGermans, activeUS, addGroundItem, allGermans, counterEls, equipmentName, renderRoster, renderVP,
 //   updateCounterVisual
@@ -10,9 +12,6 @@
 //   contact: estimateHitChanceBreakdown, hitBreakdownHtml
 //   rounds: assaultOpts, chooseTarget, renderTrack, startActionRound, wakeUpUnawareInHex
 //   verbs: activeSoldiersIn, carryCandidates, grenadeMods, isInteriorHex, markExfiltrated
-// Still global (their files are not wrapped yet):
-//   core: Asl, CHART, D, ENTRY_HEXES, EQ, FC, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_TERRAIN, Sched,
-//   TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, terrainRowFor, vpRequirement, vpTargetNote, weaponById
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -39,7 +38,7 @@
   var HIT_TEXT = { hit: '<b style="color:var(--clear)">HIT</b>.', miss: 'Miss.' };
   var HIT_WORDS = { hit: '<b>HIT</b>', miss: 'miss' };
   function toHitCard(o, onHit, onMiss) {
-    var result = o.result || function (roll) { return FC.resolveHitRoll(o.chance, roll) === 'hit' ? 'hit' : 'miss'; };
+    var result = o.result || function (roll) { return M1.FC.resolveHitRoll(o.chance, roll) === 'hit' ? 'hit' : 'miss'; };
     var text = o.text || HIT_TEXT, words = o.logWords || HIT_WORDS, fx = o.fx;
     M1.rollPopup({ actor: o.actor, title: o.title, kind: 'single', variant: o.variant, contextHtml: o.contextHtml,
       strip: o.strip !== undefined ? o.strip : o.result ? undefined : M1.hitStrip(o.chance),
@@ -61,9 +60,9 @@
   // §9/1 Fire Combat Procedure
   // ---------------------------------------------------------------------
   function fireChain(firer, target, fireType, onDone) {
-    var weapon = weaponById(firer.weaponId);
-    var range = FC.hexDistance(firer.hexId, target.hexId);
-    var band = FC.resolveRangeBand(weapon, range);
+    var weapon = M1.weaponById(firer.weaponId);
+    var range = M1.FC.hexDistance(firer.hexId, target.hexId);
+    var band = M1.FC.resolveRangeBand(weapon, range);
     // §6/5/§11/4: "Even an attempted attack... makes all US soldiers in the target hex aware" —
     // triggers on the attempt itself, not the outcome, and fire has no hit-chance modifier keyed
     // to awareness (unlike assault's WS-negation), so it's safe to fire this immediately.
@@ -77,10 +76,10 @@
     function jamStep() {
       M1.rollPopup({ actor: { left: firer, right: target }, title: 'Jam Check', kind: 'percentile', variant: 'wide', 
         contextHtml: 'Weapon: ' + weapon.name + '.',
-        explain: function (roll) { var jam = FC.resolveJamCheck(weapon, fireType, roll); return jam.jammed ? '<b style="color:#e05a4a;">JAMMED</b> &mdash; stays jammed until cleared (&sect;9/4).' : 'No jam.'; },
-        logText: function (roll) { var jam = FC.resolveJamCheck(weapon, fireType, roll); return 'Jam check: <span class="roll">' + M1.pad2(roll) + '</span> vs &le;' + M1.pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
-        fxLanded: function (roll) { if (FC.resolveJamCheck(weapon, fireType, roll).jammed) { tracer.resolve('jam'); M1.FX.badge(firer.hexId, 'JAMMED', 'bad'); } },
-      }, function (roll) { if (FC.resolveJamCheck(weapon, fireType, roll).jammed) { firer.weaponJammed = true; onDone(); return; } hitStep(); });
+        explain: function (roll) { var jam = M1.FC.resolveJamCheck(weapon, fireType, roll); return jam.jammed ? '<b style="color:#e05a4a;">JAMMED</b> &mdash; stays jammed until cleared (&sect;9/4).' : 'No jam.'; },
+        logText: function (roll) { var jam = M1.FC.resolveJamCheck(weapon, fireType, roll); return 'Jam check: <span class="roll">' + M1.pad2(roll) + '</span> vs &le;' + M1.pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
+        fxLanded: function (roll) { if (M1.FC.resolveJamCheck(weapon, fireType, roll).jammed) { tracer.resolve('jam'); M1.FX.badge(firer.hexId, 'JAMMED', 'bad'); } },
+      }, function (roll) { if (M1.FC.resolveJamCheck(weapon, fireType, roll).jammed) { firer.weaponJammed = true; onDone(); return; } hitStep(); });
     }
     function hitStep() {
       var b = M1.estimateHitChanceBreakdown(firer, target, fireType);
@@ -93,16 +92,16 @@
     function damageStep() {
       M1.rollPopup({ actor: { left: firer, right: target }, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: M1.damageStrip(weapon),
         explain: function (roll) {
-          var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-          var ns = FC.escalateDamageResult(target.status, displayCode(target, dmg.code));
+          var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND);
+          var ns = M1.FC.escalateDamageResult(target.status, displayCode(target, dmg.code));
           return '<b>' + dmg.code + ' = ' + dmg.label + '</b> &mdash; ' + target.name + ' is now <b>' + ns.toUpperCase() + '</b>.' +
             fieldDressNote(target, dmg.code);
         },
-        logText: function (roll) { var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND); return 'Damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + ' = ' + dmg.label + '</b>.'; },
+        logText: function (roll) { var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND); return 'Damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + ' = ' + dmg.label + '</b>.'; },
         fxLanded: function (roll) { M1.FX.floatDie(target.hexId, roll, 'bad'); },
       }, function (roll) {
-        var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-        applyDamage(target, D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
+        var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND);
+        applyDamage(target, M1.D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
         if (M1.state.phase === 'over') { onDone(); return; }
         ammoStep();
       });
@@ -113,12 +112,12 @@
     function ammoStep() {
       if (firer.side === 'german') { onDone(); return; }
       M1.rollPopup({ actor: firer, title: 'Ammo Check', kind: 'percentile', contextHtml: 'Weapon: ' + weapon.name + '.',
-        explain: function (roll) { var ammo = FC.resolveAmmoExpenditure(weapon, roll); return ammo.expended ? 'Clip spent.' : 'Clip not used up.'; },
-        logText: function (roll) { var ammo = FC.resolveAmmoExpenditure(weapon, roll); return 'Ammo: <span class="roll">' + M1.pad2(roll) + '</span> &rarr; ' + (ammo.expended ? 'clip spent.' : 'not used up.'); },
-        fxLanded: function (roll) { if (FC.resolveAmmoExpenditure(weapon, roll).expended) M1.FX.badge(firer.hexId, 'CLIP SPENT', 'neutral'); },
+        explain: function (roll) { var ammo = M1.FC.resolveAmmoExpenditure(weapon, roll); return ammo.expended ? 'Clip spent.' : 'Clip not used up.'; },
+        logText: function (roll) { var ammo = M1.FC.resolveAmmoExpenditure(weapon, roll); return 'Ammo: <span class="roll">' + M1.pad2(roll) + '</span> &rarr; ' + (ammo.expended ? 'clip spent.' : 'not used up.'); },
+        fxLanded: function (roll) { if (M1.FC.resolveAmmoExpenditure(weapon, roll).expended) M1.FX.badge(firer.hexId, 'CLIP SPENT', 'neutral'); },
       }, function (roll) {
-        var ammo = FC.resolveAmmoExpenditure(weapon, roll);
-        if (ammo.expended) { EQ.expendAmmo(firer.inventory, firer.weaponId); M1.renderRoster(); }
+        var ammo = M1.FC.resolveAmmoExpenditure(weapon, roll);
+        if (ammo.expended) { M1.EQ.expendAmmo(firer.inventory, firer.weaponId); M1.renderRoster(); }
         onDone();
       });
     }
@@ -129,26 +128,26 @@
   // trace, no Ammo Check (§9/5: Germans expend none); terrain is the target's own hex, read as
   // from a distance. Rounds do not commence.
   function hiddenFireChain(target, spec, onDone) {
-    var weapon = weaponById(spec.weaponId);
-    var row = LOS.BUILDING_TERRAIN[LOS_TERRAIN[target.hexId]] ? TERRAIN_ROW_INTERIOR_FAR : terrainRowFor(target.hexId);
+    var weapon = M1.weaponById(spec.weaponId);
+    var row = M1.LOS.BUILDING_TERRAIN[M1.LOS_TERRAIN[target.hexId]] ? M1.TERRAIN_ROW_INTERIOR_FAR : M1.terrainRowFor(target.hexId);
     if (!target.isActive) { onDone(); return; }
-    if (!FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, target.stance)) {
+    if (!M1.FC.canBeFiredAt(M1.CHART.FIRE_MODS_TERRAIN, row, target.stance)) {
       M1.infoPopup({ actor: target, title: 'Hidden rifleman', bodyHtml: 'A shot cracks out of nowhere, but ' + target.name + ' cannot be fired at where he lies.' }, onDone);
       return;
     }
-    var easyMod = D.hitChanceMod(M1.state.difficulty, 'german');
+    var easyMod = M1.D.hitChanceMod(M1.state.difficulty, 'german');
     var b = {
-      baseHit: CHART.BASE_HIT[spec.range], band: spec.range, terrainMod: FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, target.stance),
+      baseHit: M1.CHART.BASE_HIT[spec.range], band: spec.range, terrainMod: M1.FC.resolveTerrainMod(M1.CHART.FIRE_MODS_TERRAIN, row, target.stance),
       ws: spec.weaponSkill, fireType: spec.fireType, easyMod: easyMod,
     };
-    b.clamped = FC.computeFinalHitChance({ baseHit: b.baseHit, terrainMod: b.terrainMod, fireType: b.fireType, weaponSkill: b.ws, otherMods: easyMod ? [easyMod] : [] }).clamped;
+    b.clamped = M1.FC.computeFinalHitChance({ baseHit: b.baseHit, terrainMod: b.terrainMod, fireType: b.fireType, weaponSkill: b.ws, otherMods: easyMod ? [easyMod] : [] }).clamped;
     M1.infoPopup({ actor: target, title: 'Hidden rifleman',
       bodyHtml: target.name + ' is fired upon by a hidden rifleman: ' + spec.fireType + ', ' + spec.range + ' range, ' + weapon.name + ', Weapon Skill ' + spec.weaponSkill + '.' }, jamStep);
     function jamStep() {
       M1.rollPopup({ actor: target, title: 'Jam Check', kind: 'percentile', variant: 'wide', contextHtml: 'Weapon: ' + weapon.name + '.',
-        explain: function (roll) { return FC.resolveJamCheck(weapon, spec.fireType, roll).jammed ? '<b style="color:#e05a4a;">JAMMED</b> &mdash; the shot never comes.' : 'No jam.'; },
-        logText: function (roll) { var jam = FC.resolveJamCheck(weapon, spec.fireType, roll); return 'Hidden rifleman, jam check: <span class="roll">' + M1.pad2(roll) + '</span> vs &le;' + M1.pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
-      }, function (roll) { if (FC.resolveJamCheck(weapon, spec.fireType, roll).jammed) { onDone(); return; } hitStep(); });
+        explain: function (roll) { return M1.FC.resolveJamCheck(weapon, spec.fireType, roll).jammed ? '<b style="color:#e05a4a;">JAMMED</b> &mdash; the shot never comes.' : 'No jam.'; },
+        logText: function (roll) { var jam = M1.FC.resolveJamCheck(weapon, spec.fireType, roll); return 'Hidden rifleman, jam check: <span class="roll">' + M1.pad2(roll) + '</span> vs &le;' + M1.pad2(jam.threshold) + ' &rarr; ' + (jam.jammed ? '<b>JAMMED</b>.' : 'no jam.'); },
+      }, function (roll) { if (M1.FC.resolveJamCheck(weapon, spec.fireType, roll).jammed) { onDone(); return; } hitStep(); });
     }
     function hitStep() {
       toHitCard({ actor: target, title: 'Hit Chance & To-Hit', variant: 'wide', contextHtml: M1.hitBreakdownHtml(b),
@@ -158,15 +157,15 @@
     function damageStep() {
       M1.rollPopup({ actor: target, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: M1.damageStrip(weapon),
         explain: function (roll) {
-          var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-          var ns = FC.escalateDamageResult(target.status, displayCode(target, dmg.code));
+          var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND);
+          var ns = M1.FC.escalateDamageResult(target.status, displayCode(target, dmg.code));
           return '<b>' + dmg.code + ' = ' + dmg.label + '</b> &mdash; ' + target.name + ' is now <b>' + ns.toUpperCase() + '</b>.' + fieldDressNote(target, dmg.code);
         },
-        logText: function (roll) { var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND); return 'Hidden rifleman, damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + ' = ' + dmg.label + '</b>.'; },
+        logText: function (roll) { var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND); return 'Hidden rifleman, damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + ' = ' + dmg.label + '</b>.'; },
         fxLanded: function (roll) { M1.FX.floatDie(target.hexId, roll, 'bad'); },
       }, function (roll) {
-        var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-        applyDamage(target, D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
+        var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND);
+        applyDamage(target, M1.D.consumeFieldDressing(M1.state.difficulty, target, dmg.code), 'killed');
         onDone();
       });
     }
@@ -184,14 +183,14 @@
   // here as a partial/untested version.
   // ---------------------------------------------------------------------
   function grenadeChain(thrower, targetHexId, onDone) {
-    var range = FC.hexDistance(thrower.hexId, targetHexId);
-    var band = FC.resolveRangeBand(weaponById(Gr.weaponIdFor('grenade', M1.isInteriorHex(targetHexId))), range);
+    var range = M1.FC.hexDistance(thrower.hexId, targetHexId);
+    var band = M1.FC.resolveRangeBand(M1.weaponById(M1.Gr.weaponIdFor('grenade', M1.isInteriorHex(targetHexId))), range);
     var mods = M1.grenadeMods(thrower, targetHexId);
-    var baseHit = CHART.BASE_HIT[band];
+    var baseHit = M1.CHART.BASE_HIT[band];
     // Gr.computeHitChance takes a flat list of modifiers, so Easy mode's is just another entry.
-    var easyMod = D.hitChanceMod(M1.state.difficulty, thrower.side);
+    var easyMod = M1.D.hitChanceMod(M1.state.difficulty, thrower.side);
     if (easyMod) mods = mods.concat([easyMod]);
-    var hitChance = Gr.computeHitChance(baseHit, mods);
+    var hitChance = M1.Gr.computeHitChance(baseHit, mods);
     // §11/4/§6/5's "even an attempted attack wakes the hex" rule, already applied the same way
     // to fire and assault attempts — a thrown grenade is no different.
     if (thrower.side === 'german') M1.wakeUpUnawareInHex(targetHexId);
@@ -201,7 +200,7 @@
     // grout/grin is exactly this "always certain" case, docs/26_GRENADES.md), so it happens right
     // here rather than at the end the way a personal weapon's probabilistic ammo check does.
     if (thrower.inventory) {
-      EQ.expendGrenade(thrower.inventory);
+      M1.EQ.expendGrenade(thrower.inventory);
       if (thrower.side !== 'german') M1.renderRoster();
     }
 
@@ -223,23 +222,23 @@
     }
     function scatterStep() {
       M1.rollPopup({ actor: thrower, title: 'Grenade Scatter', kind: 'single', contextHtml: 'Missed the target hex &mdash; rolling to see where it actually lands (&sect;10/3).',
-        explain: function (roll) { return 'Lands in <b>' + Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId + '</b>.'; },
-        logText: function (roll) { return 'Scatter: <span class="roll">' + roll + '</span> &rarr; lands in ' + Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId + '.'; },
-        fxLanded: function (roll) { var land = Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId; M1.FX.trail(targetHexId, land); M1.FX.ensureVisible([land]); },
-      }, function (roll) { resolveLanding(Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId); });
+        explain: function (roll) { return 'Lands in <b>' + M1.Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId + '</b>.'; },
+        logText: function (roll) { return 'Scatter: <span class="roll">' + roll + '</span> &rarr; lands in ' + M1.Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId + '.'; },
+        fxLanded: function (roll) { var land = M1.Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId; M1.FX.trail(targetHexId, land); M1.FX.ensureVisible([land]); },
+      }, function (roll) { resolveLanding(M1.Gr.resolveScatter(thrower.hexId, targetHexId, roll).hexId); });
     }
     function resolveLanding(landHexId) {
       M1.rollPopup({ actor: thrower, title: 'Dud Check', kind: 'percentile', contextHtml: 'Grenade landed in ' + landHexId + '.',
-        explain: function (roll) { return Gr.resolveDudCheck(roll).dud ? '<b>DUD</b> &mdash; no effect.' : 'Explodes!'; },
-        logText: function (roll) { return 'Dud check: <span class="roll">' + M1.pad2(roll) + '</span> &rarr; ' + (Gr.resolveDudCheck(roll).dud ? 'dud.' : 'explodes.'); },
+        explain: function (roll) { return M1.Gr.resolveDudCheck(roll).dud ? '<b>DUD</b> &mdash; no effect.' : 'Explodes!'; },
+        logText: function (roll) { return 'Dud check: <span class="roll">' + M1.pad2(roll) + '</span> &rarr; ' + (M1.Gr.resolveDudCheck(roll).dud ? 'dud.' : 'explodes.'); },
         fxLanded: function (roll) {
-          var dud = Gr.resolveDudCheck(roll).dud;
+          var dud = M1.Gr.resolveDudCheck(roll).dud;
           M1.FX.blast(landHexId, dud);
           M1.FX.badge(landHexId, dud ? 'DUD' : 'BOOM', dud ? 'neutral' : 'bad');
         },
       }, function (roll) {
-        if (Gr.resolveDudCheck(roll).dud) { onDone(); return; }
-        var landWeapon = weaponById(Gr.weaponIdFor('grenade', M1.isInteriorHex(landHexId)));
+        if (M1.Gr.resolveDudCheck(roll).dud) { onDone(); return; }
+        var landWeapon = M1.weaponById(M1.Gr.weaponIdFor('grenade', M1.isInteriorHex(landHexId)));
         damageEach(M1.activeSoldiersIn(landHexId), 0, landWeapon);
       });
     }
@@ -250,18 +249,18 @@
       var victim = occupants[i];
       M1.rollPopup({ actor: victim, title: 'Grenade Damage — ' + victim.name, kind: 'single', contextHtml: 'Damage roll on the ' + landWeapon.name + ' row.', strip: M1.damageStrip(landWeapon),
         explain: function (roll) {
-          var dmg = FC.resolveDamage(landWeapon, roll, CHART.DAMAGE_LEGEND);
-          var code = dmg.code === 'X' ? FC.resolveXCode(victim.stance === 'prone') : dmg.code;
-          var ns = FC.escalateDamageResult(victim.status, displayCode(victim, code));
+          var dmg = M1.FC.resolveDamage(landWeapon, roll, M1.CHART.DAMAGE_LEGEND);
+          var code = dmg.code === 'X' ? M1.FC.resolveXCode(victim.stance === 'prone') : dmg.code;
+          var ns = M1.FC.escalateDamageResult(victim.status, displayCode(victim, code));
           return '<b>' + dmg.code + ' = ' + dmg.label + '</b> &mdash; ' + victim.name + ' is now <b>' + ns.toUpperCase() + '</b>.' +
             fieldDressNote(victim, code);
         },
-        logText: function (roll) { var dmg = FC.resolveDamage(landWeapon, roll, CHART.DAMAGE_LEGEND); return 'Grenade damage (' + victim.name + '): <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + '</b>.'; },
+        logText: function (roll) { var dmg = M1.FC.resolveDamage(landWeapon, roll, M1.CHART.DAMAGE_LEGEND); return 'Grenade damage (' + victim.name + '): <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + '</b>.'; },
         fxLanded: function (roll) { M1.FX.floatDie(victim.hexId, roll, 'bad'); },
       }, function (roll) {
-        var dmg = FC.resolveDamage(landWeapon, roll, CHART.DAMAGE_LEGEND);
-        var code = dmg.code === 'X' ? FC.resolveXCode(victim.stance === 'prone') : dmg.code;
-        applyDamage(victim, D.consumeFieldDressing(M1.state.difficulty, victim, code), 'grenade');
+        var dmg = M1.FC.resolveDamage(landWeapon, roll, M1.CHART.DAMAGE_LEGEND);
+        var code = dmg.code === 'X' ? M1.FC.resolveXCode(victim.stance === 'prone') : dmg.code;
+        applyDamage(victim, M1.D.consumeFieldDressing(M1.state.difficulty, victim, code), 'grenade');
         if (M1.state.phase === 'over') { onDone(); return; }
         damageEach(occupants, i + 1, landWeapon);
       });
@@ -274,7 +273,7 @@
   function assaultChain(attacker, defender, opts, onDone) {
     var chooseCapture = !!opts.capture, isCharge = !!opts.charge;
     var weaponId = chooseCapture ? 'asltc' : 'asltk';
-    var weapon = weaponById(weaponId);
+    var weapon = M1.weaponById(weaponId);
     var lunge = { resolve: function () {} }; // board effect (task 4); declared before the card can show
     M1.infoPopup({
       actor: { left: attacker, right: defender },
@@ -289,13 +288,13 @@
       // defender's PRE-attack awareness) first, since an unaware defender's WS is negated for
       // THIS assault regardless of the fact that the attack itself is what wakes him up.
       if (attacker.side === 'german') M1.wakeUpUnawareInHex(defender.hexId);
-      var hitChance = Asl.computeHitChance(CHART.BASE_HIT.assault, mods);
+      var hitChance = M1.Asl.computeHitChance(M1.CHART.BASE_HIT.assault, mods);
       // assaultrules.js clamps before Easy mode's modifier exists, so it is applied and re-clamped
       // here rather than by teaching that tested module about a non-rulebook concept.
-      var easyMod = D.hitChanceMod(M1.state.difficulty, attacker.side);
-      if (easyMod) hitChance = D.applyHitMod(hitChance, easyMod);
+      var easyMod = M1.D.hitChanceMod(M1.state.difficulty, attacker.side);
+      if (easyMod) hitChance = M1.D.applyHitMod(hitChance, easyMod);
       // Spell out every §11/4 modifier that actually applied, so the number is auditable.
-      var parts = ['Base ' + CHART.BASE_HIT.assault, M1.fmtSigned(attacker.WS) + ' attacker WS'];
+      var parts = ['Base ' + M1.CHART.BASE_HIT.assault, M1.fmtSigned(attacker.WS) + ' attacker WS'];
       if ((mods.defenderWS || 0) >= 1 && !mods.defenderPanicked && !mods.defenderWounded) parts.push('&minus;' + mods.defenderWS + ' defender WS');
       if (isCharge) parts.push('&minus;3 charge assault');
       if (mods.attackerWounded) parts.push('&minus;2 attacker wounded');
@@ -309,29 +308,29 @@
     function damageStep() {
       M1.rollPopup({ actor: { left: attacker, right: defender }, title: 'Assault Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: M1.damageStrip(weapon),
         explain: function (roll) {
-          var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-          var code = dmg.code === 'Z' ? FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
+          var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND);
+          var code = dmg.code === 'Z' ? M1.FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
           if (code === 'C') return '<b>CAPTURED</b> &mdash; ' + defender.name + ' is taken prisoner.';
           // '*' = "No effect" (DAMAGE_LEGEND) — a real Assault Table result (e.g. Assault-to-Kill
           // roll 0), not a P/W/I/K code escalateDamageResult understands. Found live while
           // verifying Task #62: an unguarded call here crashed the page on this roll.
           if (code === '*') return '<b>No effect.</b>';
-          var ns = FC.escalateDamageResult(defender.status, displayCode(defender, code));
-          return '<b>' + code + ' = ' + CHART.DAMAGE_LEGEND[code] + '</b> &mdash; ' + defender.name + ' is now <b>' + ns.toUpperCase() + '</b>.' +
+          var ns = M1.FC.escalateDamageResult(defender.status, displayCode(defender, code));
+          return '<b>' + code + ' = ' + M1.CHART.DAMAGE_LEGEND[code] + '</b> &mdash; ' + defender.name + ' is now <b>' + ns.toUpperCase() + '</b>.' +
             fieldDressNote(defender, code);
         },
-        logText: function (roll) { var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND); return 'Assault damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + '</b>.'; },
+        logText: function (roll) { var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND); return 'Assault damage: <span class="roll">' + roll + '</span> &rarr; <b>' + dmg.code + '</b>.'; },
         fxLanded: function (roll) {
           M1.FX.floatDie(defender.hexId, roll, 'bad');
-          var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-          var code = dmg.code === 'Z' ? FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
+          var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND);
+          var code = dmg.code === 'Z' ? M1.FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
           if (code === '*') M1.FX.badge(defender.hexId, 'NO EFFECT', 'neutral');
         },
       }, function (roll) {
-        var dmg = FC.resolveDamage(weapon, roll, CHART.DAMAGE_LEGEND);
-        var code = dmg.code === 'Z' ? FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
+        var dmg = M1.FC.resolveDamage(weapon, roll, M1.CHART.DAMAGE_LEGEND);
+        var code = dmg.code === 'Z' ? M1.FC.resolveZCode(defender.status === 'panicked' || defender.status === 'wounded') : dmg.code;
         if (code === 'C') applyCapture(defender);
-        else if (code !== '*') applyDamage(defender, D.consumeFieldDressing(M1.state.difficulty, defender, code), 'captured');
+        else if (code !== '*') applyDamage(defender, M1.D.consumeFieldDressing(M1.state.difficulty, defender, code), 'captured');
         onDone();
       });
     }
@@ -341,7 +340,7 @@
   // applied and has to announce exactly what the commit will do, so the question (does it apply?)
   // is asked without mutating and the allowance is only spent on commit — see difficulty.js.
   function fieldDressNote(target, code) {
-    return D.fieldDressingApplies(M1.state.difficulty, target, code)
+    return M1.D.fieldDressingApplies(M1.state.difficulty, target, code)
       ? '<br><br><b style="color:var(--clear);">Field dressing (easy mode)</b> &mdash; ' + target.name +
         ' is <b>INCAPACITATED</b> instead of killed. This is his one second chance; he is still out of ' +
         'the fight and still costs 2 VP unless you carry him off the map (&sect;15).'
@@ -349,7 +348,7 @@
   }
   // The code that will actually be applied, for display purposes only. Never mutates.
   function displayCode(target, code) {
-    return D.fieldDressingApplies(M1.state.difficulty, target, code) ? 'I' : code;
+    return M1.D.fieldDressingApplies(M1.state.difficulty, target, code) ? 'I' : code;
   }
 
   // ---------------------------------------------------------------------
@@ -357,7 +356,7 @@
   // ---------------------------------------------------------------------
   function applyDamage(target, code, outcomeLabel) {
     var before = target.status;
-    var newStatus = FC.escalateDamageResult(target.status, code);
+    var newStatus = M1.FC.escalateDamageResult(target.status, code);
     target.status = newStatus;
     if (newStatus !== before) M1.FX.status(target); else M1.FX.badge(target.hexId, 'NO EFFECT', 'neutral');
     // The AR Track only exists while a Round is in progress; `track` is null in Operations. Every
@@ -367,7 +366,7 @@
     // §12 hazard would trip over on its first run.
     if (newStatus === 'incapacitated' || newStatus === 'killed') {
       target.isActive = false;
-      if (M1.state.track) Sched.removeFromRound(M1.state.track, target.id);
+      if (M1.state.track) M1.Sched.removeFromRound(M1.state.track, target.id);
       recordCasualty(target, newStatus === 'killed' ? 'killed' : 'incapacitated');
       M1.updateCounterVisual(target); M1.renderTrack(); M1.renderRoster(); M1.renderVP();
       checkEndingConditions();
@@ -375,7 +374,7 @@
       if (!M1.activeUS().length) { endMission('all-us-down'); return; }
     } else if (newStatus === 'wounded') {
       target.wounded = true; target.stance = 'prone';
-      if (M1.state.track) Sched.applyWoundedStatus(M1.state.track, target.id);
+      if (M1.state.track) M1.Sched.applyWoundedStatus(M1.state.track, target.id);
       // §13/2 (docs/39_WOUND_EFFECTS.md, Task #58): "A wounded soldier has his Movement Point
       // Allowance reduced to 2 for the rest of the mission." Permanent, not just this Round —
       // roundLegalDestinations/dragCandidates/etc. all read s.mpa directly, so this one
@@ -385,7 +384,7 @@
       // must immediately drop the contents of one Port Box." Only the Port-Box-specific clause
       // belongs to the inventory model itself.
       if (target.side === 'US' && target.inventory) {
-        var dropped = EQ.applyWoundPortBoxLoss(target, target.inventory);
+        var dropped = M1.EQ.applyWoundPortBoxLoss(target, target.inventory);
         dropped.droppedItemIds.forEach(function (id) {
           // Task #68 (docs/37_PICKUP_EXCHANGE.md): actually lands in the hex now, pickup-able by
           // Pick Up/Exchange Equipment — previously just logged and vanished (docs/33's own gap).
@@ -395,7 +394,7 @@
       }
       M1.updateCounterVisual(target); M1.renderTrack();
     } else if (newStatus === 'panicked') {
-      if (M1.state.track) Sched.applyPanicStatus(M1.state.track, target.id);
+      if (M1.state.track) M1.Sched.applyPanicStatus(M1.state.track, target.id);
       M1.renderTrack();
     }
   }
@@ -404,7 +403,7 @@
     M1.FX.status(target);
     target.stance = 'prone';
     target.isActive = false;
-    Sched.removeFromRound(M1.state.track, target.id);
+    M1.Sched.removeFromRound(M1.state.track, target.id);
     recordCasualty(target, 'captured');
     M1.updateCounterVisual(target); M1.renderTrack(); M1.renderRoster(); M1.renderVP();
     checkEndingConditions();
@@ -437,7 +436,7 @@
     // soldier" like the normal Self-Preservation trigger (arrules.js's own proximity check,
     // still applied normally for every OTHER German); this one simply always wins for him.
     g.forcedSelfPreservation = true;
-    var seen = M1.activeUS().some(function (s) { return losClearBetween(g, s); });
+    var seen = M1.activeUS().some(function (s) { return M1.losClearBetween(g, s); });
     if (!seen) {
       g.isActive = false;
       var el = M1.counterEls[g.id]; if (el) { el.remove(); delete M1.counterEls[g.id]; }
@@ -518,11 +517,11 @@
   // movement off the map edge, and Operations is where free movement happens (§5).
   // ---------------------------------------------------------------------
   function canExit(s) {
-    return !!s && M1.state.phase === 'movement' && !s.exited && s.isActive && ENTRY_HEXES.indexOf(s.hexId) !== -1;
+    return !!s && M1.state.phase === 'movement' && !s.exited && s.isActive && M1.ENTRY_HEXES.indexOf(s.hexId) !== -1;
   }
   function tryExit(s) {
     if (!s || s.exited || !s.isActive) return;
-    if (ENTRY_HEXES.indexOf(s.hexId) === -1) { Toasts.show('Must be on the north edge (A1-J1) to exit.', { kind: 'error' }); return; }
+    if (M1.ENTRY_HEXES.indexOf(s.hexId) === -1) { M1.Toasts.show('Must be on the north edge (A1-J1) to exit.', { kind: 'error' }); return; }
     // §15: an incapacitated soldier in this hex can be carried off with him, avoiding that
     // casualty's 2 VP loss. chooseTarget auto-picks a lone candidate without a dialog, which is
     // the right behavior here — carrying costs the player nothing and saves 2 VP, so there is no
@@ -574,13 +573,13 @@
   function checkEndingConditions() {
     if (M1.state.phase === 'over') return;
     var allExited = M1.activeUS().every(function (s) { return s.exited; }) && M1.state.usSoldiers.some(function (s) { return s.isActive; });
-    if (V.checkEnding2(allExited)) { endMission('ending2'); return; }
+    if (M1.V.checkEnding2(allExited)) { endMission('ending2'); return; }
 
     var t8 = M1.activeUS().some(function (s) { return !s.exited && s.hexId === 'T8'; });
     var k13 = M1.activeUS().some(function (s) { return !s.exited && s.hexId === 'K13'; });
     var l13 = M1.activeUS().some(function (s) { return !s.exited && s.hexId === 'L13'; });
-    var heights = M1.activeUS().some(function (s) { return !s.exited && HEIGHTS_CANDIDATE_HEXES[s.hexId]; });
-    if (V.checkEnding1({ t8Occupied: t8, k13Occupied: k13, l13Occupied: l13, heightsHexWithFullRoadLOS: heights, activeGermanCount: M1.activeGermans().length })) {
+    var heights = M1.activeUS().some(function (s) { return !s.exited && M1.HEIGHTS_CANDIDATE_HEXES[s.hexId]; });
+    if (M1.V.checkEnding1({ t8Occupied: t8, k13Occupied: k13, l13Occupied: l13, heightsHexWithFullRoadLOS: heights, activeGermanCount: M1.activeGermans().length })) {
       M1.state.vpState.awards.push({ amount: 4, note: 'Ending 1 — Hold the Ground' });
       // §15's second exfiltration clause: "or, if mission ending 1 is accomplished, by moving him
       // into either building hex." JUDGMENT CALL on "either": the same victory paragraph calls T8
@@ -601,15 +600,15 @@
     document.getElementById('movement-sec').style.display = 'none';
     M1.clearDestMarks();
     var totals = M1.renderVP();
-    var result = V.resolveVictory(totals.total, vpRequirement());
-    M1.Cues.banner('end', result === 'won' ? 'Mission Accomplished' : 'Mission Failed', totals.total + ' VP · need ' + vpRequirement(), result === 'won' ? 'won' : 'lost');
+    var result = M1.V.resolveVictory(totals.total, M1.vpRequirement());
+    M1.Cues.banner('end', result === 'won' ? 'Mission Accomplished' : 'Mission Failed', totals.total + ' VP · need ' + M1.vpRequirement(), result === 'won' ? 'won' : 'lost');
     M1.Cues.kranz(result === 'won' ? 'frustrated' : 'smug', result === 'won'
-      ? '<b>Verdammt.</b> ' + totals.total + ' VP against the ' + vpRequirement() + ' you needed. The ground is yours, for today.'
-      : '<b>Zu wenig.</b> ' + totals.total + ' VP, and you needed ' + vpRequirement() + '. This ground stays ours.');
+      ? '<b>Verdammt.</b> ' + totals.total + ' VP against the ' + M1.vpRequirement() + ' you needed. The ground is yours, for today.'
+      : '<b>Zu wenig.</b> ' + totals.total + ' VP, and you needed ' + M1.vpRequirement() + '. This ground stays ours.');
     M1.infoPopup({
       title: result === 'won' ? 'Mission Accomplished' : 'Mission Failed',
-      bodyHtml: 'Ending: ' + reason + '. Final VP: ' + totals.gained + ' gained &minus; ' + totals.lost + ' lost = <b>' + totals.total + '</b> (need ' + vpRequirement() + '). Result: <b>' + result.toUpperCase() + '</b>.' +
-        (vpTargetNote() ? '<br><br><span style="color:var(--text-label); font-size:12px;">' + vpTargetNote() + '</span>' : ''),
+      bodyHtml: 'Ending: ' + reason + '. Final VP: ' + totals.gained + ' gained &minus; ' + totals.lost + ' lost = <b>' + totals.total + '</b> (need ' + M1.vpRequirement() + '). Result: <b>' + result.toUpperCase() + '</b>.' +
+        (M1.vpTargetNote() ? '<br><br><span style="color:var(--text-label); font-size:12px;">' + M1.vpTargetNote() + '</span>' : ''),
     }, function () {
       var banner = document.getElementById('status-banner');
       banner.className = result === 'won' ? 'win' : 'lose';

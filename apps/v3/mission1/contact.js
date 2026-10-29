@@ -2,14 +2,12 @@
 // Exports to M1 (9): activateGermansSequentially, afterParagraphChain, estimateHitChanceBreakdown, hitBreakdownHtml,
 //   hitBreakdownText, noteContact, pendingContact, resetContactFlow, showSoldierInspector
 // Uses from M1:
-//   core: state
+//   core: CHART, D, FC, GAct, GERMAN_ROSTER, Ops, Sched, V, germanInstanceId, img, paragraphHex, resolveGermanCardId,
+//   state, terrainRowFor, terrainRowForTarget, vpRequirement, weaponById
 //   present: Cues, d10, fmtSigned, infoPopup, logHeader, rollPopup
 //   roster: findSoldier, kitHtml, makeCounter, renderVP, scrollMapTo
 //   operations: pendingConditionChange, runConditionChange, runRoundsConditionChange
 //   rounds: renderTrack, slotLabel, startActionRound
-// Still global (their files are not wrapped yet):
-//   core: CHART, D, FC, GAct, GERMAN_ROSTER, Ops, Sched, V, germanInstanceId, img, paragraphHex, resolveGermanCardId,
-//   terrainRowFor, terrainRowForTarget, vpRequirement, weaponById
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -39,11 +37,11 @@
   // through insertMidRoundGermans.
   M1.pendingContact = null;
   function noteContact(mover, chain) {
-    var terms = Ops.contactTerms(chain.effects || []);
+    var terms = M1.Ops.contactTerms(chain.effects || []);
     if (!terms || M1.state.phase === 'round') return;
     terms.paragraph = chain.visited[chain.visited.length - 1];
     terms.awareIds = terms.awareSoldiers.map(function (id) { return id === 'mover' ? mover.id : id; });
-    terms.germanIds = terms.germanTwoTurns.map(germanInstanceId);
+    terms.germanIds = terms.germanTwoTurns.map(M1.germanInstanceId);
     M1.pendingContact = terms;
   }
   function afterParagraphChain(chain, next) {
@@ -108,19 +106,19 @@
     function revealNext() {
       if (!ids.length) { activateGermansSequentially(effects, i + 1, next, newIds); return; }
       var numericId = ids.shift();
-      var cardId = resolveGermanCardId(numericId);
+      var cardId = M1.resolveGermanCardId(numericId);
       // Keyed by instance, not by card — see germanInstanceId. Two Germans sharing a substituted
       // card are two soldiers, and "already active" has to mean this one, not his stand-in twin.
-      var instanceId = germanInstanceId(numericId);
+      var instanceId = M1.germanInstanceId(numericId);
       if (M1.state.germans[instanceId] && M1.state.germans[instanceId].isActive) { revealNext(); return; } // already active
       // A German already activated once and since removed does not activate a second time: §2/1's
       // Activation VP is paid "regardless of what happens later with that German", so re-running
       // his activation would pay it twice for one soldier.
       if (M1.state.germans[instanceId]) { revealNext(); return; }
-      var card = GERMAN_ROSTER[cardId];
+      var card = M1.GERMAN_ROSTER[cardId];
       var g = {
         id: instanceId, name: 'German (' + instanceId + ', ' + card.Role + ')', side: 'german', card: card,
-        img: img('soldiers/de_soldier_' + (Sched.letterFromGermanCardId(cardId) || 'T') + '_crouching.png'),
+        img: M1.img('soldiers/de_soldier_' + (M1.Sched.letterFromGermanCardId(cardId) || 'T') + '_crouching.png'),
         IN: parseInt(card.IN, 10) || 2, PC: parseInt(card.PC, 10) || 2, WS: parseInt(card.WS, 10) || 0,
         mpa: parseInt(card.MPA, 10) || 0,
         // eff.hex ("T-8", "Q-11", ...) is already a PRINTED hex id with a hyphen for readability —
@@ -131,9 +129,9 @@
         // single-digit rows, since it expects a zero-padded 2-digit cartridge row. REAL BUG, found
         // via a user report and confirmed by cross-referencing every real activate_german hex
         // against the paragraph text that names it.
-        weaponId: guessGermanWeaponId(card), hexId: eff.hex ? paragraphHex(eff.hex) : mapAnyHex(),
+        weaponId: guessGermanWeaponId(card), hexId: eff.hex ? M1.paragraphHex(eff.hex) : mapAnyHex(),
         stance: eff.stance || 'crouching', isCommander: false, wounded: false, status: 'unharmed', isActive: true,
-        letter: Sched.letterFromGermanCardId(cardId), specialReaction: eff.specialReaction || null,
+        letter: M1.Sched.letterFromGermanCardId(cardId), specialReaction: eff.specialReaction || null,
         inventory: { ammoBoxes: new Array(guessGermanGrenadeCount(card)).fill('gren') },
         // Task #69 (docs/43_PREPARE_WEAPON.md): JUDGMENT CALL — a German never gets a scripted
         // "prepare" step anywhere in assets/data/german_action_programs.js, so a German who
@@ -154,7 +152,7 @@
       M1.logHeader('German activated: ' + g.name + ' at ' + g.hexId + '.');
       M1.Cues.banner('activation', 'German Activated', (card.Role ? card.Role + ' · ' : '') + g.hexId);
       M1.Cues.kranz(Object.keys(M1.state.germans).length > 1 ? 'smug' : 'confident', '<b>Achtung!</b> ' + g.name +
-        ' takes his post at <b>' + g.hexId + '</b>. From now on he acts by his own card. He is worth <b>' + V.germanActivationVP(card.VP) +
+        ' takes his post at <b>' + g.hexId + '</b>. From now on he acts by his own card. He is worth <b>' + M1.V.germanActivationVP(card.VP) +
         ' VP</b> to you for showing himself (&sect;2/1); enjoy them.', g.id);
       presentActivation(g, card, numericId, revealNext);
     }
@@ -172,7 +170,7 @@
       var g = M1.state.germans[ids[idx]];
       var entry = { id: g.id, IN: g.IN, hexId: g.hexId, letter: g.letter, isCommander: false, receivesTwoTurns: g.receivesTwoTurns };
       if (g.receivesTwoTurns) {
-        var result = Sched.insertMidRoundGerman(M1.state.track, entry, { arTrack: window.AMBUSH_AR_TRACK });
+        var result = M1.Sched.insertMidRoundGerman(M1.state.track, entry, { arTrack: window.AMBUSH_AR_TRACK });
         M1.infoPopup({
           actor: g, title: 'Mid-Round Activation &mdash; AR Track',
           bodyHtml: g.name + ' joins the current Round&rsquo;s Action Round Track in the <b>' + M1.slotLabel(result.slot) + '</b> space (&sect;6/6, receives two turns). No effect on US awareness.',
@@ -181,7 +179,7 @@
         return;
       }
       var roll = M1.d10();
-      var result2 = Sched.insertMidRoundGerman(M1.state.track, entry, { rollDie: function () { return roll; }, arTrack: window.AMBUSH_AR_TRACK });
+      var result2 = M1.Sched.insertMidRoundGerman(M1.state.track, entry, { rollDie: function () { return roll; }, arTrack: window.AMBUSH_AR_TRACK });
       M1.rollPopup({
         actor: g, title: 'Mid-Round Activation &mdash; AR Track', kind: 'single', presetValue: roll,
         contextHtml: g.name + ' (IN ' + g.IN + ') joins the current Round&rsquo;s Action Round Track (&sect;6/6). No effect on US awareness.',
@@ -215,16 +213,16 @@
     // Step 2 — "Add Victory Points the soldier has on his card to your Squad Sheet." §2/1: this
     // is the Activation award, kept "regardless of what happens later with that German."
     function step2() {
-      var award = V.germanActivationVP(card.VP);
+      var award = M1.V.germanActivationVP(card.VP);
       M1.state.vpState.germanActivations.push({ cardId: g.id, vpText: card.VP || '' });
       M1.renderVP();
-      var totals = V.computeVPTotal(M1.state.vpState);
-      var conditional = V.parseGermanVP(card.VP || '').conditional;
+      var totals = M1.V.computeVPTotal(M1.state.vpState);
+      var conditional = M1.V.parseGermanVP(card.VP || '').conditional;
       M1.infoPopup({
         actor: g, title: 'Victory Points Awarded',
         bodyHtml: '<b>+' + award + ' VP</b> for activating ' + card['Card ID'] + '. You keep this regardless of what happens to him later (&sect;2/1).' +
           (conditional ? '<br><br>His card also carries a conditional award: <b>+' + conditional.amount + ' VP if ' + conditional.trigger + '</b>.' : '') +
-          '<br><br>Squad total is now <b>' + totals.total + ' VP</b> (need ' + vpRequirement() + ').',
+          '<br><br>Squad total is now <b>' + totals.total + ' VP</b> (need ' + M1.vpRequirement() + ').',
         logHtml: 'Activation award: <b>+' + award + ' VP</b> (' + card['Card ID'] + ') &rarr; total ' + totals.total + '.',
       }, step3);
     }
@@ -260,7 +258,7 @@
   function germanCardHtml(card, numericId) {
     var rows = [
       ['Identity', card['Card ID'] + (numericId ? ' (number ' + numericId + ')' : '')],
-      ['Counter letter', Sched.letterFromGermanCardId(card['Card ID']) || '—'],
+      ['Counter letter', M1.Sched.letterFromGermanCardId(card['Card ID']) || '—'],
       ['Type', card.Role || '—'],
       ['Victory Points', card.VP || '—'],
       ['Initiative (IN)', card.IN], ['Perception (PC)', card.PC],
@@ -316,17 +314,17 @@
     return 'Firing without aiming first. Faster (you keep the rest of your action) but always -2 to Hit Chance. Aimed fire skips this penalty but costs your whole action.';
   }
   function estimateHitChanceBreakdown(firer, target, fireType) {
-    var weapon = weaponById(firer.weaponId);
-    var band = FC.resolveRangeBand(weapon, FC.hexDistance(firer.hexId, target.hexId));
+    var weapon = M1.weaponById(firer.weaponId);
+    var band = M1.FC.resolveRangeBand(weapon, M1.FC.hexDistance(firer.hexId, target.hexId));
     if (!band) return null;
-    var baseHit = CHART.BASE_HIT[band];
-    var terrainMod = FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, terrainRowForTarget(firer, target), target.stance);
+    var baseHit = M1.CHART.BASE_HIT[band];
+    var terrainMod = M1.FC.resolveTerrainMod(M1.CHART.FIRE_MODS_TERRAIN, M1.terrainRowForTarget(firer, target), target.stance);
     var otherMods = firer.status === 'wounded' ? [-1] : [];
     // Easy mode's handicap rides in as an ordinary modifier rather than a post-hoc adjustment, so
     // it clamps with everything else (§9/1 step 4) and shows up in the breakdown as its own term.
-    var easyMod = D.hitChanceMod(M1.state.difficulty, firer.side);
+    var easyMod = M1.D.hitChanceMod(M1.state.difficulty, firer.side);
     if (easyMod) otherMods.push(easyMod);
-    var clamped = FC.computeFinalHitChance({ baseHit: baseHit, terrainMod: terrainMod, fireType: fireType, weaponSkill: firer.WS, otherMods: otherMods }).clamped;
+    var clamped = M1.FC.computeFinalHitChance({ baseHit: baseHit, terrainMod: terrainMod, fireType: fireType, weaponSkill: firer.WS, otherMods: otherMods }).clamped;
     return { baseHit: baseHit, band: band, terrainMod: terrainMod, ws: firer.WS, fireType: fireType, easyMod: easyMod, clamped: clamped };
   }
   function hitBreakdownHtml(b) {
@@ -353,7 +351,7 @@
     var s = M1.findSoldier(id);
     if (!s) return;
     var isGerman = s.side === 'german';
-    var terrainRow = CHART.FIRE_MODS_TERRAIN[terrainRowFor(s.hexId)];
+    var terrainRow = M1.CHART.FIRE_MODS_TERRAIN[M1.terrainRowFor(s.hexId)];
     var stances = ['standing', 'crouching', 'prone'];
     var stanceHtml = stances.map(function (st, i) {
       var mod = terrainRow.mods[i];
@@ -388,7 +386,7 @@
   // bugs the old inline version carried). Kept as a named wrapper so the activation code reads the
   // same as before and the mapping has one home.
   function guessGermanWeaponId(card) {
-    return GAct.weaponIdForCard(card);
+    return M1.GAct.weaponIdForCard(card);
   }
   // Task #63 (docs/35_GRENADE_COMBAT.md): Germans get no full Port Box model (docs/33_PORT_BOX.md
   // — "driven by their cards, not a Squad Record"), but their card's own Equipment text ("Bolt

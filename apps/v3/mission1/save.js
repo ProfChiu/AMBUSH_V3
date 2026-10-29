@@ -1,7 +1,7 @@
 // mission1/save.js (12 of 13) — save/load, start screen, game flow. Stage A cut of mission1.js lines 5324-5603 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (5): applySavedState, isSafeToSave, loadSaveList, saveGame, startGameFlow
 // Uses from M1:
-//   core: state
+//   core: D, Dialogs, ENTRY_HEXES, Sched, Toasts, V, VP_REQUIREMENT_RULEBOOK, setDifficulty, state, vpReachable
 //   present: logHeader
 //   roster: activeUS, canvas, counterEls, entryEls, eventMarkerEls, findSoldier, makeCounter, placeEl,
 //   placeEventMarkerEl, renderRoster, renderVP, updateCounterVisual
@@ -9,8 +9,6 @@
 //   operations: clearDestMarks, resetOperationsFlow, selectSoldier
 //   contact: resetContactFlow
 //   rounds: driveNext, renderTrack, resetRoundFlow
-// Still global (their files are not wrapped yet):
-//   core: D, Dialogs, ENTRY_HEXES, Sched, Toasts, V, VP_REQUIREMENT_RULEBOOK, setDifficulty, vpReachable
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -53,7 +51,7 @@
   importOldSaves();
   var MAX_SAVES = 10;
   // Any queue item, modal or a resolution-card line: mid-chain is never a safe save point.
-  function popupOpen() { return !!Dialogs.current; }
+  function popupOpen() { return !!M1.Dialogs.current; }
   function isSafeToSave() {
     if (popupOpen()) return false;
     if (M1.state.phase === 'squadgen' || M1.state.phase === 'over') return false;
@@ -75,7 +73,7 @@
     catch (e) { return []; }
   }
   function describeSave(state) {
-    var totals = V.computeVPTotal(state.vpState);
+    var totals = M1.V.computeVPTotal(state.vpState);
     var where = state.phase === 'entry' ? 'Entry placement'
       : state.phase === 'movement' ? 'Operations'
       : state.phase === 'round' ? 'Action Round ' + (state.roundNum || '?')
@@ -83,21 +81,21 @@
     return where + ' &middot; ' + totals.total + ' VP';
   }
   function saveGame() {
-    if (!isSafeToSave()) { Toasts.show('Can\'t save mid-step — finish the current action first.'); return false; }
+    if (!isSafeToSave()) { M1.Toasts.show('Can\'t save mid-step — finish the current action first.'); return false; }
     var list = loadSaveList();
     list.push(serializeState());
     while (list.length > MAX_SAVES) list.shift(); // oldest first in, oldest first evicted
     try {
       localStorage.setItem(SAVE_LIST_KEY, JSON.stringify(list));
-      Toasts.show('Game saved (' + list.length + '/' + MAX_SAVES + ').', { kind: 'success' });
+      M1.Toasts.show('Game saved (' + list.length + '/' + MAX_SAVES + ').', { kind: 'success' });
       return true;
-    } catch (e) { Toasts.show('Save failed: ' + e.message); return false; }
+    } catch (e) { M1.Toasts.show('Save failed: ' + e.message); return false; }
   }
   function applySavedState(data) {
     // A fresh page load auto-starts Squad Generation (its first popup can already be open by the
     // time the player clicks Load instead of playing through it) — force-close it so its callback
     // chain can never fire afterward and act on the state we're about to replace.
-    Dialogs.reset();
+    M1.Dialogs.reset();
     // Bug 13: the chains Dialogs.reset() just stopped leave their state behind; drop it too.
     M1.resetOperationsFlow(); M1.resetContactFlow(); M1.resetRoundFlow();
     Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].remove(); }); M1.counterEls = {};
@@ -112,7 +110,7 @@
     M1.state.usSoldiers.forEach(function (s) { if (s.aware === undefined) s.aware = true; });
     // Saves written before Easy mode existed carry no difficulty; they were all played on the
     // rulebook settings, so Normal is the correct default rather than a guess.
-    setDifficulty(data.difficulty === D.EASY ? D.EASY : D.NORMAL);
+    M1.setDifficulty(data.difficulty === M1.D.EASY ? M1.D.EASY : M1.D.NORMAL);
     M1.state.opsState = data.opsState; M1.state.vpState = data.vpState; M1.state.track = data.track;
     // germanActivations/awards postdate the §2/1 VP fix — a save written before it has neither,
     // so default them rather than letting computeVPTotal reduce over undefined.
@@ -151,7 +149,7 @@
 
     if (M1.state.phase === 'entry') {
       document.getElementById('tb-phase').textContent = 'Entry Placement';
-      ENTRY_HEXES.forEach(function (hexId) {
+      M1.ENTRY_HEXES.forEach(function (hexId) {
         var el = document.createElement('div');
         el.className = 'entry-hex';
         M1.placeEl(el, hexId);
@@ -168,7 +166,7 @@
     } else if (M1.state.phase === 'round') {
       document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum;
       document.getElementById('track-sec').style.display = '';
-      if (Sched.isRoundComplete(M1.state.track)) {
+      if (M1.Sched.isRoundComplete(M1.state.track)) {
         M1.renderTrack();
         document.getElementById('round-sec').style.display = '';
         document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum + ' complete';
@@ -188,8 +186,8 @@
   // the game un-started with nothing on screen.
   function openLoadDialog(onCancel) {
     var list = loadSaveList();
-    if (!list.length) { Toasts.show('No saved games found.'); if (onCancel) onCancel(); return; }
-    Dialogs.push({
+    if (!list.length) { M1.Toasts.show('No saved games found.'); if (onCancel) onCancel(); return; }
+    M1.Dialogs.push({
       title: 'Load Game', variant: 'wide', allowEnter: false, allowEscape: true, escapeButtonId: 'cancel',
       buttons: [{ id: 'cancel', label: 'Cancel' }],
       render: function (ctx) {
@@ -218,7 +216,7 @@
   // ---------------------------------------------------------------------
   function startGameFlow() {
     var saves = loadSaveList();
-    Dialogs.push({
+    M1.Dialogs.push({
       title: 'Ambush! Digital — Mission 1', variant: 'narrow', allowEnter: true, allowEscape: false,
       buttons: [
         { id: 'normal', label: 'Start — Normal', variant: 'amber' },
@@ -230,12 +228,12 @@
         // stated, visible adjustments, not a vague "easier" — so it is described up front and
         // repeated in the Objectives window for the rest of the mission.
         ctx.bodyEl.innerHTML = '<div class="step-context">' +
-          '<b>Normal</b> &mdash; ' + D.settings(D.NORMAL).blurb +
-          ' Victory target <b>' + V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(D.NORMAL)).requirement + ' VP</b>.' +
-          '<br><br><b>Easy</b> &mdash; ' + D.settings(D.EASY).blurb +
-          ' Victory target <b>' + V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(D.EASY)).requirement + ' VP</b>.' +
+          '<b>Normal</b> &mdash; ' + M1.D.settings(M1.D.NORMAL).blurb +
+          ' Victory target <b>' + M1.V.scaleRequirement(M1.vpReachable.ceiling, M1.VP_REQUIREMENT_RULEBOOK, M1.D.vpMargin(M1.D.NORMAL)).requirement + ' VP</b>.' +
+          '<br><br><b>Easy</b> &mdash; ' + M1.D.settings(M1.D.EASY).blurb +
+          ' Victory target <b>' + M1.V.scaleRequirement(M1.vpReachable.ceiling, M1.VP_REQUIREMENT_RULEBOOK, M1.D.vpMargin(M1.D.EASY)).requirement + ' VP</b>.' +
           '<ul style="text-align:left; margin:8px 0 0; padding-left:20px; line-height:1.6;">' +
-          D.describe(D.EASY).map(function (line) { return '<li>' + line + '</li>'; }).join('') +
+          M1.D.describe(M1.D.EASY).map(function (line) { return '<li>' + line + '</li>'; }).join('') +
           '</ul><br>' +
           (saves.length ? saves.length + ' saved game' + (saves.length === 1 ? '' : 's') + ' available.' : 'No saved games found.') +
           '</div>';
@@ -243,13 +241,13 @@
       onButton: function (id, ctx) { ctx.close(id); },
       onClose: function (id) {
         if (id === 'load') { openLoadDialog(function () { startGameFlow(); }); return; }
-        setDifficulty(id === 'easy' ? D.EASY : D.NORMAL);
+        M1.setDifficulty(id === 'easy' ? M1.D.EASY : M1.D.NORMAL);
         M1.startSquadGeneration();
       },
     });
   }
   document.getElementById('exportSaveBtn').addEventListener('click', function () {
-    if (!isSafeToSave()) { Toasts.show('Can\'t save mid-step — finish the current action first.'); return; }
+    if (!isSafeToSave()) { M1.Toasts.show('Can\'t save mid-step — finish the current action first.'); return; }
     var blob = new Blob([JSON.stringify(serializeState(), null, 2)], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -268,7 +266,7 @@
     var reader = new FileReader();
     reader.onload = function () {
       var data;
-      try { data = JSON.parse(reader.result); } catch (err) { Toasts.show('That file is not a valid save.'); return; }
+      try { data = JSON.parse(reader.result); } catch (err) { M1.Toasts.show('That file is not a valid save.'); return; }
       applySavedState(data);
     };
     reader.readAsText(file);

@@ -1,7 +1,8 @@
 // mission1/seams.js (13 of 13) — VERBS, verbsOffered, __mission1Debug, AmbushMission. Stage A cut of mission1.js lines 5604-5871 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1: nothing.
 // Uses from M1:
-//   core: state
+//   core: CHART, D, Dialogs, EQ, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, M, MISSION_CARDS, Ops, REAL_TERRAIN,
+//   TERRAIN_LABELS, dialogLog, edgeFeatures, setDifficulty, state, terrainRowFor, upright
 //   present: Resolve, lessonRng, stripTags
 //   info: Sight
 //   roster: allGermans, counterEls, currentImgFor, entryEls, equipmentName, findSoldier, renderVP, shownVP
@@ -13,9 +14,6 @@
 //   verbs: allInHex, disableActionButtons, pickupOffers, resolvePickup
 //   combat: applyDamage, tryExit
 //   save: applySavedState, isSafeToSave, loadSaveList, saveGame, startGameFlow
-// Still global (their files are not wrapped yet):
-//   core: CHART, D, Dialogs, EQ, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, M, MISSION_CARDS, Ops, REAL_TERRAIN,
-//   TERRAIN_LABELS, dialogLog, edgeFeatures, setDifficulty, terrainRowFor, upright
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -66,26 +64,26 @@
   }
   var automation = {
     pendingDecision: function () {
-      var spec = Dialogs.current;
+      var spec = M1.Dialogs.current;
       if (!spec) return null;
       // A resolution-card line is resolving, not asking: nothing to decide yet, but the board
       // is not waiting for the player either.
       if (spec.modeless) return { kind: 'resolving', title: spec.title || '' };
       return {
-        kind: 'dialog', title: spec.title || '', text: Dialogs.bodyText(),
+        kind: 'dialog', title: spec.title || '', text: M1.Dialogs.bodyText(),
         phase: document.getElementById('tb-phase').textContent,
         buttons: (spec.buttons || []).map(function (b) { return { id: b.id, label: b.label, disabled: !!b.disabled }; }),
         rows: (spec.choices || []).map(function (c, i) { return { idx: i, text: c.text, odds: c.odds }; }),
       };
     },
     choose: function (i) {
-      var spec = Dialogs.current;
+      var spec = M1.Dialogs.current;
       if (!spec || !spec.choices || !spec.choices[i]) throw new Error('choose(' + i + '): no such row in the open dialog');
       spec.choices[i].pick();
       return true;
     },
     press: function (id) {
-      if (Dialogs.current) return Dialogs.press(id);
+      if (M1.Dialogs.current) return M1.Dialogs.press(id);
       if (id === 'resultDone') return M1.Resolve.pressDone();
       var v = VERBS[id];
       if (!v) throw new Error('press(' + id + '): no dialog is open and that is not a verb');
@@ -133,7 +131,7 @@
         banner: document.getElementById('status-banner').textContent || '',
       };
     },
-    dialogLog: function () { return dialogLog.slice(); },
+    dialogLog: function () { return M1.dialogLog.slice(); },
     setPresentation: function () { return 'cards'; },
   };
 
@@ -184,7 +182,7 @@
   // the shell starts the mission; v2's start dialog (startGameFlow) is not shown.
   window.AmbushMission = {
     start: function (level) {
-      setDifficulty(level === 'easy' ? D.EASY : D.NORMAL);
+      M1.setDifficulty(level === 'easy' ? M1.D.EASY : M1.D.NORMAL);
       M1.startSquadGeneration();
     },
     // v3 punch list 2 (stack.js): everything in one hex, what each token carries, and what the
@@ -194,21 +192,21 @@
       var actor = M1.state.phase === 'round' && M1.state.currentActorId && !M1.picking ? M1.findSoldier(M1.state.currentActorId) : null;
       if (actor && actor.side === 'german') actor = null;
       var pickupBtn = document.getElementById('pickupBtn');
-      var canTake = !!actor && actor.hexId === hexId && !pickupBtn.disabled && !Dialogs.current &&
+      var canTake = !!actor && actor.hexId === hexId && !pickupBtn.disabled && !M1.Dialogs.current &&
         document.getElementById('action-sec').style.display !== 'none';
       var offers = canTake ? M1.pickupOffers(actor) : [];
       function gear(t) {
         if (t.side === 'german') return t.weaponId ? [M1.equipmentName(t.weaponId)] : [];
         if (!t.inventory) return [];
         // an Ammo Box holds a clip for a weapon, or a grenade
-        return EQ.carriedItemIds(t.inventory).map(M1.equipmentName)
+        return M1.EQ.carriedItemIds(t.inventory).map(M1.equipmentName)
           .concat(t.inventory.ammoBoxes.filter(Boolean).map(function (id) { return id === 'gren' ? 'Grenade' : 'Clip: ' + M1.equipmentName(id); }));
       }
       return {
         hexId: hexId,
         actor: actor ? { id: actor.id, name: actor.name, here: actor.hexId === hexId } : null,
         takeWhy: !actor ? '' : actor.hexId !== hexId ? actor.name + ' is not in this hex.' :
-          canTake ? '' : !upright(actor) ? 'He must be standing or crouching (§6/7).' :
+          canTake ? '' : !M1.upright(actor) ? 'He must be standing or crouching (§6/7).' :
           (actor.stance === 'standing' && M1.allInHex(hexId).some(function (t) { return t.id !== actor.id && !t.isActive; }))
             ? 'Taking equipment from an inactive soldier needs him crouching (§6/7).' :
           M1.allInHex(hexId).some(function (t) { return t.side !== actor.side && t.isActive && t.weaponId; })
@@ -260,26 +258,26 @@
       // whom he would look at from there.
       facts: function (hexId, soldierId, targetId) {
         var s = soldierId ? M1.findSoldier(soldierId) : null, t = targetId ? M1.findSoldier(targetId) : null;
-        var terrain = REAL_TERRAIN[hexId], row = terrainRowFor(hexId), mod = {};
+        var terrain = M1.REAL_TERRAIN[hexId], row = M1.terrainRowFor(hexId), mod = {};
         ['standing', 'crouching', 'prone'].forEach(function (st) {
-          mod[st] = FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, st) ? FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, st) : null;
+          mod[st] = M1.FC.canBeFiredAt(M1.CHART.FIRE_MODS_TERRAIN, row, st) ? M1.FC.resolveTerrainMod(M1.CHART.FIRE_MODS_TERRAIN, row, st) : null;
         });
         var d = s && M1.state.phase === 'round' ? M1.roundLegalDestinations(s)[hexId] : null;
-        var out = { hex: hexId, terrain: terrain, label: TERRAIN_LABELS[terrain] || terrain || 'unknown',
-          mp: M.mpCost(terrain), reach: d ? d.cost : null, mpa: s ? s.mpa : null, row: row, mod: mod,
+        var out = { hex: hexId, terrain: terrain, label: M1.TERRAIN_LABELS[terrain] || terrain || 'unknown',
+          mp: M1.M.mpCost(terrain), reach: d ? d.cost : null, mpa: s ? s.mpa : null, row: row, mod: mod,
           cover: row === 0 ? 'no cover' : row <= 3 ? 'light cover' : 'good cover',
-          adjacent: !!(s && FC.hexDistance(s.hexId, hexId) === 1) };
+          adjacent: !!(s && M1.FC.hexDistance(s.hexId, hexId) === 1) };
         // Phase 8b (chapter 5): the hex's cell on the mission card, read by the engine's own parser
-        var cid = G.printedIdToCartridgeId(hexId), grid = M1.state.opsState && MISSION_CARDS['1'][String(M1.state.opsState.condition)];
-        var raw = cid && grid ? grid[cid] : null, cell = Ops.parseCellValue(raw);
+        var cid = M1.G.printedIdToCartridgeId(hexId), grid = M1.state.opsState && M1.MISSION_CARDS['1'][String(M1.state.opsState.condition)];
+        var raw = cid && grid ? grid[cid] : null, cell = M1.Ops.parseCellValue(raw);
         out.cell = { raw: raw, type: cell.type, paragraph: cell.paragraph || null, sighting: cell.sighting || null,
           occurred: !!(cell.sighting && M1.state.opsState.sightingsOccurred[cell.sighting]), marker: !!(M1.state.opsState && M1.state.opsState.eventMarkers[hexId]) };
         if (t) {
-          var r = LOS.traceLOS({ fromId: hexId, toId: t.hexId, elevationByHexId: LOS_ELEV, terrainByHexId: LOS_TERRAIN,
-            edgeFeatures: edgeFeatures, fromStance: s ? s.stance : 'standing', toStance: t.stance });
-          var bt = r.hexId ? REAL_TERRAIN[r.hexId] : null;
-          out.los = { clear: !r.blocked, block: r.hexId || null, blockLabel: bt ? (TERRAIN_LABELS[bt] || bt) : null,
-            reason: r.reason || null, path: r.path || [], range: FC.hexDistance(hexId, t.hexId) };
+          var r = M1.LOS.traceLOS({ fromId: hexId, toId: t.hexId, elevationByHexId: M1.LOS_ELEV, terrainByHexId: M1.LOS_TERRAIN,
+            edgeFeatures: M1.edgeFeatures, fromStance: s ? s.stance : 'standing', toStance: t.stance });
+          var bt = r.hexId ? M1.REAL_TERRAIN[r.hexId] : null;
+          out.los = { clear: !r.blocked, block: r.hexId || null, blockLabel: bt ? (M1.TERRAIN_LABELS[bt] || bt) : null,
+            reason: r.reason || null, path: r.path || [], range: M1.FC.hexDistance(hexId, t.hexId) };
         }
         return out;
       },

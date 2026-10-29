@@ -2,10 +2,8 @@
 // Exports to M1 (17): Cues, FX, Resolve, actorRowHtml, d10, damageStrip, fmtSigned, hitStrip, infoPopup, lessonRng,
 //   logHeader, logLine, pad2, rollPopup, speak, stripTags, voiceMuted
 // Uses from M1:
-//   core: state
+//   core: CHART, Dialogs, FC, G, state
 //   roster: canvas, currentImgFor, nameFor, pctPos
-// Still global (their files are not wrapped yet):
-//   core: CHART, Dialogs, FC, G
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -59,7 +57,7 @@
   function hitStrip(c) {
     var cells = [], hits = 0;
     for (var i = 0; i < 10; i++) {
-      var hit = FC.resolveHitRoll(c, i) === 'hit';
+      var hit = M1.FC.resolveHitRoll(c, i) === 'hit';
       if (hit) hits++;
       cells.push({ label: hit ? 'HIT' : '', tone: hit ? 'hit' : 'miss' });
     }
@@ -69,7 +67,7 @@
   function damageStrip(weapon) {
     var cells = [];
     for (var i = 0; i < 10; i++) {
-      var code = FC.resolveDamage(weapon, i, CHART.DAMAGE_LEGEND).code;
+      var code = M1.FC.resolveDamage(weapon, i, M1.CHART.DAMAGE_LEGEND).code;
       cells.push({ label: code === '*' ? '&ndash;' : code, tone: STRIP_TONE[code] || 'miss' });
     }
     return { cells: cells, caption: weapon.name + ' damage row' };
@@ -270,9 +268,9 @@
       if (e.target.closest('.res-card, .strip, .popup')) return;
       closeCard(false);
     }, true);
-    Dialogs.onPresent(function (spec) { if (spec && !spec.modeless && lingering()) closeCard(false); });
+    M1.Dialogs.onPresent(function (spec) { if (spec && !spec.modeless && lingering()) closeCard(false); });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && lingering() && !Dialogs.current) { e.preventDefault(); pressDone(); }
+      if (e.key === 'Enter' && lingering() && !M1.Dialogs.current) { e.preventDefault(); pressDone(); }
     });
     function lineFor(opts) {
       var key = actorKey(opts.actor);
@@ -345,7 +343,7 @@
     }
 
     function pushInfo(opts, cb) {
-      Dialogs.push({
+      M1.Dialogs.push({
         modeless: true, title: opts.title,
         run: function (ctx) {
           var line = lineFor(opts);
@@ -363,7 +361,7 @@
       });
     }
     function pushRoll(opts, cb) {
-      Dialogs.push({
+      M1.Dialogs.push({
         modeless: true, title: opts.title,
         run: function (ctx) {
           var line = lineFor(opts);
@@ -426,7 +424,7 @@
     // "Finished" means the queue has stayed idle for a moment: a walk hands one step to the next
     // through a brief idle, and Done must not flicker on between steps.
     var doneTimer = null;
-    Dialogs.onPresent(function (spec) {
+    M1.Dialogs.onPresent(function (spec) {
       document.body.classList.toggle('resolving', !!(spec && spec.modeless));
       if (spec && !spec.modeless && card) card.open = false;
       clearTimeout(doneTimer);
@@ -606,7 +604,7 @@
     // camera is the stage's zoom/pan view, AmbushStage.view, not v2's vertical scroll).
     function ensureVisible(hexes, instant) {
       if (!window.AmbushStage) return;
-      var pts = hexes.filter(Boolean).map(function (h) { var p = M1.pctPos(h); return { x: p.left / 100 * G.MAP_WIDTH, y: p.top / 100 * G.MAP_HEIGHT }; });
+      var pts = hexes.filter(Boolean).map(function (h) { var p = M1.pctPos(h); return { x: p.left / 100 * M1.G.MAP_WIDTH, y: p.top / 100 * M1.G.MAP_HEIGHT }; });
       if (!pts.length) return;
       // Instant when the player is about to click (a gliding map moves the hex out from under
       // the cursor mid-click); smooth when it is following the action.

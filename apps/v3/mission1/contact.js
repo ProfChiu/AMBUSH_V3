@@ -215,14 +215,7 @@
     // Paragraph to show where the Soldier is." Scrolls there too: an activation hex can be far
     // from the squad, and a counter placed off-screen reads as nothing having happened.
     function step3() {
-      var el = document.createElement('div');
-      el.className = 'counter enemy';
-      el.dataset.soldierId = g.id;
-      placeEl(el, g.hexId);
-      el.innerHTML = '<img src="' + currentImgFor(g) + '">';
-      el.addEventListener('click', function (e) { e.stopPropagation(); showSoldierInspector(g.id); });
-      canvas.appendChild(el);
-      counterEls[g.id] = el;
+      makeCounter(g, g.hexId);
       scrollMapTo(g.hexId);
       infoPopup({
         actor: g, title: 'Counter Placed',

@@ -96,6 +96,8 @@
       var hex = G.colLetter(i) + r.row;
       var s = { id: who.letter + '-' + r.row, side: who.side, letter: who.letter, stance: r.s.stance, status: r.s.status };
       var el = C.make(s);
+      if (who.side === 'german') el.classList.add('de'); // counters.css's German face (mission1 uses .enemy)
+      C.update(el, s);
       if (r.cls) el.classList.add(r.cls);
       at(el, hex);
       el.title = (who.side === 'us' ? 'US ' : 'German ') + who.letter + ' · ' + r.tag + ' · ' + hex;

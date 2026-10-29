@@ -182,27 +182,7 @@
     if (entryIndex >= usSoldiers.length) return;
     var s = usSoldiers[entryIndex];
     s.hexId = hexId;
-    var el = document.createElement('div');
-    el.className = 'counter';
-    // Stable identity for automated play/verification (tools/bot/) — counter DOM order shifts
-    // as soldiers exit or are removed, so index-based lookup is not safe. No effect on the game.
-    el.dataset.soldierId = s.id;
-    placeEl(el, hexId);
-    el.innerHTML = '<img src="' + currentImgFor(s) + '">';
-    el.addEventListener('click', function (e) {
-      e.stopPropagation();
-      if (phase === 'movement') {
-        // Clicking an already-selected soldier opens the inspector instead of re-selecting him
-        // (a no-op otherwise) — still "click on him" per the user's own ask, without turning
-        // every ordinary movement-planning click into an interrupting modal.
-        if (selectedId === s.id) { showSoldierInspector(s.id); return; }
-        selectSoldier(s.id);
-        return;
-      }
-      if (phase === 'round') showSoldierInspector(s.id);
-    });
-    canvas.appendChild(el);
-    counterEls[s.id] = el;
+    makeCounter(s, hexId);
     updateCounterVisual(s);
     logLine(s.name + ' enters the map at ' + hexId + '.');
     entryIndex++;

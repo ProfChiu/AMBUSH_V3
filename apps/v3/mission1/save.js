@@ -92,37 +92,12 @@
 
     usSoldiers.forEach(function (s) {
       if (s.exited || !s.hexId) return;
-      var el = document.createElement('div');
-      el.className = 'counter';
-      el.dataset.soldierId = s.id;
-      placeEl(el, s.hexId);
-      el.innerHTML = '<img src="' + currentImgFor(s) + '">';
-      el.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (phase === 'movement') {
-        // Clicking an already-selected soldier opens the inspector instead of re-selecting him
-        // (a no-op otherwise) — still "click on him" per the user's own ask, without turning
-        // every ordinary movement-planning click into an interrupting modal.
-        if (selectedId === s.id) { showSoldierInspector(s.id); return; }
-        selectSoldier(s.id);
-        return;
-      }
-        if (phase === 'round') showSoldierInspector(s.id);
-      });
-      canvas.appendChild(el);
-      counterEls[s.id] = el;
+      makeCounter(s, s.hexId);
       updateCounterVisual(s);
     });
     Object.keys(germans).forEach(function (cardId) {
       var g = germans[cardId];
-      var el = document.createElement('div');
-      el.className = 'counter enemy';
-      el.dataset.soldierId = g.id;
-      placeEl(el, g.hexId);
-      el.innerHTML = '<img src="' + currentImgFor(g) + '">';
-      el.addEventListener('click', function (e) { e.stopPropagation(); showSoldierInspector(g.id); });
-      canvas.appendChild(el);
-      counterEls[g.id] = el;
+      makeCounter(g, g.hexId);
       updateCounterVisual(g);
     });
     Object.keys(opsState.eventMarkers || {}).forEach(function (hexId) { placeEventMarkerEl(hexId); });

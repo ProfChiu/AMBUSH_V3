@@ -50,26 +50,37 @@
   // width), so this centers the target hex in the visible vertical band.
   // Follow only when off-screen (task 4); v1's always-re-centre behaviour left with Classic.
   function scrollMapTo(hexId) { FX.ensureVisible([hexId]); }
-  function currentImgFor(s) {
-    if (s.side === 'german') return s.img;
-    return (s.stance === 'crouching' || s.stance === 'prone') ? s.imgCrouch : s.img;
+  // The scan, the star, the tints and the counter itself come from counters.js (AmbushCounters).
+  function currentImgFor(s) { return AmbushCounters.srcFor(s); }
+  // A click on a counter: a German opens the inspector; a US soldier is selected in Operations
+  // (a click on the one already selected opens the inspector) and inspected in a Round.
+  function counterClick(s) {
+    if (s.side === 'german') { showSoldierInspector(s.id); return; }
+    if (phase === 'movement') {
+      // Clicking an already-selected soldier opens the inspector instead of re-selecting him
+      // (a no-op otherwise) — still "click on him" per the user's own ask, without turning
+      // every ordinary movement-planning click into an interrupting modal.
+      if (selectedId === s.id) { showSoldierInspector(s.id); return; }
+      selectSoldier(s.id);
+      return;
+    }
+    if (phase === 'round') showSoldierInspector(s.id);
   }
+  // Build a soldier's counter, place it in hexId and put it on the map (US entry, German
+  // activation, both on load). The caller runs updateCounterVisual where it always has.
+  function makeCounter(s, hexId) {
+    var el = AmbushCounters.make(s, counterClick);
+    placeEl(el, hexId);
+    canvas.appendChild(el);
+    counterEls[s.id] = el;
+    return el;
+  }
+  // Phase 5: a rustle when a living soldier changes stance on screen
+  function stanceRustle() { FX.sound('rustle'); }
   function updateCounterVisual(s) {
     var el = counterEls[s.id];
     if (!el) return;
-    el.classList.toggle('wounded', s.status === 'wounded');
-    el.classList.toggle('dead', isOut(s));
-    var imgEl = el.querySelector('img');
-    if (imgEl) imgEl.src = currentImgFor(s);
-    // the commander wears a star, so the soldier who can Give Turn and Make aware is found on sight
-    if (s.isCommander && !el.querySelector('.cmd-badge')) {
-      var star = document.createElement('span');
-      star.className = 'cmd-badge'; star.textContent = '★'; star.title = s.name + ', commander (§6/3)';
-      el.appendChild(star);
-    }
-    // Phase 5: a rustle when a living soldier changes stance on screen
-    if (el._stance && el._stance !== s.stance && !el.classList.contains('dead')) FX.sound('rustle');
-    el._stance = s.stance;
+    AmbushCounters.update(el, s, stanceRustle);
   }
   function highlightActor(id) {
     Object.keys(counterEls).forEach(function (k) { counterEls[k].classList.toggle('active-actor', k === id); });

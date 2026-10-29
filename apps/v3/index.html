@@ -55,7 +55,7 @@
 </section>
 
 <!-- Game: the map fills the window, the HUD floats over it. Mission 1 (Phase 3) is v2's controller
-     (mission1.js, copied from apps/game/mission1demo.js) re-pointed at this stage; every element id
+     (mission1/, 13 files since R3; copied from apps/game/mission1demo.js) re-pointed at this stage; every element id
      below is one it, or the bot's seam, reaches for. -->
 <section id="game" class="screen" aria-label="Mission">
   <div id="board"><div id="world">
@@ -225,7 +225,7 @@
 <div id="dialogs-root"></div>
 
 <!-- v2's rules engine, byte-identical (apps/game/), and its data. v2's dialog engine
-     (ambushdialogs.js) is loaded unchanged; its controller is v3's copy, mission1.js. -->
+     (ambushdialogs.js) is loaded unchanged; its controller is v3's copy, in mission1/ (13 files). -->
 <script src="../game/hexgrid.js"></script>
 <script src="../game/movementrules.js"></script>
 <script src="../game/losrules.js"></script>
@@ -266,7 +266,19 @@
 <script src="board.js"></script>
 <script src="counters.js"></script>
 <script src="../game/ambushdialogs.js"></script>
-<script src="mission1.js"></script>
+<script src="mission1/core.js"></script>
+<script src="mission1/present.js"></script>
+<script src="mission1/info.js"></script>
+<script src="mission1/roster.js"></script>
+<script src="mission1/setup.js"></script>
+<script src="mission1/operations.js"></script>
+<script src="mission1/contact.js"></script>
+<script src="mission1/rounds.js"></script>
+<script src="mission1/verbs.js"></script>
+<script src="mission1/german.js"></script>
+<script src="mission1/combat.js"></script>
+<script src="mission1/save.js"></script>
+<script src="mission1/seams.js"></script>
 <script src="shell.js"></script>
 <script src="ring.js"></script>
 <script src="stack.js"></script>

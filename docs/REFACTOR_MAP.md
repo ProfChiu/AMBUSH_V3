@@ -464,25 +464,25 @@ Parity after each file.
 
 ### 5.4 The files (`apps/v3/mission1/`, in load order)
 
-Sizes are after Phase 4's dead code is removed; "uses" and "used for" count the names crossing the file's edge.
+Line ranges and sizes are the actual R3 cut (Step 3) of `mission1.js` at `689a433`, after R2's dead-code removal; lines 23, 24 and 5872 were the IIFE wrapper. Sizes exclude each file's two added lines (`'use strict';` and a header). "uses" and "used for" count the names crossing the file's edge (measured before R2).
 
-| # | File | From lines | ~Lines | Holds | Used for / uses |
+| # | File | Lines (689a433) | Lines | Holds | Used for / uses |
 |---|---|---|---:|---|---|
-| 1 | `core.js` | 1-373 | 370 | engine and data aliases, constants, terrain/LOS tables, weapon and crew-weapon rules, VP target, difficulty, `UI.init`, objectives and voice buttons, `M1.state` (Stage B) | ~70 / 3 |
-| 2 | `present.js` | 374-1051 | 590 | dice and strips, voice, log, pop-up helpers, `Resolve`, `FX` | ~20 / 14 |
-| 3 | `info.js` | 1052-1378 | 325 | `Info` (the map as information surface), `Sight` | 2 / 32 |
-| 4 | `roster.js` | 1379-1653 | 275 | map rendering, counters (via `counters.js`), finders, kit and token strip, roster/VP/objectives render | 35 / 15 |
-| 5 | `setup.js` | 1654-1867 | 215 | §4 squad generation, entry placement | 4 / 25 |
-| 6 | `operations.js` | 1868-2576 | 705 | selection, destinations, combo moves, walking, HUD, Paragraph Check, Condition Change, step chain | 33 / 73 |
-| 7 | `contact.js` | 2577-2955 | 380 | contact terms, German activation, German card, tooltips, hit breakdown, inspector | 8 / 43 |
-| 8 | `rounds.js` | 2956-3544 | 590 | Action Round start, events, awareness, initiative, track, turn driving, action panel, round move, target choice | 16 / 96 |
-| 9 | `verbs.js` | 3545-4219 | 675 | grenade, drag, pick up, command, stance, prepare, fire, assault, clear jam (the player's verbs) | 28 / 64 |
-| 10 | `german.js` | 4220-4810 | 590 | German turn, German actions, German movement by reference | 3 / 60 |
-| 11 | `combat.js` | 4811-5400 | 590 | fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory | 12 / 61 |
-| 12 | `save.js` | 5401-5719 | 290 | save/load (new key + import), start screen, game flow | 6 / 48 |
-| 13 | `seams.js` | 5720-end | 290 | `VERBS`, `verbsOffered`, `automation`, `__mission1Debug` (live members only), `AmbushMission` | 0 / 96 |
+| 1 | `core.js` | 1-22, 25-365 | 363 | engine and data aliases, constants, terrain/LOS tables, weapon and crew-weapon rules, VP target, difficulty, `UI.init`, objectives and voice buttons, `M1.state` (Stage B) | ~70 / 3 |
+| 2 | `present.js` | 366-979 | 614 | dice and strips, voice, log, pop-up helpers, `Resolve`, `FX` | ~20 / 14 |
+| 3 | `info.js` | 980-1305 | 326 | `Info` (the map as information surface), `Sight` | 2 / 32 |
+| 4 | `roster.js` | 1306-1581 | 276 | map rendering, counters (via `counters.js`), finders, kit and token strip, roster/VP/objectives render | 35 / 15 |
+| 5 | `setup.js` | 1582-1795 | 214 | §4 squad generation, entry placement | 4 / 25 |
+| 6 | `operations.js` | 1796-2488 | 693 | selection, destinations, combo moves, walking, HUD, Paragraph Check, Condition Change, step chain | 33 / 73 |
+| 7 | `contact.js` | 2489-2880 | 392 | contact terms, German activation, German card, tooltips, hit breakdown, inspector | 8 / 43 |
+| 8 | `rounds.js` | 2881-3467 | 587 | Action Round start, events, awareness, initiative, track, turn driving, action panel, round move, target choice | 16 / 96 |
+| 9 | `verbs.js` | 3468-4134 | 667 | grenade, drag, pick up, command, stance, prepare, fire, assault, clear jam (the player's verbs) | 28 / 64 |
+| 10 | `german.js` | 4135-4733 | 599 | German turn, German actions, German movement by reference | 3 / 60 |
+| 11 | `combat.js` | 4734-5323 | 590 | fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory | 12 / 61 |
+| 12 | `save.js` | 5324-5603 | 280 | save/load (new key + import), start screen, game flow | 6 / 48 |
+| 13 | `seams.js` | 5604-5871 | 268 | `VERBS`, `verbsOffered`, `automation`, `__mission1Debug` (live members only), `AmbushMission` | 0 / 96 |
 
-`combat.js` keeps round end, exit and victory (5243-5400) because Stage A keeps line order. They can move to
+`combat.js` keeps round end, exit and victory (5167-5323 at `689a433`) because Stage A keeps line order. They can move to
 `rounds.js` in Stage C, when order stops mattering.
 
 ### 5.5 index.html load order (Stage A onward)
@@ -656,3 +656,39 @@ identical, traces identical, 5 live drives pass, engine unchanged). `mission1.js
   (differ if `stance` were unset); `counters.js`'s `OUT` (another file, Step 4); the German counter loop on load
   (Step 4); `usSoldiers.filter` in findSoldier, the inactive-mates finder and Ending 1 (different predicates).
 - **For R3:** §5.4's line ranges are stale; re-derive them from section markers on the current file.
+
+**R3 results (2026-10-29): Step 3, Stage A cut. T2 green** (1,082 s: T1 PASS 151 s; parity 30/30 Normal + 30/30 Easy
+identical; traces identical, 282 + 408 entries; live chapters 55, drills 55, germans 36, lesson 39, map 47 ok, 0 fail,
+0 console errors; engine 19/19 match the manifest). `apps/v3/mission1.js` is gone; `apps/v3/mission1/` holds 13 plain
+scripts, each `'use strict';` + a one-line header + its lines of the `689a433` file, byte for byte. The IIFE wrapper was
+three lines (23 `(function () {`, 24 `  'use strict';`, 5872 `})();`): no guard, no `return`, no top-level `this`,
+`let`, `const` or `class`. The 22-line file header went to the top of `core.js`'s body. Bodies keep their 2-space indent.
+
+| File | Lines of `689a433` | Body lines | | File | Lines of `689a433` | Body lines |
+|---|---|---:|---|---|---|---:|
+| `core.js` | 1-22, 25-365 | 363 | | `rounds.js` | 2881-3467 | 587 |
+| `present.js` | 366-979 | 614 | | `verbs.js` | 3468-4134 | 667 |
+| `info.js` | 980-1305 | 326 | | `german.js` | 4135-4733 | 599 |
+| `roster.js` | 1306-1581 | 276 | | `combat.js` | 4734-5323 | 590 |
+| `setup.js` | 1582-1795 | 214 | | `save.js` | 5324-5603 | 280 |
+| `operations.js` | 1796-2488 | 693 | | `seams.js` | 5604-5871 | 268 |
+| `contact.js` | 2489-2880 | 392 | | **total** | | **5,869** |
+
+Boundaries are the section-rule comments; `contact.js` starts at the orphaned "real bug found live while testing Task
+#66" comment just above "Contact terms (Phase 8c)", and `german.js` at `germanAutoTurn`'s comment (no rule there).
+`index.html` loads the 13 in §5.5's order in place of the one tag; two comments there now say `mission1/`. Nothing else
+loads `mission1.js` by path (the other hits are comments in shell, ring, stack, lesson, css, `lesson_fixtures.js`).
+
+**Proof tools added.** `tools/split_mission1.py` (the cut, from `git show 689a433`, asserts the ranges tile the file);
+`tools/check_split.py` (strips the 2 added lines, concatenation equals the old body minus the wrapper; index order);
+`tools/check_globals.py` (Chromium: the 345 top-level names on `window`, none a browser global (979) or another
+script's (298), none declared twice, the list complete against the page's real globals, 0 console errors on load).
+`__v3stack` is set by `stack.js` only when `AmbushMission` exists, so the check allows it. Old page vs new page: no
+global lost, exactly 345 added.
+
+**For R4 and R5.** The four counter-build sites (`el.className = 'counter…'`) are `setup.js` (US entry), `contact.js`
+(German activation) and `save.js` ×2 (US and German on load); `updateCounterVisual` is in `roster.js`. The chains for
+`toHitCard` are in `combat.js`; clear jam (`clearJamRoll`) is in `verbs.js`. Stage B's state vars: 9 in `roster.js`
+(lines 81-94 of the file), `selectedId` in `operations.js`, `entryIndex` in `setup.js`, `difficulty` in `core.js`. Until
+Stage B they are window properties, so a missed rename will not throw when read through `window.x` or `typeof`; grep
+for bare names as planned, and rerun `check_globals.py` (its expected set shrinks by the moved names).

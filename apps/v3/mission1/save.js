@@ -1,0 +1,282 @@
+'use strict';
+// mission1/save.js (12 of 13) — save/load, start screen, game flow. Stage A cut of mission1.js lines 5324-5603 (docs/REFACTOR_MAP.md 5.4).
+  // ---------------------------------------------------------------------
+  // Save / Load — localStorage for a quick same-browser save, plus export/import to a JSON
+  // file for portability (same "no server, client-side file only" constraint as Download Log).
+  //
+  // Every module-level piece of real game state (usSoldiers, germans, opsState, vpState, track,
+  // etc.) is plain JSON-safe data — no DOM nodes or functions live on these objects — so a
+  // straight JSON.stringify/parse round-trip is enough for the DATA. The DOM (counters, entry
+  // markers, Event marker overlays, which HUD sections are visible) is never serialized; it's
+  // rebuilt fresh from the restored data by applySavedState(), the same way startOperations()/
+  // startActionRound()/etc. build it fresh from scratch today.
+  //
+  // Saving is only allowed at a genuinely quiescent moment — no popup open, and not mid-way
+  // through picking a Move destination (an uncommitted UI selection, not real state) — because
+  // the game is a step-by-step popup chain (pendingSteps/currentHex/currentParagraph) with no
+  // well-defined "resume" point mid-chain. Every point where the player is actually waiting to
+  // choose something (soldier selection, an entry hex, an Action Round's action panel) already
+  // has no popup open, so this isn't a real restriction on normal play.
+  // Multiple slots, most-recent-last, capped at MAX_SAVES — saveGame() evicts the oldest (index 0)
+  // once the cap is exceeded. Each entry IS a serializeState() snapshot (it already carries its
+  // own savedAt/version), so there's no separate metadata wrapper to keep in sync.
+  var SAVE_LIST_KEY = 'ambush-mission1-saves-v1';
+  var MAX_SAVES = 10;
+  // Any queue item, modal or a resolution-card line: mid-chain is never a safe save point.
+  function popupOpen() { return !!Dialogs.current; }
+  function isSafeToSave() {
+    if (popupOpen()) return false;
+    if (phase === 'squadgen' || phase === 'over') return false;
+    if (phase === 'round' && document.getElementById('cancelMoveBtn').style.display !== 'none') return false; // mid Move destination-pick
+    return true;
+  }
+  function serializeState() {
+    return {
+      version: 1, savedAt: Date.now(), phase: phase, difficulty: difficulty,
+      usSoldiers: usSoldiers, germans: germans, opsState: opsState, vpState: vpState,
+      track: track, currentActorId: currentActorId, roundNum: roundNum,
+      currentGermanIdsThisRound: currentGermanIdsThisRound, entryIndex: entryIndex, selectedId: selectedId,
+    };
+  }
+  function loadSaveList() {
+    try { var raw = localStorage.getItem(SAVE_LIST_KEY); return raw ? JSON.parse(raw) : []; }
+    catch (e) { return []; }
+  }
+  function describeSave(state) {
+    var totals = V.computeVPTotal(state.vpState);
+    var where = state.phase === 'entry' ? 'Entry placement'
+      : state.phase === 'movement' ? 'Operations'
+      : state.phase === 'round' ? 'Action Round ' + (state.roundNum || '?')
+      : state.phase;
+    return where + ' &middot; ' + totals.total + ' VP';
+  }
+  function saveGame() {
+    if (!isSafeToSave()) { Toasts.show('Can\'t save mid-step — finish the current action first.'); return false; }
+    var list = loadSaveList();
+    list.push(serializeState());
+    while (list.length > MAX_SAVES) list.shift(); // oldest first in, oldest first evicted
+    try {
+      localStorage.setItem(SAVE_LIST_KEY, JSON.stringify(list));
+      Toasts.show('Game saved (' + list.length + '/' + MAX_SAVES + ').', { kind: 'success' });
+      return true;
+    } catch (e) { Toasts.show('Save failed: ' + e.message); return false; }
+  }
+  function applySavedState(data) {
+    // A fresh page load auto-starts Squad Generation (its first popup can already be open by the
+    // time the player clicks Load instead of playing through it) — force-close it so its callback
+    // chain can never fire afterward and act on the state we're about to replace.
+    Dialogs.reset();
+    Object.keys(counterEls).forEach(function (k) { counterEls[k].remove(); }); counterEls = {};
+    clearDestMarks();
+    Object.keys(entryEls).forEach(function (k) { entryEls[k].remove(); }); entryEls = {};
+    Object.keys(eventMarkerEls).forEach(function (k) { eventMarkerEls[k].remove(); }); eventMarkerEls = {};
+
+    usSoldiers = data.usSoldiers; germans = data.germans; phase = data.phase;
+    // `aware` (§6/5) postdates this field's introduction — a save written before it has none, so
+    // default to already-aware rather than false: the concept didn't exist yet at save time, and
+    // those soldiers were already acting normally, not sitting immobile.
+    usSoldiers.forEach(function (s) { if (s.aware === undefined) s.aware = true; });
+    // Saves written before Easy mode existed carry no difficulty; they were all played on the
+    // rulebook settings, so Normal is the correct default rather than a guess.
+    setDifficulty(data.difficulty === D.EASY ? D.EASY : D.NORMAL);
+    opsState = data.opsState; vpState = data.vpState; track = data.track;
+    // germanActivations/awards postdate the §2/1 VP fix — a save written before it has neither,
+    // so default them rather than letting computeVPTotal reduce over undefined.
+    vpState.germanActivations = vpState.germanActivations || [];
+    vpState.awards = vpState.awards || [];
+    vpState.germanDefeats = vpState.germanDefeats || [];
+    vpState.usCasualties = vpState.usCasualties || [];
+    currentActorId = data.currentActorId; roundNum = data.roundNum || 0;
+    currentGermanIdsThisRound = data.currentGermanIdsThisRound || [];
+    entryIndex = data.entryIndex || 0; selectedId = data.selectedId || null;
+
+    usSoldiers.forEach(function (s) {
+      if (s.exited || !s.hexId) return;
+      var el = document.createElement('div');
+      el.className = 'counter';
+      el.dataset.soldierId = s.id;
+      placeEl(el, s.hexId);
+      el.innerHTML = '<img src="' + currentImgFor(s) + '">';
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (phase === 'movement') {
+        // Clicking an already-selected soldier opens the inspector instead of re-selecting him
+        // (a no-op otherwise) — still "click on him" per the user's own ask, without turning
+        // every ordinary movement-planning click into an interrupting modal.
+        if (selectedId === s.id) { showSoldierInspector(s.id); return; }
+        selectSoldier(s.id);
+        return;
+      }
+        if (phase === 'round') showSoldierInspector(s.id);
+      });
+      canvas.appendChild(el);
+      counterEls[s.id] = el;
+      updateCounterVisual(s);
+    });
+    Object.keys(germans).forEach(function (cardId) {
+      var g = germans[cardId];
+      var el = document.createElement('div');
+      el.className = 'counter enemy';
+      el.dataset.soldierId = g.id;
+      placeEl(el, g.hexId);
+      el.innerHTML = '<img src="' + currentImgFor(g) + '">';
+      el.addEventListener('click', function (e) { e.stopPropagation(); showSoldierInspector(g.id); });
+      canvas.appendChild(el);
+      counterEls[g.id] = el;
+      updateCounterVisual(g);
+    });
+    Object.keys(opsState.eventMarkers || {}).forEach(function (hexId) { placeEventMarkerEl(hexId); });
+
+    renderRoster();
+    renderVP();
+
+    document.getElementById('roster-sec').style.display = '';
+    document.getElementById('movement-sec').style.display = 'none';
+    document.getElementById('action-sec').style.display = 'none';
+    document.getElementById('track-sec').style.display = 'none';
+    document.getElementById('round-sec').style.display = 'none';
+    document.getElementById('cancelMoveBtn').style.display = 'none';
+
+    if (phase === 'entry') {
+      document.getElementById('tb-phase').textContent = 'Entry Placement';
+      ENTRY_HEXES.forEach(function (hexId) {
+        var el = document.createElement('div');
+        el.className = 'entry-hex';
+        placeEl(el, hexId);
+        el.title = hexId;
+        el.addEventListener('click', function (e) { e.stopPropagation(); placeNextSoldier(hexId); });
+        canvas.appendChild(el);
+        entryEls[hexId] = el;
+      });
+      promptPlaceSoldier();
+    } else if (phase === 'movement') {
+      document.getElementById('tb-phase').textContent = 'Operations';
+      document.getElementById('movement-sec').style.display = '';
+      if (activeUS().length) selectSoldier(selectedId && findSoldier(selectedId) ? selectedId : activeUS()[0].id);
+    } else if (phase === 'round') {
+      document.getElementById('tb-phase').textContent = 'Round ' + roundNum;
+      document.getElementById('track-sec').style.display = '';
+      if (Sched.isRoundComplete(track)) {
+        renderTrack();
+        document.getElementById('round-sec').style.display = '';
+        document.getElementById('tb-phase').textContent = 'Round ' + roundNum + ' complete';
+        document.getElementById('status-banner').textContent = 'Round complete. Continue the fight.';
+      } else {
+        document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
+        driveNext();
+      }
+    }
+    logHeader('Game loaded' + (data.savedAt ? ' (saved ' + new Date(data.savedAt).toLocaleString() + ')' : '') + '.');
+  }
+  // Lets the player pick which of the (up to MAX_SAVES) saved games to resume, newest first,
+  // each row showing when it was saved and a short "where you were" descriptor.
+  // onCancel: optional — called if the player backs out without loading anything. The mid-game
+  // "Load" button leaves onCancel unset (there's already a live game underneath to fall back to);
+  // the startup dialog passes one so Cancel returns to the start-screen choice instead of leaving
+  // the game un-started with nothing on screen.
+  function openLoadDialog(onCancel) {
+    var list = loadSaveList();
+    if (!list.length) { Toasts.show('No saved games found.'); if (onCancel) onCancel(); return; }
+    Dialogs.push({
+      title: 'Load Game', variant: 'wide', allowEnter: false, allowEscape: true, escapeButtonId: 'cancel',
+      buttons: [{ id: 'cancel', label: 'Cancel' }],
+      render: function (ctx) {
+        var rows = list.slice().reverse(); // newest first
+        var html = rows.map(function (state, i) {
+          var idx = list.length - 1 - i;
+          return '<div class="save-row" data-idx="' + idx + '">' +
+            '<span class="save-ts">' + new Date(state.savedAt).toLocaleString() + '</span>' +
+            '<span class="save-desc">' + describeSave(state) + '</span></div>';
+        }).join('');
+        ctx.bodyEl.innerHTML = '<div class="save-list">' + html + '</div>';
+        Array.prototype.forEach.call(ctx.bodyEl.querySelectorAll('.save-row'), function (row) {
+          row.addEventListener('click', function () { applySavedState(list[parseInt(row.dataset.idx, 10)]); });
+        });
+      },
+      onButton: function (id, ctx) { ctx.close(); },
+      onClose: function () { if (onCancel) onCancel(); }, // fires on Cancel/Escape only — a real
+      // row pick goes through applySavedState()'s Dialogs.reset(), which bypasses onClose entirely.
+    });
+  }
+  document.getElementById('saveGameBtn').addEventListener('click', saveGame);
+  document.getElementById('loadGameBtn').addEventListener('click', function () { openLoadDialog(); });
+
+  // ---------------------------------------------------------------------
+  // Start screen — shown once, on page load, instead of jumping straight into Squad Generation.
+  // ---------------------------------------------------------------------
+  function startGameFlow() {
+    var saves = loadSaveList();
+    Dialogs.push({
+      title: 'Ambush! Digital — Mission 1', variant: 'narrow', allowEnter: true, allowEscape: false,
+      buttons: [
+        { id: 'normal', label: 'Start — Normal', variant: 'amber' },
+        { id: 'easy', label: 'Start — Easy' },
+        { id: 'load', label: 'Load Game', disabled: !saves.length },
+      ],
+      render: function (ctx) {
+        // Spell out exactly what Easy changes before the player picks. The mode is a set of
+        // stated, visible adjustments, not a vague "easier" — so it is described up front and
+        // repeated in the Objectives window for the rest of the mission.
+        ctx.bodyEl.innerHTML = '<div class="step-context">' +
+          '<b>Normal</b> &mdash; ' + D.settings(D.NORMAL).blurb +
+          ' Victory target <b>' + V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(D.NORMAL)).requirement + ' VP</b>.' +
+          '<br><br><b>Easy</b> &mdash; ' + D.settings(D.EASY).blurb +
+          ' Victory target <b>' + V.scaleRequirement(vpReachable.ceiling, VP_REQUIREMENT_RULEBOOK, D.vpMargin(D.EASY)).requirement + ' VP</b>.' +
+          '<ul style="text-align:left; margin:8px 0 0; padding-left:20px; line-height:1.6;">' +
+          D.describe(D.EASY).map(function (line) { return '<li>' + line + '</li>'; }).join('') +
+          '</ul><br>' +
+          (saves.length ? saves.length + ' saved game' + (saves.length === 1 ? '' : 's') + ' available.' : 'No saved games found.') +
+          '</div>';
+      },
+      onButton: function (id, ctx) { ctx.close(id); },
+      onClose: function (id) {
+        if (id === 'load') { openLoadDialog(function () { startGameFlow(); }); return; }
+        setDifficulty(id === 'easy' ? D.EASY : D.NORMAL);
+        startSquadGeneration();
+      },
+    });
+  }
+  document.getElementById('exportSaveBtn').addEventListener('click', function () {
+    if (!isSafeToSave()) { Toasts.show('Can\'t save mid-step — finish the current action first.'); return; }
+    var blob = new Blob([JSON.stringify(serializeState(), null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'ambush-mission1-save-' + Date.now() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('importSaveBtn').addEventListener('click', function () { document.getElementById('importSaveFile').click(); });
+  document.getElementById('importSaveFile').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    e.target.value = ''; // allow re-importing the same filename later
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var data;
+      try { data = JSON.parse(reader.result); } catch (err) { Toasts.show('That file is not a valid save.'); return; }
+      applySavedState(data);
+    };
+    reader.readAsText(file);
+  });
+
+  // Debugging aid — dumps the visible play log plus a full state snapshot to a downloadable
+  // .txt file. No server to persist to (this is a static file:// app), so a client-side download
+  // is the whole mechanism.
+  document.getElementById('downloadLogBtn').addEventListener('click', function () {
+    var lines = Array.prototype.map.call(document.querySelectorAll('#combatlog .log-line'), function (el) { return el.textContent; });
+    var text = 'Ambush! Digital — Mission 1 play log — ' + new Date().toISOString() + '\n\n' +
+      lines.join('\n') + '\n\n---- state dump ----\n' + JSON.stringify(window.__mission1Debug.state(), null, 2) + '\n';
+    var blob = new Blob([text], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'ambush-mission1-log-' + Date.now() + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('resetBtn').addEventListener('click', function () { location.reload(); });

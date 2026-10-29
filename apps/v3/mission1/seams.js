@@ -1,0 +1,270 @@
+'use strict';
+// mission1/seams.js (13 of 13) — VERBS, verbsOffered, __mission1Debug, AmbushMission. Stage A cut of mission1.js lines 5604-5871 (docs/REFACTOR_MAP.md 5.4).
+  // ---------------------------------------------------------------------
+  // Automation seam (v2 task 2, docs/02_HANDOFF.md). tools/bot/ plays ONLY through these five
+  // calls plus select(); it never reads or clicks the page's markup. When the presentation
+  // rewrite changes the DOM, it keeps these answering the same shapes and the bot, pacing.py and
+  // autopsy.py keep working unchanged — that is the contract. Every action runs the same
+  // handler a player's click runs.
+  //
+  //   pendingDecision()  the open dialog as data, or null when the board is waiting:
+  //                      { kind:'dialog', title, text, phase, buttons:[{id,label,disabled}],
+  //                        rows:[{idx,text,odds}] }
+  //   choose(i)          pick row i of the open dialog
+  //   press(id)          a dialog button while a dialog is open, otherwise a board verb (VERBS);
+  //                      false when it is not available (disabled, as a click would be)
+  //   clickHex(hexId)    the decision the map is offering at that hex: an entry hex during
+  //                      placement, otherwise a destination marker (move, combo move, drag)
+  //   select(soldierId)  Operations: make this soldier the one the panel acts for
+  //   board()            the state the player can see: phase, soldiers, Germans, VP panel,
+  //                      offered destinations/entry hexes, and verbs {name: enabled}
+  //   dialogLog()        every dialog presented so far: { title, rows, modeless, phase } (pacing.py)
+  //   setPresentation()  kept for old callers: always 'cards', the only presentation;
+  //                      pendingDecision() answers { kind:'resolving' } while a card line plays
+  // ---------------------------------------------------------------------
+  // Verb name -> [panel section, button]. Names are the contract; element ids are this page's.
+  var VERBS = {
+    'stance:standing': ['movement-sec', 'stance-standing'], 'stance:crouching': ['movement-sec', 'stance-crouching'],
+    'stance:prone': ['movement-sec', 'stance-prone'], exitMap: ['movement-sec', 'exitMapBtn'],
+    clearJamOps: ['movement-sec', 'clearJamOpsBtn'],
+    move: ['action-sec', 'moveBtn'], fireAimed: ['action-sec', 'fireAimed'], fireSnap: ['action-sec', 'fireSnap'],
+    assault: ['action-sec', 'assaultBtn'], grenade: ['action-sec', 'grenadeBtn'], drag: ['action-sec', 'dragBtn'],
+    giveTurn: ['action-sec', 'giveTurnBtn'], makeAware: ['action-sec', 'makeAwareBtn'],
+    changeStance: ['action-sec', 'changeStanceBtn'], prepareWeapon: ['action-sec', 'prepareWeaponBtn'],
+    pickup: ['action-sec', 'pickupBtn'], clearJam: ['action-sec', 'clearJamBtn'], pass: ['action-sec', 'passTurn'],
+    cancelMove: ['action-sec', 'cancelMoveBtn'],
+    newRound: ['round-sec', 'newRoundBtn'],
+  };
+  function verbsOffered() {
+    var out = {};
+    Object.keys(VERBS).forEach(function (name) {
+      var sec = document.getElementById(VERBS[name][0]), btn = document.getElementById(VERBS[name][1]);
+      if (!sec || !btn || sec.style.display === 'none') return;
+      if (name === 'cancelMove' && btn.style.display === 'none') return;
+      out[name] = !btn.disabled;
+    });
+    return out;
+  }
+  var automation = {
+    pendingDecision: function () {
+      var spec = Dialogs.current;
+      if (!spec) return null;
+      // A resolution-card line is resolving, not asking: nothing to decide yet, but the board
+      // is not waiting for the player either.
+      if (spec.modeless) return { kind: 'resolving', title: spec.title || '' };
+      return {
+        kind: 'dialog', title: spec.title || '', text: Dialogs.bodyText(),
+        phase: document.getElementById('tb-phase').textContent,
+        buttons: (spec.buttons || []).map(function (b) { return { id: b.id, label: b.label, disabled: !!b.disabled }; }),
+        rows: (spec.choices || []).map(function (c, i) { return { idx: i, text: c.text, odds: c.odds }; }),
+      };
+    },
+    choose: function (i) {
+      var spec = Dialogs.current;
+      if (!spec || !spec.choices || !spec.choices[i]) throw new Error('choose(' + i + '): no such row in the open dialog');
+      spec.choices[i].pick();
+      return true;
+    },
+    press: function (id) {
+      if (Dialogs.current) return Dialogs.press(id);
+      if (id === 'resultDone') return Resolve.pressDone();
+      var v = VERBS[id];
+      if (!v) throw new Error('press(' + id + '): no dialog is open and that is not a verb');
+      var btn = document.getElementById(v[1]);
+      if (btn.disabled) return false;
+      btn.click(); // the button's own handler — same code path as the player's click
+      return true;
+    },
+    clickHex: function (hexId) {
+      if (phase === 'entry' && entryEls[hexId]) { placeNextSoldier(hexId); return true; }
+      if (destPicks[hexId]) { destPicks[hexId](); return true; }
+      // Task 6: in Operations any hex with a wall-aware route is a destination — the soldier
+      // walks it and stops when something happens.
+      if (phase === 'movement' && selectedSoldier() && walkRoute(hexId)) return true;
+      throw new Error('clickHex(' + hexId + '): the map offers no decision there');
+    },
+    pickActor: function (soldierId) { return pickActor(soldierId); },
+    select: function (soldierId) {
+      if (phase !== 'movement' || !counterEls[soldierId] || !findSoldier(soldierId)) return false;
+      if (selectedId !== soldierId) selectSoldier(soldierId);
+      return true;
+    },
+    board: function () {
+      var shownSel = selectedId && counterEls[selectedId] && counterEls[selectedId].classList.contains('selected') ? selectedId : null;
+      return {
+        phase: phase, roundNum: roundNum, condition: opsState ? opsState.condition : null,
+        currentActorId: currentActorId, selectedId: shownSel, lastSelectedId: lastSelectedId,
+        us: usSoldiers.map(function (s) {
+          return { id: s.id, letter: s.letter, hexId: s.hexId, stance: s.stance, status: s.status,
+            isActive: !!s.isActive, exited: !!s.exited, aware: !!s.aware, mpa: s.mpa,
+            weaponId: s.weaponId, PC: s.PC, WS: s.WS, IN: s.IN,
+            jammed: !!s.weaponJammed, broken: !!s.weaponBroken };
+        }),
+        germans: allGermans().map(function (g) {
+          return { id: g.id, hexId: g.hexId, status: g.status, isActive: !!g.isActive, role: g.card.Role };
+        }),
+        vp: { gained: shownVP.gained, lost: shownVP.lost, total: shownVP.total, need: shownVP.need },
+        casualties: vpState.usCasualties, activations: vpState.germanActivations.length,
+        dests: Object.keys(destPicks),
+        entryHexes: phase === 'entry' ? Object.keys(entryEls) : [],
+        verbs: verbsOffered(),
+        // v3: the soldiers the player may pick (§6/1)
+        pickable: picking ? picking.ids.slice() : [],
+        presentation: 'cards',
+        banner: document.getElementById('status-banner').textContent || '',
+      };
+    },
+    dialogLog: function () { return dialogLog.slice(); },
+    setPresentation: function () { return 'cards'; },
+  };
+
+  // The console seam for tools/: the automation calls above, plus the hooks tools/bot and
+  // tools/repro_save.py use (R2 removed the 36 *ForTesting hooks nothing called). Each drives the
+  // same production function a player's action runs.
+  window.__mission1Debug = {
+    pendingDecision: automation.pendingDecision, choose: automation.choose, press: automation.press,
+    clickHex: automation.clickHex, select: automation.select, pickActor: automation.pickActor, board: automation.board,
+    dialogLog: automation.dialogLog, setPresentation: automation.setPresentation,
+    tryExit: function () { var s = selectedSoldier(); if (s) tryExit(s); },
+    // currentActorId matters as much as the track itself for anything driving a Round from
+    // outside: the AR Track says whose turn it SHOULD be, this says whose turn the game is
+    // actually presenting. Its absence silently broke the automated player (tools/bot/), which
+    // read undefined and so could never identify the acting soldier — reducing every Rounds turn
+    // to "fire or pass" and freezing 27 of 30 test games in an endless firefight.
+    state: function () { return { phase: phase, usSoldiers: usSoldiers, germans: germans, vpState: vpState, opsState: opsState, track: track, roundNum: roundNum, currentActorId: currentActorId }; },
+    // Passes hexId straight through as eff.hex, the same shape a real activate_german effect
+    // uses — exercises the exact production code path instead of spawning at a placeholder and
+    // patching the position afterward, which raced against the reveal pop-up/scroll once
+    // activateGermansSequentially stopped being fully synchronous.
+    spawnGermanForTesting: function (cardId, hexId) {
+      activateGermansSequentially([{ ids: [cardId.replace(/^GE /, '').replace(/\/.*/, '')], hex: hexId, stance: 'crouching' }], 0, function () {});
+    },
+    saveGame: saveGame,
+    listSaves: loadSaveList,
+    loadSaveAtIndex: function (i) { var list = loadSaveList(); if (list[i] !== undefined) applySavedState(list[i]); },
+    isSafeToSave: isSafeToSave,
+    // Console-only verification hook for §13/2's Port Box loss on wound (task 61) — drives the
+    // real applyDamage('W') path directly, since reaching a specific soldier's wound naturally
+    // depends on random fire-combat outcomes.
+    applyWoundForTesting: function (soldierId) { var s = findSoldier(soldierId); if (s) applyDamage(s, 'W', 'test'); },
+    groundItemsForTesting: function () { return groundItems; },
+    // Wall-aware Operations pathfinding, exposed for the automated player. The bot steps toward a
+    // goal by picking whichever adjacent hex is nearest by raw hex distance, which walks it
+    // straight into a building wall and oscillates for ever — K12 and L12 are both "closer to
+    // K13" than each other, and neither can actually reach it. Rather than teach the bot the
+    // wall rules (a second, driftable copy of them), this hands it the game's own answer.
+    // Returns the next hex to step to, or null if the goal is unreachable.
+    operationsNextStepForTesting: function (fromHexId, goalHexId) {
+      var route = operationsRoute(fromHexId, goalHexId); // same search, now shared with the walk
+      return route && route.length ? route[0] : null;
+    },
+  };
+
+  renderVP(); // populates the Objectives float window body even if it's opened before any game starts
+  // v3: the mission card on the shell's mission select picks the difficulty (brief, Phase 2), so
+  // the shell starts the mission; v2's start dialog (startGameFlow) is not shown.
+  window.AmbushMission = {
+    start: function (level) {
+      setDifficulty(level === 'easy' ? D.EASY : D.NORMAL);
+      startSquadGeneration();
+    },
+    // v3 punch list 2 (stack.js): everything in one hex, what each token carries, and what the
+    // player may do from there: pick/select a soldier, or (in a Round) have the current actor take
+    // an item, the same Pick Up / Exchange code as v2's button (§5/3, §6/7).
+    stack: function (hexId) {
+      var actor = phase === 'round' && currentActorId && !picking ? findSoldier(currentActorId) : null;
+      if (actor && actor.side === 'german') actor = null;
+      var pickupBtn = document.getElementById('pickupBtn');
+      var canTake = !!actor && actor.hexId === hexId && !pickupBtn.disabled && !Dialogs.current &&
+        document.getElementById('action-sec').style.display !== 'none';
+      var offers = canTake ? pickupOffers(actor) : [];
+      function gear(t) {
+        if (t.side === 'german') return t.weaponId ? [equipmentName(t.weaponId)] : [];
+        if (!t.inventory) return [];
+        // an Ammo Box holds a clip for a weapon, or a grenade
+        return EQ.carriedItemIds(t.inventory).map(equipmentName)
+          .concat(t.inventory.ammoBoxes.filter(Boolean).map(function (id) { return id === 'gren' ? 'Grenade' : 'Clip: ' + equipmentName(id); }));
+      }
+      return {
+        hexId: hexId,
+        actor: actor ? { id: actor.id, name: actor.name, here: actor.hexId === hexId } : null,
+        takeWhy: !actor ? '' : actor.hexId !== hexId ? actor.name + ' is not in this hex.' :
+          canTake ? '' : !upright(actor) ? 'He must be standing or crouching (§6/7).' :
+          (actor.stance === 'standing' && allInHex(hexId).some(function (t) { return t.id !== actor.id && !t.isActive; }))
+            ? 'Taking equipment from an inactive soldier needs him crouching (§6/7).' :
+          allInHex(hexId).some(function (t) { return t.side !== actor.side && t.isActive && t.weaponId; })
+            ? 'A German keeps his weapon until he is killed, incapacitated or captured (§6/7, §14).' : 'Nothing here he can take.',
+        tokens: allInHex(hexId).filter(function (t) { return !t.exited && (t.side !== 'german' || counterEls[t.id]); }).map(function (t) {
+          var act = phase === 'movement' && t.side !== 'german' && t.isActive ? 'select' :
+            picking && picking.ids.indexOf(t.id) !== -1 ? 'pick' : '';
+          return { id: t.id, name: t.name, letter: t.letter, side: t.side, stance: t.stance, status: t.status,
+            isActive: !!t.isActive, img: currentImgFor(t), gear: gear(t), act: act,
+            current: t.id === currentActorId, selected: t.id === selectedId };
+        }),
+        ground: (groundItems[hexId] || []).map(function (it) { return equipmentName(it.id); }),
+        offers: offers.map(function (o, i) { return { idx: i, from: o.from, item: o.item, label: stripTags(o.label) }; }),
+      };
+    },
+    hexOf: function (id) { var t = findSoldier(id); return t ? t.hexId : null; },
+    actOn: function (id) {
+      if (picking) return pickActor(id);
+      if (phase === 'movement' && counterEls[id] && findSoldier(id).side !== 'german') { selectSoldier(id); return true; }
+      return false;
+    },
+    take: function (idx) {
+      var actor = findSoldier(currentActorId), st = this.stack(actor.hexId);
+      if (!st.offers[idx]) return false;
+      disableActionButtons();
+      resolvePickup(actor, pickupOffers(actor)[idx]);
+      return true;
+    },
+    // v2's own start dialog (Normal / Easy / Load): index.html?play=ask, so the bot picks the level
+    // exactly as it does on v2's page
+    ask: function () { startGameFlow(); },
+    // v3 Phase 6 (lesson.js): a lesson opens on a saved position (a fixture, the same shape a save
+    // has) and rolls from its own seeded stream; the bot's seam reads the board while it runs.
+    lesson: {
+      load: function (data, rng) {
+        lessonRng = rng || null;
+        applySavedState(JSON.parse(JSON.stringify(data)));
+        // v3 opens Operations with nobody selected (punch list 3); a load selects the first soldier
+        if (phase === 'movement') deselect();
+      },
+      board: automation.board, pending: automation.pendingDecision,
+      // the German side, revealed the way a paragraph's activate_german effect reveals it
+      activate: function (cardId, hexId, stance) {
+        activateGermansSequentially([{ ids: [String(cardId)], hex: hexId, stance: stance || 'crouching' }], 0, function () {});
+      },
+      // Phase 7b (chapter 3): what the map says about a hex, from the functions the game itself
+      // asks (the movement chart, the fire chart's terrain row, traceLOS), so a puzzle's answer
+      // and its refusal are the engine's, never a copy. soldierId: whose move and stance; targetId:
+      // whom he would look at from there.
+      facts: function (hexId, soldierId, targetId) {
+        var s = soldierId ? findSoldier(soldierId) : null, t = targetId ? findSoldier(targetId) : null;
+        var terrain = REAL_TERRAIN[hexId], row = terrainRowFor(hexId), mod = {};
+        ['standing', 'crouching', 'prone'].forEach(function (st) {
+          mod[st] = FC.canBeFiredAt(CHART.FIRE_MODS_TERRAIN, row, st) ? FC.resolveTerrainMod(CHART.FIRE_MODS_TERRAIN, row, st) : null;
+        });
+        var d = s && phase === 'round' ? roundLegalDestinations(s)[hexId] : null;
+        var out = { hex: hexId, terrain: terrain, label: TERRAIN_LABELS[terrain] || terrain || 'unknown',
+          mp: M.mpCost(terrain), reach: d ? d.cost : null, mpa: s ? s.mpa : null, row: row, mod: mod,
+          cover: row === 0 ? 'no cover' : row <= 3 ? 'light cover' : 'good cover',
+          adjacent: !!(s && FC.hexDistance(s.hexId, hexId) === 1) };
+        // Phase 8b (chapter 5): the hex's cell on the mission card, read by the engine's own parser
+        var cid = G.printedIdToCartridgeId(hexId), grid = opsState && MISSION_CARDS['1'][String(opsState.condition)];
+        var raw = cid && grid ? grid[cid] : null, cell = Ops.parseCellValue(raw);
+        out.cell = { raw: raw, type: cell.type, paragraph: cell.paragraph || null, sighting: cell.sighting || null,
+          occurred: !!(cell.sighting && opsState.sightingsOccurred[cell.sighting]), marker: !!(opsState && opsState.eventMarkers[hexId]) };
+        if (t) {
+          var r = LOS.traceLOS({ fromId: hexId, toId: t.hexId, elevationByHexId: LOS_ELEV, terrainByHexId: LOS_TERRAIN,
+            edgeFeatures: edgeFeatures, fromStance: s ? s.stance : 'standing', toStance: t.stance });
+          var bt = r.hexId ? REAL_TERRAIN[r.hexId] : null;
+          out.los = { clear: !r.blocked, block: r.hexId || null, blockLabel: bt ? (TERRAIN_LABELS[bt] || bt) : null,
+            reason: r.reason || null, path: r.path || [], range: FC.hexDistance(hexId, t.hexId) };
+        }
+        return out;
+      },
+      sight: function (fromHex, toHex, fromStance, toStance) { return Sight.draw(fromHex, toHex, fromStance, toStance); },
+      unsight: function () { Sight.clear(); },
+    },
+  };

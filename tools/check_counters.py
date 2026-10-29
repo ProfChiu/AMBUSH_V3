@@ -27,6 +27,14 @@ SNAP_JS = r"""() => {
     window.__rustles = 0;
     var orig = FX.sound;
     FX.sound = function (n) { if (n === 'rustle') window.__rustles++; return orig.apply(this, arguments); };
+    // --events: the board effects and spoken card results, in order (R4 Step 5's toHitCard proof)
+    window.__events = [];
+    ['floatDie', 'sound', 'shake', 'badge'].forEach(function (k) {
+      var f = FX[k];
+      FX[k] = function () { window.__events.push(k + ' ' + JSON.stringify(Array.prototype.slice.call(arguments))); return f.apply(this, arguments); };
+    });
+    var sp = window.speak;
+    window.speak = function (h) { window.__events.push('speak ' + h); return sp.apply(this, arguments); };
   }
   var els = Array.prototype.slice.call(document.querySelectorAll('.counter'));
   if (els.some(function (e) { return e.classList.contains('moving'); })) return null;
@@ -76,6 +84,8 @@ def main():
             else:
                 time.sleep(0.08)
             time.sleep(0.02)
+        events = page.evaluate("() => window.__events")
+        log = page.evaluate("() => Array.from(document.querySelectorAll('#combatlog .log-line')).map(e => e.innerHTML)")
         saves_raw = page.evaluate("() => localStorage.getItem('ambush-mission1-saves-v1')")
         errors = list(s.errors)
     # The saves a game writes depend on when the page was quiet, so the load half replays the
@@ -91,10 +101,17 @@ def main():
             time.sleep(0.5)
             snaps.append({'load': i, **snap(page)})
             errors += list(s.errors)
-    Path(a.out).write_text(json.dumps({'errors': errors, 'saves_raw': saves_raw, 'snaps': snaps}, indent=0))
+    Path(a.out).write_text(json.dumps({'errors': errors, 'events': events, 'log': log, 'saves_raw': saves_raw, 'snaps': snaps}, indent=0))
     print(f'{len(snaps)} snapshots, {n} saves, {len(errors)} console errors -> {a.out}')
     if a.against:
-        ref = json.loads(Path(a.against).read_text())['snaps']
+        refall = json.loads(Path(a.against).read_text())
+        ref = refall['snaps']
+        for k, mine in (('events', events), ('log', log)):
+            other = refall.get(k)
+            if other is not None and other != mine:
+                i = next((j for j, (x, y) in enumerate(zip(other, mine)) if x != y), min(len(other), len(mine)))
+                print(f'check_counters DIFFER in {k} at {i} ({len(other)} vs {len(mine)}):\n  before {other[i:i+3]}\n  after  {mine[i:i+3]}')
+                return 1
         if len(ref) != len(snaps):
             print(f'check_counters DIFFER: {len(ref)} vs {len(snaps)} snapshots')
         for i, (x, y) in enumerate(zip(ref, snaps)):
@@ -103,7 +120,7 @@ def main():
                 return 1
         if len(ref) != len(snaps) or errors:
             return 1
-        print(f'check_counters IDENTICAL ({len(snaps)} snapshots)')
+        print(f'check_counters IDENTICAL ({len(snaps)} snapshots, {len(events)} fx/speech events, {len(log)} log lines)')
     return 0
 
 

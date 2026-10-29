@@ -1,6 +1,41 @@
 'use strict';
 // mission1/combat.js (11 of 13) — fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory. Stage A cut of mission1.js lines 4734-5323 (docs/REFACTOR_MAP.md 5.4).
   // ---------------------------------------------------------------------
+  // One to-hit card (docs/REFACTOR_MAP.md 4.3 item 1): one d10, read once per roll the same way
+  // by the card's result line, the log, the board effect and what follows.
+  //   o.actor, o.title, o.variant, o.contextHtml: the rollPopup's own fields. o.strip defaults to
+  //     hitStrip(o.chance).
+  //   o.chance: the Hit Chance; a roll is 'hit' or 'miss' by FC.resolveHitRoll.
+  //   o.text {hit, miss}: the card's result line (default "HIT." / "Miss.").
+  //   o.log: the log line's label ("To-hit"); o.logWords {hit, miss} (default HIT / miss). The line
+  //     reads "<log>: <roll> → <word>."
+  //   o.fx {hex, mark, loud}: when the die lands, mark() (the tracer / arc / lunge, read then)
+  //     resolves, the die floats over hex, and a loud one sounds and shakes or badges MISS.
+  //   o.result(roll): an outcome key in place of hit / miss (clear jam's clear / jam / break). Then
+  //     onHit(key) is the one continuation and onMiss is left out.
+  // ---------------------------------------------------------------------
+  var HIT_TEXT = { hit: '<b style="color:var(--clear)">HIT</b>.', miss: 'Miss.' };
+  var HIT_WORDS = { hit: '<b>HIT</b>', miss: 'miss' };
+  function toHitCard(o, onHit, onMiss) {
+    var result = o.result || function (roll) { return FC.resolveHitRoll(o.chance, roll) === 'hit' ? 'hit' : 'miss'; };
+    var text = o.text || HIT_TEXT, words = o.logWords || HIT_WORDS, fx = o.fx;
+    rollPopup({ actor: o.actor, title: o.title, kind: 'single', variant: o.variant, contextHtml: o.contextHtml,
+      strip: o.strip !== undefined ? o.strip : o.result ? undefined : hitStrip(o.chance),
+      explain: function (roll) { return text[result(roll)]; },
+      logText: function (roll) { return o.log + ': <span class="roll">' + roll + '</span> &rarr; ' + words[result(roll)] + '.'; },
+      fxLanded: fx && function (roll) {
+        var hit = result(roll) === 'hit';
+        if (fx.mark) fx.mark().resolve(hit ? 'hit' : 'miss');
+        FX.floatDie(fx.hex, roll, hit ? 'hit' : 'miss');
+        if (fx.loud) { FX.sound(hit ? 'hit' : 'miss'); if (hit) FX.shake(); else FX.badge(fx.hex, 'MISS', 'neutral'); }
+      },
+    }, function (roll) {
+      var r = result(roll);
+      if (!onMiss) onHit(r); else if (r === 'hit') onHit(); else onMiss();
+    });
+  }
+
+  // ---------------------------------------------------------------------
   // §9/1 Fire Combat Procedure
   // ---------------------------------------------------------------------
   function fireChain(firer, target, fireType, onDone) {
@@ -28,17 +63,10 @@
     function hitStep() {
       var b = estimateHitChanceBreakdown(firer, target, fireType);
       var breakdown = hitBreakdownHtml(b);
-      rollPopup({ actor: { left: firer, right: target }, title: 'Hit Chance & To-Hit', kind: 'single', variant: 'wide', contextHtml: breakdown, strip: hitStrip(b.clamped),
-        explain: function (roll) { var hit = FC.resolveHitRoll(b.clamped, roll) === 'hit'; return hit ? '<b style="color:var(--clear)">HIT</b>.' : 'Miss.'; },
-        logText: function (roll) { var hit = FC.resolveHitRoll(b.clamped, roll) === 'hit'; return 'To-hit: <span class="roll">' + roll + '</span> &rarr; ' + (hit ? '<b>HIT</b>' : 'miss') + '.'; },
-        fxLanded: function (roll) {
-          var hit = FC.resolveHitRoll(b.clamped, roll) === 'hit';
-          tracer.resolve(hit ? 'hit' : 'miss');
-          FX.floatDie(target.hexId, roll, hit ? 'hit' : 'miss');
-          FX.sound(hit ? 'hit' : 'miss');
-          if (hit) FX.shake(); else FX.badge(target.hexId, 'MISS', 'neutral');
-        },
-      }, function (roll) { if (FC.resolveHitRoll(b.clamped, roll) === 'hit') damageStep(); else ammoStep(); });
+      toHitCard({ actor: { left: firer, right: target }, title: 'Hit Chance & To-Hit', variant: 'wide', contextHtml: breakdown,
+        chance: b.clamped, log: 'To-hit',
+        fx: { hex: target.hexId, mark: function () { return tracer; }, loud: true },
+      }, damageStep, ammoStep);
     }
     function damageStep() {
       rollPopup({ actor: { left: firer, right: target }, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: damageStrip(weapon),

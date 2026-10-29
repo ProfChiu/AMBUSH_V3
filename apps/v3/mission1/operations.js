@@ -209,7 +209,7 @@
           title: 'Select Target — Snap Fire',
           prompt: s.name + ' has line of sight to ' + targets.length + (targets.length === 1 ? ' German' : ' Germans') + '. Choose a target.',
           hitChanceFor: function (t) { return estimateHitChance(s, t, 'snap'); },
-          hitChanceTipFor: function (t) { var b = estimateHitChanceBreakdown(s, t, 'snap'); return b ? hitBreakdownText(b) : ''; },
+          hitChanceTipFor: function (t) { var b = M1.estimateHitChanceBreakdown(s, t, 'snap'); return b ? M1.hitBreakdownText(b) : ''; },
           onCancel: onEndTurn,
         }, function (target) {
           fireChain(s, target, 'snap', function () { finishFireStep(s, onEndTurn); });
@@ -614,7 +614,7 @@
     var fromEvent = plan.some(function (s) { return s.type === 'event_roll'; });
     var i = 0;
     function showNext() {
-      if (i >= plan.length) { noteContact(mover, chain); afterParagraphChain(chain, next); return; }
+      if (i >= plan.length) { M1.noteContact(mover, chain); M1.afterParagraphChain(chain, next); return; }
       var step = plan[i]; i++;
       if (step.type === 'paragraph_text') {
         var text = PARAGRAPHS[step.num];

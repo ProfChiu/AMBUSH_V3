@@ -61,8 +61,8 @@
       }, function (roll) { if (FC.resolveJamCheck(weapon, fireType, roll).jammed) { firer.weaponJammed = true; onDone(); return; } hitStep(); });
     }
     function hitStep() {
-      var b = estimateHitChanceBreakdown(firer, target, fireType);
-      var breakdown = hitBreakdownHtml(b);
+      var b = M1.estimateHitChanceBreakdown(firer, target, fireType);
+      var breakdown = M1.hitBreakdownHtml(b);
       toHitCard({ actor: { left: firer, right: target }, title: 'Hit Chance & To-Hit', variant: 'wide', contextHtml: breakdown,
         chance: b.clamped, log: 'To-hit',
         fx: { hex: target.hexId, mark: function () { return tracer; }, loud: true },
@@ -129,7 +129,7 @@
       }, function (roll) { if (FC.resolveJamCheck(weapon, spec.fireType, roll).jammed) { onDone(); return; } hitStep(); });
     }
     function hitStep() {
-      toHitCard({ actor: target, title: 'Hit Chance & To-Hit', variant: 'wide', contextHtml: hitBreakdownHtml(b),
+      toHitCard({ actor: target, title: 'Hit Chance & To-Hit', variant: 'wide', contextHtml: M1.hitBreakdownHtml(b),
         chance: b.clamped, log: 'Hidden rifleman, to-hit', fx: { hex: target.hexId, loud: true },
       }, damageStep, onDone);
     }

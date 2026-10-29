@@ -26,12 +26,12 @@
     if (n === 1) M1.state.usSoldiers.forEach(function (s) { s.aware = false; });
     // "The US soldier who just made his PC check is automatically aware" (289, 312, 316, 333,
     // 602, 606): aware before the Awareness Phase, so he skips its check and is placed normally.
-    if (n === 1 && pendingContact) {
-      pendingContact.awareIds.forEach(function (id) {
+    if (n === 1 && M1.pendingContact) {
+      M1.pendingContact.awareIds.forEach(function (id) {
         var s = M1.findSoldier(id);
         if (!s || !s.isActive) return;
         s.aware = true;
-        M1.logLine(s.name + ' made the PC check and is automatically aware (paragraph ' + pendingContact.paragraph + ').');
+        M1.logLine(s.name + ' made the PC check and is automatically aware (paragraph ' + M1.pendingContact.paragraph + ').');
       });
     }
 
@@ -132,7 +132,7 @@
   function rollInitiativeAdvantage(n) {
     // §6/1: "The paragraph that activates the Germans and initiates Rounds may state that one
     // side or the other has the advantage in the first Round... although you still roll."
-    var fixed = n === 1 && pendingContact && pendingContact.advantage ? pendingContact : null;
+    var fixed = n === 1 && M1.pendingContact && M1.pendingContact.advantage ? M1.pendingContact : null;
     function sideOf(rolls) {
       if (fixed) return fixed.advantage;
       return AR.resolveAdvantage(rolls.a, rolls.b) === 'german' ? 'german' : 'US';
@@ -156,8 +156,8 @@
   }
   function placeMarkersChain(n, advantageSide) {
     document.getElementById('track-sec').style.display = 'none';
-    var contact = n === 1 ? pendingContact : null;
-    pendingContact = null;
+    var contact = n === 1 ? M1.pendingContact : null;
+    M1.pendingContact = null;
     // §6/5: a still-unaware soldier skips initiative placement entirely (Unaware slot); a
     // soldier whose Awareness Check just succeeded this Round (runAwarenessChecks) also skips
     // it, landing straight in Complete rather than a real turn — see placeMarkers' `placement`

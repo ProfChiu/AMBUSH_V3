@@ -1,5 +1,23 @@
-'use strict';
 // mission1/contact.js (7 of 13) — contact terms, German activation, German card, tooltips, inspectors. Stage A cut of mission1.js lines 2489-2880 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (9): activateGermansSequentially, afterParagraphChain, estimateHitChanceBreakdown, hitBreakdownHtml,
+//   hitBreakdownText, noteContact, pendingContact, resetContactFlow, showSoldierInspector
+// Uses from M1:
+//   core: state
+//   present: Cues, d10, fmtSigned, infoPopup, logHeader, rollPopup
+//   roster: findSoldier, kitHtml, makeCounter, renderVP, scrollMapTo
+// Still global (their files are not wrapped yet):
+//   core: CHART, D, FC, GAct, GERMAN_ROSTER, Ops, Sched, V, germanInstanceId, img, paragraphHex, resolveGermanCardId,
+//   terrainRowFor, terrainRowForTarget, vpRequirement, weaponById
+//   operations: pendingConditionChange, runConditionChange, runRoundsConditionChange
+//   rounds: renderTrack, slotLabel, startActionRound
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.activateGermansSequentially = activateGermansSequentially; M1.afterParagraphChain = afterParagraphChain;
+  M1.estimateHitChanceBreakdown = estimateHitChanceBreakdown; M1.hitBreakdownHtml = hitBreakdownHtml;
+  M1.hitBreakdownText = hitBreakdownText; M1.noteContact = noteContact;
+  M1.resetContactFlow = resetContactFlow; M1.showSoldierInspector = showSoldierInspector;
   // A real bug found live while testing Task #66: an `activate_german` effect can carry its own
   // `conditionChange` field (e.g. paragraph 289 — "activate Germans 9/15... go to Condition 3"),
   // set via the SAME ctx.setCondition hook a bare set_condition op uses (paragraphinterpreter.js).
@@ -19,14 +37,14 @@
   // are placed. During a Round they are ignored (§6/6: "Ignore those parts of the paragraph
   // dealing with advantage and US awareness"); a German's own 2 turns still apply there,
   // through insertMidRoundGermans.
-  var pendingContact = null;
+  M1.pendingContact = null;
   function noteContact(mover, chain) {
     var terms = Ops.contactTerms(chain.effects || []);
     if (!terms || M1.state.phase === 'round') return;
     terms.paragraph = chain.visited[chain.visited.length - 1];
     terms.awareIds = terms.awareSoldiers.map(function (id) { return id === 'mover' ? mover.id : id; });
     terms.germanIds = terms.germanTwoTurns.map(germanInstanceId);
-    pendingContact = terms;
+    M1.pendingContact = terms;
   }
   function afterParagraphChain(chain, next) {
     var activateEffects = chain.effects.filter(function (e) { return e.op === 'activate_german'; });
@@ -388,4 +406,5 @@
 
   // Bug 13: a contact paragraph's Round 1 terms belong to the position that rolled them. A load
   // (applySavedState) drops them, so they are never applied to a Round 1 they did not start.
-  function resetContactFlow() { pendingContact = null; }
+  function resetContactFlow() { M1.pendingContact = null; }
+})();

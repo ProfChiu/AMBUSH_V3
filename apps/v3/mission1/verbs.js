@@ -422,7 +422,7 @@
       title: 'Select Target — ' + (fireType === 'aimed' ? 'Aimed Fire' : 'Snap Fire'),
       prompt: firer.name + ' has line of sight to ' + targets.length + (targets.length === 1 ? ' German' : ' Germans') + '. Choose a target.',
       hitChanceFor: function (t) { return estimateHitChance(firer, t, fireType); },
-      hitChanceTipFor: function (t) { var b = estimateHitChanceBreakdown(firer, t, fireType); return b ? hitBreakdownText(b) : ''; },
+      hitChanceTipFor: function (t) { var b = M1.estimateHitChanceBreakdown(firer, t, fireType); return b ? M1.hitBreakdownText(b) : ''; },
       onCancel: function () { showActionPanel(M1.state.currentActorId); },
     }, function (target) {
       // Task #70 (docs/44_SNAP_FIRE_COMBO.md): only a snap fire can lead into a combo follow-up
@@ -657,7 +657,7 @@
   });
 
   function estimateHitChance(firer, target, fireType) {
-    var b = estimateHitChanceBreakdown(firer, target, fireType);
+    var b = M1.estimateHitChanceBreakdown(firer, target, fireType);
     return b ? b.clamped : -Infinity;
   }
 

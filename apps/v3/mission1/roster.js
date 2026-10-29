@@ -6,11 +6,11 @@
 // Uses from M1:
 //   core: state
 //   present: FX, Resolve, fmtSigned
+//   contact: showSoldierInspector
 // Still global (their files are not wrapped yet):
 //   core: D, EQ, FloatDialogs, G, SQCHART, V, WEAPONS_REQUIRING_PREPARATION, img, vpRequirement, vpTargetNote,
 //   weaponById
 //   operations: selectSoldier
-//   contact: showSoldierInspector
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -76,16 +76,16 @@
   // A click on a counter: a German opens the inspector; a US soldier is selected in Operations
   // (a click on the one already selected opens the inspector) and inspected in a Round.
   function counterClick(s) {
-    if (s.side === 'german') { showSoldierInspector(s.id); return; }
+    if (s.side === 'german') { M1.showSoldierInspector(s.id); return; }
     if (M1.state.phase === 'movement') {
       // Clicking an already-selected soldier opens the inspector instead of re-selecting him
       // (a no-op otherwise) — still "click on him" per the user's own ask, without turning
       // every ordinary movement-planning click into an interrupting modal.
-      if (M1.state.selectedId === s.id) { showSoldierInspector(s.id); return; }
+      if (M1.state.selectedId === s.id) { M1.showSoldierInspector(s.id); return; }
       selectSoldier(s.id);
       return;
     }
-    if (M1.state.phase === 'round') showSoldierInspector(s.id);
+    if (M1.state.phase === 'round') M1.showSoldierInspector(s.id);
   }
   // Build a soldier's counter, place it in hexId and put it on the map (US entry, German
   // activation, both on load). The caller runs updateCounterVisual where it always has.

@@ -82,7 +82,7 @@
     // chain can never fire afterward and act on the state we're about to replace.
     Dialogs.reset();
     // Bug 13: the chains Dialogs.reset() just stopped leave their state behind; drop it too.
-    resetOperationsFlow(); resetContactFlow(); resetRoundFlow();
+    resetOperationsFlow(); M1.resetContactFlow(); resetRoundFlow();
     Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].remove(); }); M1.counterEls = {};
     clearDestMarks();
     Object.keys(M1.entryEls).forEach(function (k) { M1.entryEls[k].remove(); }); M1.entryEls = {};

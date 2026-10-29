@@ -137,7 +137,7 @@
     // patching the position afterward, which raced against the reveal pop-up/scroll once
     // activateGermansSequentially stopped being fully synchronous.
     spawnGermanForTesting: function (cardId, hexId) {
-      activateGermansSequentially([{ ids: [cardId.replace(/^GE /, '').replace(/\/.*/, '')], hex: hexId, stance: 'crouching' }], 0, function () {});
+      M1.activateGermansSequentially([{ ids: [cardId.replace(/^GE /, '').replace(/\/.*/, '')], hex: hexId, stance: 'crouching' }], 0, function () {});
     },
     saveGame: saveGame,
     listSaves: loadSaveList,
@@ -233,7 +233,7 @@
       board: automation.board, pending: automation.pendingDecision,
       // the German side, revealed the way a paragraph's activate_german effect reveals it
       activate: function (cardId, hexId, stance) {
-        activateGermansSequentially([{ ids: [String(cardId)], hex: hexId, stance: stance || 'crouching' }], 0, function () {});
+        M1.activateGermansSequentially([{ ids: [String(cardId)], hex: hexId, stance: stance || 'crouching' }], 0, function () {});
       },
       // Phase 7b (chapter 3): what the map says about a hex, from the functions the game itself
       // asks (the movement chart, the fire chart's terrain row, traceLOS), so a puzzle's answer

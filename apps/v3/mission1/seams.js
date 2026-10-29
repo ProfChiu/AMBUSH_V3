@@ -83,7 +83,7 @@
       if (M1.state.phase === 'movement' && M1.selectedSoldier() && M1.walkRoute(hexId)) return true;
       throw new Error('clickHex(' + hexId + '): the map offers no decision there');
     },
-    pickActor: function (soldierId) { return pickActor(soldierId); },
+    pickActor: function (soldierId) { return M1.pickActor(soldierId); },
     select: function (soldierId) {
       if (M1.state.phase !== 'movement' || !M1.counterEls[soldierId] || !M1.findSoldier(soldierId)) return false;
       if (M1.state.selectedId !== soldierId) M1.selectSoldier(soldierId);
@@ -109,7 +109,7 @@
         entryHexes: M1.state.phase === 'entry' ? Object.keys(M1.entryEls) : [],
         verbs: verbsOffered(),
         // v3: the soldiers the player may pick (§6/1)
-        pickable: picking ? picking.ids.slice() : [],
+        pickable: M1.picking ? M1.picking.ids.slice() : [],
         presentation: 'cards',
         banner: document.getElementById('status-banner').textContent || '',
       };
@@ -172,7 +172,7 @@
     // player may do from there: pick/select a soldier, or (in a Round) have the current actor take
     // an item, the same Pick Up / Exchange code as v2's button (§5/3, §6/7).
     stack: function (hexId) {
-      var actor = M1.state.phase === 'round' && M1.state.currentActorId && !picking ? M1.findSoldier(M1.state.currentActorId) : null;
+      var actor = M1.state.phase === 'round' && M1.state.currentActorId && !M1.picking ? M1.findSoldier(M1.state.currentActorId) : null;
       if (actor && actor.side === 'german') actor = null;
       var pickupBtn = document.getElementById('pickupBtn');
       var canTake = !!actor && actor.hexId === hexId && !pickupBtn.disabled && !Dialogs.current &&
@@ -196,7 +196,7 @@
             ? 'A German keeps his weapon until he is killed, incapacitated or captured (§6/7, §14).' : 'Nothing here he can take.',
         tokens: M1.allInHex(hexId).filter(function (t) { return !t.exited && (t.side !== 'german' || M1.counterEls[t.id]); }).map(function (t) {
           var act = M1.state.phase === 'movement' && t.side !== 'german' && t.isActive ? 'select' :
-            picking && picking.ids.indexOf(t.id) !== -1 ? 'pick' : '';
+            M1.picking && M1.picking.ids.indexOf(t.id) !== -1 ? 'pick' : '';
           return { id: t.id, name: t.name, letter: t.letter, side: t.side, stance: t.stance, status: t.status,
             isActive: !!t.isActive, img: M1.currentImgFor(t), gear: gear(t), act: act,
             current: t.id === M1.state.currentActorId, selected: t.id === M1.state.selectedId };
@@ -207,7 +207,7 @@
     },
     hexOf: function (id) { var t = M1.findSoldier(id); return t ? t.hexId : null; },
     actOn: function (id) {
-      if (picking) return pickActor(id);
+      if (M1.picking) return M1.pickActor(id);
       if (M1.state.phase === 'movement' && M1.counterEls[id] && M1.findSoldier(id).side !== 'german') { M1.selectSoldier(id); return true; }
       return false;
     },

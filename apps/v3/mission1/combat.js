@@ -8,11 +8,11 @@
 //   updateCounterVisual
 //   operations: clearDestMarks, deselect, renderStatusBanner, selectedSoldier
 //   contact: estimateHitChanceBreakdown, hitBreakdownHtml
+//   rounds: assaultOpts, chooseTarget, renderTrack, startActionRound, wakeUpUnawareInHex
 //   verbs: activeSoldiersIn, carryCandidates, grenadeMods, isInteriorHex, markExfiltrated
 // Still global (their files are not wrapped yet):
 //   core: Asl, CHART, D, ENTRY_HEXES, EQ, FC, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_TERRAIN, Sched,
 //   TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, terrainRowFor, vpRequirement, vpTargetNote, weaponById
-//   rounds: assaultOpts, chooseTarget, renderTrack, startActionRound, wakeUpUnawareInHex
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -67,7 +67,7 @@
     // §6/5/§11/4: "Even an attempted attack... makes all US soldiers in the target hex aware" —
     // triggers on the attempt itself, not the outcome, and fire has no hit-chance modifier keyed
     // to awareness (unlike assault's WS-negation), so it's safe to fire this immediately.
-    if (firer.side === 'german') wakeUpUnawareInHex(target.hexId);
+    if (firer.side === 'german') M1.wakeUpUnawareInHex(target.hexId);
     var tracer = { resolve: function () {} }; // board effect (task 4); set when the card shows the shot
 
     M1.infoPopup({ actor: { left: firer, right: target }, title: 'Fire — ' + (fireType === 'aimed' ? 'Aimed' : 'Snap'),
@@ -194,7 +194,7 @@
     var hitChance = Gr.computeHitChance(baseHit, mods);
     // §11/4/§6/5's "even an attempted attack wakes the hex" rule, already applied the same way
     // to fire and assault attempts — a thrown grenade is no different.
-    if (thrower.side === 'german') wakeUpUnawareInHex(targetHexId);
+    if (thrower.side === 'german') M1.wakeUpUnawareInHex(targetHexId);
 
     // §10 preamble: "When a soldier throws a grenade, cross off one of his ammo boxes containing
     // a grenade" — unconditional on the throw itself, not on the outcome (weapon.ammo === 'A' on
@@ -284,11 +284,11 @@
     }, hitStep);
 
     function hitStep() {
-      var mods = assaultOpts(attacker, defender, isCharge);
+      var mods = M1.assaultOpts(attacker, defender, isCharge);
       // §11/4: "makes all US soldiers in the target hex aware" — computed from `mods` (the
       // defender's PRE-attack awareness) first, since an unaware defender's WS is negated for
       // THIS assault regardless of the fact that the attack itself is what wakes him up.
-      if (attacker.side === 'german') wakeUpUnawareInHex(defender.hexId);
+      if (attacker.side === 'german') M1.wakeUpUnawareInHex(defender.hexId);
       var hitChance = Asl.computeHitChance(CHART.BASE_HIT.assault, mods);
       // assaultrules.js clamps before Easy mode's modifier exists, so it is applied and re-clamped
       // here rather than by teaching that tested module about a non-rulebook concept.
@@ -369,7 +369,7 @@
       target.isActive = false;
       if (M1.state.track) Sched.removeFromRound(M1.state.track, target.id);
       recordCasualty(target, newStatus === 'killed' ? 'killed' : 'incapacitated');
-      M1.updateCounterVisual(target); renderTrack(); M1.renderRoster(); M1.renderVP();
+      M1.updateCounterVisual(target); M1.renderTrack(); M1.renderRoster(); M1.renderVP();
       checkEndingConditions();
       if (target.side === 'german') return;
       if (!M1.activeUS().length) { endMission('all-us-down'); return; }
@@ -393,10 +393,10 @@
           M1.logLine(target.name + ' drops ' + M1.equipmentName(id) + ' (wounded, Port Box reduced to one).', 'event');
         });
       }
-      M1.updateCounterVisual(target); renderTrack();
+      M1.updateCounterVisual(target); M1.renderTrack();
     } else if (newStatus === 'panicked') {
       if (M1.state.track) Sched.applyPanicStatus(M1.state.track, target.id);
-      renderTrack();
+      M1.renderTrack();
     }
   }
   function applyCapture(target) {
@@ -406,7 +406,7 @@
     target.isActive = false;
     Sched.removeFromRound(M1.state.track, target.id);
     recordCasualty(target, 'captured');
-    M1.updateCounterVisual(target); renderTrack(); M1.renderRoster(); M1.renderVP();
+    M1.updateCounterVisual(target); M1.renderTrack(); M1.renderRoster(); M1.renderVP();
     checkEndingConditions();
   }
   // §11/2 second half (Task #72, docs/46_CAPTURED_GERMAN.md): "During Operations, if a captured
@@ -449,7 +449,7 @@
     M1.logHeader(g.name + ' is left unguarded &mdash; he is free! All US soldiers are now aware of him (&sect;11/2).');
     M1.activeUS().forEach(function (s) { s.aware = true; });
     M1.renderRoster();
-    startActionRound(1);
+    M1.startActionRound(1);
   }
   function recordCasualty(soldier, outcome) {
     if (soldier.side === 'german') {
@@ -505,7 +505,7 @@
   }
   document.getElementById('newRoundBtn').addEventListener('click', function () {
     document.getElementById('round-sec').style.display = 'none';
-    startActionRound(M1.state.roundNum + 1);
+    M1.startActionRound(M1.state.roundNum + 1);
   });
 
   // ---------------------------------------------------------------------
@@ -529,7 +529,7 @@
     // real decision to interrupt him for until there's more than one body to choose between.
     var carryable = M1.carryCandidates(s);
     if (!carryable.length) { finishExit(s, null); return; }
-    chooseTarget(s, carryable, {
+    M1.chooseTarget(s, carryable, {
       title: 'Carry Off the Map',
       prompt: s.name + ' can carry one incapacitated soldier off the map with him — that soldier\'s 2 VP loss is then avoided (&sect;15). Cancel to leave them behind.',
       onCancel: function () { finishExit(s, null); },

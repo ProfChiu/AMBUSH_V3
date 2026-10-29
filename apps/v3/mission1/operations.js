@@ -12,13 +12,13 @@
 //   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, destEls, eventMarkerEls,
 //   findSoldier, kitHtml, nameFor, placeEl, placeEventMarkerEl, renderVP, updateCounterVisual
 //   contact: afterParagraphChain, estimateHitChanceBreakdown, hitBreakdownText, noteContact
+//   rounds: chooseTarget, doRoundMove, driveNext, renderTrack, startActionRound, visibleEnemyTargets
 //   verbs: chooseOffer, clearJamRoll, estimateHitChance
 //   combat: canExit, checkCapturedGermanEscapes, checkEndingConditions, fireChain, hiddenFireChain
 // Still global (their files are not wrapped yet):
 //   core: G, LOS_DB, LOS_TERRAIN, M, MISSION, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
 //   TERRAIN_LABELS, canClearJam, edgeFeatureBetween, edgeFeatures, germanInstanceId, losClear, paragraphHex,
 //   weaponUsable
-//   rounds: chooseTarget, doRoundMove, driveNext, renderTrack, startActionRound, visibleEnemyTargets
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -201,14 +201,14 @@
   // ---------------------------------------------------------------------
   function comboMoveBudget(s) { return Math.floor(s.mpa / 2) - (s.comboMoveCostUsed || 0); }
   function completeTurn(soldierId) {
-    if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, soldierId); renderTrack(); driveNext(); }
+    if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, soldierId); M1.renderTrack(); M1.driveNext(); }
   }
   // Called once a snap fire resolves. Offers a follow-up (another snap fire, or a move within
   // whatever half-MPA budget remains) if this was the turn's first sub-action and something is
   // actually still available; otherwise just ends the turn.
   function finishFireStep(s, onEndTurn) {
     if (M1.state.phase === 'over' || s.comboStepsUsed > 0) { onEndTurn(); return; }
-    var canFireAgain = weaponUsable(s) && visibleEnemyTargets(s).length > 0;
+    var canFireAgain = weaponUsable(s) && M1.visibleEnemyTargets(s).length > 0;
     var moveDests = legalDestinationsWithBudget(s, comboMoveBudget(s));
     var canMove = Object.keys(moveDests).length > 0;
     if (!canFireAgain && !canMove) { onEndTurn(); return; }
@@ -221,7 +221,7 @@
     var half = Math.floor(s.mpa / 2);
     if (M1.state.phase === 'over' || s.comboStepsUsed > 0 || moveCostSoFar > half) { onEndTurn(); return; }
     s.comboMoveCostUsed = moveCostSoFar;
-    if (!(weaponUsable(s) && visibleEnemyTargets(s).length > 0)) { onEndTurn(); return; }
+    if (!(weaponUsable(s) && M1.visibleEnemyTargets(s).length > 0)) { onEndTurn(); return; }
     offerComboChoice(s, { fire: true, move: false, moveDests: {} }, onEndTurn);
   }
   function offerComboChoice(s, avail, onEndTurn) {
@@ -237,8 +237,8 @@
       s.comboStepsUsed = 1;
       if (offer.kind === 'end') { onEndTurn(); return; }
       if (offer.kind === 'fire') {
-        var targets = visibleEnemyTargets(s);
-        chooseTarget(s, targets, {
+        var targets = M1.visibleEnemyTargets(s);
+        M1.chooseTarget(s, targets, {
           title: 'Select Target — Snap Fire',
           prompt: s.name + ' has line of sight to ' + targets.length + (targets.length === 1 ? ' German' : ' Germans') + '. Choose a target.',
           hitChanceFor: function (t) { return M1.estimateHitChance(s, t, 'snap'); },
@@ -259,7 +259,7 @@
     clearDestMarks();
     Object.keys(dests).forEach(function (hexId) {
       addDestMark(hexId, destCostClass(dests[hexId].cost), hexId + ' (' + dests[hexId].cost + ' MP)',
-        function () { doRoundMove(s, dests[hexId].path, dests[hexId].cost, onEndTurn); });
+        function () { M1.doRoundMove(s, dests[hexId].path, dests[hexId].cost, onEndTurn); });
     });
     document.getElementById('status-banner').textContent = s.name + ' — combo move, choose a destination (up to ' + comboMoveBudget(s) + ' MP), or Cancel.';
   }
@@ -602,7 +602,7 @@
   // 'movement'), so a resulting activation starts a fresh Round 1.
   function runConditionChange(to, next) {
     runConditionChangeScan(to, true, function () {
-      if (M1.activeGermans().length && M1.state.phase === 'movement') { startActionRound(1); return; }
+      if (M1.activeGermans().length && M1.state.phase === 'movement') { M1.startActionRound(1); return; }
       next();
     });
   }

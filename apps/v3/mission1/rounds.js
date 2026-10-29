@@ -1,5 +1,36 @@
-'use strict';
 // mission1/rounds.js (8 of 13) — Action Round start, events, awareness, initiative, track, turns, action panel. Stage A cut of mission1.js lines 2881-3467 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (15): assaultCandidates, assaultOpts, canFireAt, chooseTarget, doRoundMove, driveNext, pickActor,
+//   picking, renderTrack, resetRoundFlow, showActionPanel, slotLabel, startActionRound, visibleEnemyTargets,
+//   wakeUpUnawareInHex
+// Uses from M1:
+//   core: state
+//   present: Cues, FX, Resolve, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
+//   info: Info
+//   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, equipmentName, findSoldier,
+//   highlightActor, kitHtml, nameFor, placeEl, updateCounterVisual
+//   operations: addDestMark, buildOpsCtx, clearDestMarks, completeTurn, currentHex, currentParagraph, destCostClass,
+//   finishMoveStep, pendingCancelAction, pendingConditionChange, pendingSteps, presentParagraphChain,
+//   roundLegalDestinations, runParagraphCheck, runRoundsConditionChange, standUpCost, walking
+//   contact: pendingContact
+//   verbs: disableActionButtons, doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn,
+//   doPlayerGrenade, doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates,
+//   giveTurnCandidates, grenadeCandidates, makeAwareCandidates, pickupOffers, stanceChangeCandidates
+//   german: germanAutoTurn
+//   combat: checkEndingConditions, endRound
+// Still global (their files are not wrapped yet):
+//   core: AR, Asl, CHART, Checks, Dialogs, FC, M, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
+//   TERRAIN_LABELS, WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability,
+//   crewWeaponStanceOk, guardsAPrisoner, isCrewWeapon, losClearBetween, terrainRowForTarget, unprepareWeaponOnMove,
+//   weaponById, weaponMaxRange, weaponUsable
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.assaultCandidates = assaultCandidates; M1.assaultOpts = assaultOpts; M1.canFireAt = canFireAt;
+  M1.chooseTarget = chooseTarget; M1.doRoundMove = doRoundMove; M1.driveNext = driveNext;
+  M1.pickActor = pickActor; M1.renderTrack = renderTrack; M1.resetRoundFlow = resetRoundFlow;
+  M1.showActionPanel = showActionPanel; M1.slotLabel = slotLabel; M1.startActionRound = startActionRound;
+  M1.visibleEnemyTargets = visibleEnemyTargets; M1.wakeUpUnawareInHex = wakeUpUnawareInHex;
   // ---------------------------------------------------------------------
   // Action Round
   // ---------------------------------------------------------------------
@@ -247,9 +278,9 @@
   // §6/1: "If more than one US soldier occupies a space, you can have them go in any order you
   // wish." The scheduler takes the player's pick through its chooseUS hook; v2 always took the
   // first. While the player chooses, those counters glow and the soldier panel lists them.
-  var picking = null;
+  M1.picking = null;
   function driveNextNow() {
-    if (M1.state.phase !== 'round' || picking) return;
+    if (M1.state.phase !== 'round' || M1.picking) return;
     if (Sched.isRoundComplete(M1.state.track)) { M1.endRound(); return; }
     var na = Sched.nextActor(M1.state.track);
     if (na.done) { M1.endRound(); return; }
@@ -258,7 +289,7 @@
     beginTurn(na);
   }
   function offerPick(ids) {
-    picking = { ids: ids };
+    M1.picking = { ids: ids };
     M1.state.currentActorId = null;
     renderTrack();
     M1.highlightActor(null);
@@ -274,9 +305,9 @@
     M1.FX.ensureVisible(ids.map(function (id) { return M1.findSoldier(id).hexId; }), true);
   }
   function pickActor(id) {
-    if (!picking || picking.ids.indexOf(id) === -1) return false;
-    picking.ids.forEach(function (k) { if (M1.counterEls[k]) M1.counterEls[k].classList.remove('eligible'); });
-    picking = null;
+    if (!M1.picking || M1.picking.ids.indexOf(id) === -1) return false;
+    M1.picking.ids.forEach(function (k) { if (M1.counterEls[k]) M1.counterEls[k].classList.remove('eligible'); });
+    M1.picking = null;
     document.getElementById('pick-sec').style.display = 'none';
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
     beginTurn(Sched.nextActor(M1.state.track, { chooseUS: function () { return id; } }));
@@ -287,7 +318,7 @@
     if (b) pickActor(b.dataset.pick);
   });
   M1.canvas.addEventListener('click', function (e) {
-    var c = picking && e.target.closest('.counter.eligible');
+    var c = M1.picking && e.target.closest('.counter.eligible');
     if (!c) return;
     e.stopPropagation();
     pickActor(c.dataset.soldierId);
@@ -592,6 +623,7 @@
   // Bug 13: a load drops the Round's in-flight state: an open "who goes next" pick and a German
   // turn already scheduled for the abandoned position (it would otherwise run on the loaded one).
   function resetRoundFlow() {
-    picking = null;
+    M1.picking = null;
     clearTimeout(germanTurnTimer); germanTurnTimer = null;
   }
+})();

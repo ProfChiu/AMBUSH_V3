@@ -6,10 +6,10 @@
 //   roster: activeGermans, canvas, findSoldier
 //   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute
 //   contact: estimateHitChanceBreakdown
+//   rounds: canFireAt
 // Still global (their files are not wrapped yet):
 //   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
 //   edgeFeatures, losClear, terrainRowFor, weaponById, weaponUsable
-//   rounds: canFireAt
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -163,12 +163,12 @@
       var html = '<div class="ih-head"><b>' + g.name + '</b> &middot; ' + g.stance + (w ? ' &middot; ' + w.name : '') + '</div>';
       if (v) {
         if (!weaponUsable(v)) html += '<div class="ih-dim">' + v.name + '&rsquo;s weapon cannot fire now.</div>';
-        else if (!canFireAt(v, g)) html += '<div class="ih-dim">' + v.name + ' has no shot at him (sight, range or cover).</div>';
+        else if (!M1.canFireAt(v, g)) html += '<div class="ih-dim">' + v.name + ' has no shot at him (sight, range or cover).</div>';
         else {
           var aim = M1.estimateHitChanceBreakdown(v, g, 'aimed'), snap = M1.estimateHitChanceBreakdown(v, g, 'snap');
           html += '<div>' + v.name + ' &rarr; him: aimed ' + pct(aim.clamped) + ', snap ' + pct(snap.clamped) + '</div>';
         }
-        if (g.weaponId && weaponUsable(g) && canFireAt(g, v)) {
+        if (g.weaponId && weaponUsable(g) && M1.canFireAt(g, v)) {
           html += '<div class="ih-warn">He &rarr; ' + v.name + ': aimed ' + pct(M1.estimateHitChanceBreakdown(g, v, 'aimed').clamped) + '</div>';
         } else html += '<div class="ih-dim">He has no shot at ' + v.name + '.</div>';
       }

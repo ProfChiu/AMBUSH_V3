@@ -8,9 +8,9 @@
 //   setup: placeNextSoldier, promptPlaceSoldier, startSquadGeneration
 //   operations: clearDestMarks, resetOperationsFlow, selectSoldier
 //   contact: resetContactFlow
+//   rounds: driveNext, renderTrack, resetRoundFlow
 // Still global (their files are not wrapped yet):
 //   core: D, Dialogs, ENTRY_HEXES, Sched, Toasts, V, VP_REQUIREMENT_RULEBOOK, setDifficulty, vpReachable
-//   rounds: driveNext, renderTrack, resetRoundFlow
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -99,7 +99,7 @@
     // chain can never fire afterward and act on the state we're about to replace.
     Dialogs.reset();
     // Bug 13: the chains Dialogs.reset() just stopped leave their state behind; drop it too.
-    M1.resetOperationsFlow(); M1.resetContactFlow(); resetRoundFlow();
+    M1.resetOperationsFlow(); M1.resetContactFlow(); M1.resetRoundFlow();
     Object.keys(M1.counterEls).forEach(function (k) { M1.counterEls[k].remove(); }); M1.counterEls = {};
     M1.clearDestMarks();
     Object.keys(M1.entryEls).forEach(function (k) { M1.entryEls[k].remove(); }); M1.entryEls = {};
@@ -169,13 +169,13 @@
       document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum;
       document.getElementById('track-sec').style.display = '';
       if (Sched.isRoundComplete(M1.state.track)) {
-        renderTrack();
+        M1.renderTrack();
         document.getElementById('round-sec').style.display = '';
         document.getElementById('tb-phase').textContent = 'Round ' + M1.state.roundNum + ' complete';
         document.getElementById('status-banner').textContent = 'Round complete. Continue the fight.';
       } else {
         document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
-        driveNext();
+        M1.driveNext();
       }
     }
     M1.logHeader('Game loaded' + (data.savedAt ? ' (saved ' + new Date(data.savedAt).toLocaleString() + ')' : '') + '.');

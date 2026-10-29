@@ -7,13 +7,13 @@
 //   roster: activeGermans, activeUS, counterEls, equipmentName, findSoldier, nameFor, placeEl, renderRoster,
 //   renderVP, scrollMapTo, updateCounterVisual
 //   operations: pendingConditionChange, runParagraphCheck
+//   rounds: driveNext, renderTrack, visibleEnemyTargets
 //   verbs: clearJamRoll, estimateHitChance, grenadeCandidates
 //   combat: applyCapture, assaultChain, checkEndingConditions, fireChain, grenadeChain
 // Still global (their files are not wrapped yet):
 //   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
 //   Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
 //   edgeFeatureBetween, isCrewWeapon, losClearBetween, unprepareWeaponOnMove, weaponById, weaponUsable
-//   rounds: driveNext, renderTrack, visibleEnemyTargets
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -142,7 +142,7 @@
   // Snapshot of everything germanactions.js's conditions can ask about, read fresh at the moment
   // the German acts (his instructions are evaluated against the situation in front of him).
   function germanSituation(g) {
-    var visible = visibleEnemyTargets(g);
+    var visible = M1.visibleEnemyTargets(g);
     var terrainKey = REAL_TERRAIN[g.hexId];
     var openish = { clear1: 1, clear2: 1, clear3: 1, road: 1, dirt_road: 1, bridge: 1, ford: 1, stream: 1, railroad: 1 };
     var terrain = terrainKey === 'building' || terrainKey === 'second_story' || terrainKey === 'interior' ? 'building'
@@ -303,7 +303,7 @@
         }, next);
         return;
       }
-      var targets = visibleEnemyTargets(g);
+      var targets = M1.visibleEnemyTargets(g);
       if (!targets.length) {
         M1.infoPopup({ actor: g, title: 'No Target', bodyHtml: g.name + ' has no line of sight to any US soldier from ' + g.hexId + ' &mdash; cannot fire.' }, next);
         return;
@@ -336,7 +336,7 @@
             var firerId = CW.resolveGermanCrewFirer(g, mate);
             fired.push(mate.id);
             Sched.completeAction(M1.state.track, mate.id);
-            renderTrack();
+            M1.renderTrack();
             var actualFirer = firerId === mate.id ? mate : g;
             M1.infoPopup({
               actor: actualFirer, title: 'Crew Weapon',
@@ -512,8 +512,8 @@
   function finishGermanTurn(g) {
     if (M1.state.phase === 'over') return;
     if (g.isActive) Sched.completeAction(M1.state.track, g.id);
-    renderTrack();
-    driveNext();
+    M1.renderTrack();
+    M1.driveNext();
   }
 
   // Shared by both ways a German can leave the map: an explicit remove_from_map action
@@ -522,7 +522,7 @@
     g.isActive = false;
     Sched.removeFromRound(M1.state.track, g.id);
     if (M1.counterEls[g.id]) { M1.counterEls[g.id].remove(); delete M1.counterEls[g.id]; }
-    renderTrack(); M1.renderRoster(); M1.renderVP();
+    M1.renderTrack(); M1.renderRoster(); M1.renderVP();
     M1.checkEndingConditions();
     next();
   }

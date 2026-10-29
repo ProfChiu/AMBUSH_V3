@@ -11,12 +11,12 @@
 //   renderRoster, scrollMapTo, updateCounterVisual
 //   operations: addDestMark, clearDestMarks, completeTurn, finishFireStep, runParagraphCheck, standUpCost
 //   contact: estimateHitChanceBreakdown, hitBreakdownText
+//   rounds: assaultCandidates, assaultOpts, chooseTarget, driveNext, renderTrack, showActionPanel,
+//   visibleEnemyTargets
 //   combat: assaultChain, fireChain, grenadeChain, recordCasualty, toHitCard
 // Still global (their files are not wrapped yet):
 //   core: AR, Asl, CHART, Dialogs, EQ, FC, G, Gr, M, REAL_TERRAIN, Sched, TERRAIN_LABELS, Toasts, V, canClearJam,
 //   canPrepareWeapon, crewFiredThisRound, crewMates, isCrewWeapon, losClear, upright, weaponById
-//   rounds: assaultCandidates, assaultOpts, chooseTarget, driveNext, renderTrack, showActionPanel,
-//   visibleEnemyTargets
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -265,7 +265,7 @@
     chooseOffer(offers, {
       title: 'Pick Up / Exchange Equipment',
       prompt: actor.name + ' can take any of the following from ' + actor.hexId + ':',
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, function (offer) { resolvePickup(actor, offer); });
   }
   function resolvePickup(actor, offer) {
@@ -276,7 +276,7 @@
       logHtml: (ok ? actor.name + ' takes ' + offer.label + '.' : actor.name + ' has no room for ' + offer.label + '.'),
     }, function () {
       M1.renderRoster();
-      if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); }
+      if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); M1.renderTrack(); M1.driveNext(); }
     });
   }
 
@@ -309,17 +309,17 @@
     var candidates = giveTurnCandidates(giver);
     if (!candidates.length) { Toasts.show('No eligible soldier within Command Radius to give a turn to.', { kind: 'error' }); return; }
     disableActionButtons();
-    chooseTarget(giver, candidates, {
+    M1.chooseTarget(giver, candidates, {
       title: 'Give Turn',
       prompt: giver.name + ' can give his turn to any of the following (within his Command Radius, in the 1-Turn or Complete space):',
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, function (recipient) {
       Sched.giveTurn(M1.state.track, giver.id, recipient.id);
       M1.infoPopup({
         actor: { left: giver, right: recipient }, title: 'Give Turn',
         bodyHtml: giver.name + ' gives his turn to ' + recipient.name + '.',
         logHtml: giver.name + ' gives his turn to ' + recipient.name + ' (&sect;6/3).',
-      }, function () { renderTrack(); driveNext(); });
+      }, function () { M1.renderTrack(); M1.driveNext(); });
     });
   }
   function doPlayerMakeAware() {
@@ -327,10 +327,10 @@
     var candidates = makeAwareCandidates(giver);
     if (!candidates.length) { Toasts.show('No unaware soldier within Command Radius.', { kind: 'error' }); return; }
     disableActionButtons();
-    chooseTarget(giver, candidates, {
+    M1.chooseTarget(giver, candidates, {
       title: 'Make Aware',
       prompt: giver.name + ' can spend his turn to make any of the following aware (within his Command Radius):',
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, function (recipient) {
       recipient.aware = true;
       Sched.applyBecomesAware(M1.state.track, recipient.id);
@@ -340,7 +340,7 @@
         logHtml: recipient.name + ' is now aware (&sect;6/5), made aware by ' + giver.name + '.',
       }, function () {
         M1.updateCounterVisual(recipient);
-        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, giver.id); renderTrack(); driveNext(); }
+        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, giver.id); M1.renderTrack(); M1.driveNext(); }
       });
     });
   }
@@ -382,7 +382,7 @@
         ? s.name + ' can make one free stance change this turn:'
         : s.name + ' has no free stance change' + (s.wounded ? ' (wounded)' : ' left this turn') +
           ', so this costs 1 MP as a Movement Action (&sect;6/7):',
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, function (offer) {
       s.stance = offer.stance;
       if (free) s.usedFreeStanceChange = true;
@@ -393,7 +393,7 @@
         bodyHtml: s.name + ' goes <b>' + offer.stance + '</b> (' + how + ').',
         logHtml: s.name + ' goes ' + offer.stance + ' (' + how + ', &sect;6/7).',
       }, function () {
-        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, s.id); renderTrack(); driveNext(); }
+        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, s.id); M1.renderTrack(); M1.driveNext(); }
       });
     });
   }
@@ -409,13 +409,13 @@
       bodyHtml: s.name + ' prepares the ' + M1.equipmentName(s.weaponId) + '.',
       logHtml: s.name + ' prepares the ' + M1.equipmentName(s.weaponId) + ' (&sect;5/3/&sect;6/7).',
     }, function () {
-      if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, s.id); renderTrack(); driveNext(); }
+      if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, s.id); M1.renderTrack(); M1.driveNext(); }
     });
   }
 
   function doPlayerFire(fireType) {
     var firer = M1.findSoldier(M1.state.currentActorId);
-    var targets = visibleEnemyTargets(firer);
+    var targets = M1.visibleEnemyTargets(firer);
     if (!targets.length) { Toasts.show('No line of sight to a German.', { kind: 'error' }); return; }
     // §9/7 (Task A1): aimed fire from a crew weapon is two soldiers combining their actions, so
     // the second crewman has to be chosen and has to pay for it — his turn is spent too. Snap
@@ -428,7 +428,7 @@
         title: 'Combine Actions',
         prompt: firer.name + ' can only aim the ' + M1.equipmentName(firer.weaponId) +
           ' with a second crewman. Whoever helps spends his own turn doing it (&sect;9/7):',
-        onCancel: function () { showActionPanel(M1.state.currentActorId); },
+        onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
       }, function (offer) {
         var mate = M1.findSoldier(offer.id);
         M1.infoPopup({
@@ -443,7 +443,7 @@
           // if the fire kills the firer's target and ends the Round, the mate must still be
           // recorded as having acted, not left holding an unspent turn.
           Sched.completeAction(M1.state.track, mate.id);
-          renderTrack();
+          M1.renderTrack();
           continueFire();
         });
       });
@@ -452,12 +452,12 @@
     disableActionButtons();
     continueFire();
     function continueFire() {
-    chooseTarget(firer, targets, {
+    M1.chooseTarget(firer, targets, {
       title: 'Select Target — ' + (fireType === 'aimed' ? 'Aimed Fire' : 'Snap Fire'),
       prompt: firer.name + ' has line of sight to ' + targets.length + (targets.length === 1 ? ' German' : ' Germans') + '. Choose a target.',
       hitChanceFor: function (t) { return estimateHitChance(firer, t, fireType); },
       hitChanceTipFor: function (t) { var b = M1.estimateHitChanceBreakdown(firer, t, fireType); return b ? M1.hitBreakdownText(b) : ''; },
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, function (target) {
       // Task #70 (docs/44_SNAP_FIRE_COMBO.md): only a snap fire can lead into a combo follow-up
       // (Aimed has none) — fireType is fixed for the lifetime of this call, so branching once
@@ -481,15 +481,15 @@
     var candidates = grenadeCandidates(thrower);
     if (!candidates.length) { Toasts.show('No German within grenade range.', { kind: 'error' }); return; }
     disableActionButtons();
-    chooseTarget(thrower, candidates, {
+    M1.chooseTarget(thrower, candidates, {
       title: 'Select Target — Throw Grenade',
       prompt: thrower.name + ' can reach ' + candidates.length + ' hex' + (candidates.length === 1 ? '' : 'es') +
         ' with a grenade (range ' + Gr.maxThrowRange('grenade', thrower.stance) + ' while ' + thrower.stance + ').',
       hitChanceFor: function (t) { return estimateGrenadeHitChance(thrower, t.hexId); },
       noteFor: function (t) { return losClear(thrower.hexId, t.hexId) ? '' : 'Not in sight &mdash; &minus;3'; },
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, function (target) {
-      M1.grenadeChain(thrower, target.hexId, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); } });
+      M1.grenadeChain(thrower, target.hexId, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); M1.renderTrack(); M1.driveNext(); } });
     });
   }
   // §5/3/§6/7/§7/3 step 1 — choose which inactive soldier (rarely more than one in a hex), then
@@ -509,10 +509,10 @@
       document.getElementById('status-banner').textContent = dragger.name + ' — choose an adjacent hex to drag ' + dragged.name + ' to, or Cancel.';
     }
     if (candidates.length === 1) { pickDestination(candidates[0]); return; }
-    chooseTarget(dragger, candidates, {
+    M1.chooseTarget(dragger, candidates, {
       title: 'Select Soldier — Drag',
       prompt: 'Choose which inactive soldier ' + dragger.name + ' drags.',
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, pickDestination);
   }
   function performDrag(dragger, dragged, destHexId) {
@@ -538,7 +538,7 @@
         bodyHtml: dragger.name + ' drags ' + dragged.name + ' from ' + fromHexId + ' to <b>' + destHexId + '</b>.',
       }, function () {
         M1.runParagraphCheck(dragger, function () {
-          if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, dragger.id); renderTrack(); driveNext(); }
+          if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, dragger.id); M1.renderTrack(); M1.driveNext(); }
         }, { skipEventCheck: true });
       });
     }
@@ -575,24 +575,24 @@
   }
   function doPlayerAssault() {
     var firer = M1.findSoldier(M1.state.currentActorId);
-    var candidates = assaultCandidates(firer);
+    var candidates = M1.assaultCandidates(firer);
     if (!candidates.length) { Toasts.show('No German this soldier can reach and assault.', { kind: 'error' }); return; }
     var byId = {};
     candidates.forEach(function (c) { byId[c.german.id] = c; });
     disableActionButtons();
 
     // §11/1 step 1 — Choose the Target.
-    chooseTarget(firer, candidates.map(function (c) { return c.german; }), {
+    M1.chooseTarget(firer, candidates.map(function (c) { return c.german; }), {
       title: 'Select Target — Assault',
       prompt: firer.name + ' can assault ' + candidates.length + ' Germans. A target in an adjacent hex requires a charge assault (&sect;11/3).',
-      hitChanceFor: function (t) { return Asl.computeHitChance(CHART.BASE_HIT.assault, assaultOpts(firer, t, byId[t.id].isCharge)).clamped; },
+      hitChanceFor: function (t) { return Asl.computeHitChance(CHART.BASE_HIT.assault, M1.assaultOpts(firer, t, byId[t.id].isCharge)).clamped; },
       noteFor: function (t) {
         var c = byId[t.id];
         return c.isCharge
           ? 'Charge assault &mdash; move in for ' + c.cost + ' MP (of ' + c.budget + ' allowed), <b>&minus;3 to hit</b>'
           : 'Same hex &mdash; no charge penalty';
       },
-      onCancel: function () { showActionPanel(M1.state.currentActorId); },
+      onCancel: function () { M1.showActionPanel(M1.state.currentActorId); },
     }, function (target) { chooseCaptureOrKill(firer, byId[target.id]); });
   }
 
@@ -619,7 +619,7 @@
       },
       onButton: function (id, ctx) { ctx.close(id); },
       onClose: function (id) {
-        if (id !== 'kill' && id !== 'capture') { showActionPanel(M1.state.currentActorId); return; }
+        if (id !== 'kill' && id !== 'capture') { M1.showActionPanel(M1.state.currentActorId); return; }
         startAssault(attacker, candidate, id === 'capture');
       },
     });
@@ -632,7 +632,7 @@
     function resolve() {
       if (M1.state.phase === 'over') return;
       M1.assaultChain(attacker, defender, { capture: capture, charge: candidate.isCharge }, function () {
-        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); }
+        if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); M1.renderTrack(); M1.driveNext(); }
       });
     }
     if (!candidate.isCharge) { resolve(); return; }
@@ -687,7 +687,7 @@
     var s = M1.findSoldier(M1.state.currentActorId);
     if (!canClearJam(s)) return;
     disableActionButtons();
-    clearJamRoll(s, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); renderTrack(); driveNext(); } });
+    clearJamRoll(s, function () { if (M1.state.phase !== 'over') { Sched.completeAction(M1.state.track, M1.state.currentActorId); M1.renderTrack(); M1.driveNext(); } });
   });
 
   function estimateHitChance(firer, target, fireType) {

@@ -6,10 +6,10 @@
 //   present: Cues, d10, fmtSigned, infoPopup, logHeader, rollPopup
 //   roster: findSoldier, kitHtml, makeCounter, renderVP, scrollMapTo
 //   operations: pendingConditionChange, runConditionChange, runRoundsConditionChange
+//   rounds: renderTrack, slotLabel, startActionRound
 // Still global (their files are not wrapped yet):
 //   core: CHART, D, FC, GAct, GERMAN_ROSTER, Ops, Sched, V, germanInstanceId, img, paragraphHex, resolveGermanCardId,
 //   terrainRowFor, terrainRowForTarget, vpRequirement, weaponById
-//   rounds: renderTrack, slotLabel, startActionRound
 (function () {
   'use strict';
   var M1 = window.AmbushM1;
@@ -101,7 +101,7 @@
       // in-progress round's AR Track and re-roll initiative for everyone — a real bug, not a
       // simplification. Only reset to Round 1 when we're not already mid-Round (Operations path).
       if (M1.state.phase === 'round') { insertMidRoundGermans(newIds, next); return; }
-      startActionRound(1); return;
+      M1.startActionRound(1); return;
     }
     var eff = effects[i];
     var ids = (eff.ids || []).slice();
@@ -168,15 +168,15 @@
   // (§6/6): this never touches the Awareness Phase or any soldier's `aware` flag.
   function insertMidRoundGermans(ids, next) {
     function step(idx) {
-      if (idx >= ids.length) { renderTrack(); next(); return; }
+      if (idx >= ids.length) { M1.renderTrack(); next(); return; }
       var g = M1.state.germans[ids[idx]];
       var entry = { id: g.id, IN: g.IN, hexId: g.hexId, letter: g.letter, isCommander: false, receivesTwoTurns: g.receivesTwoTurns };
       if (g.receivesTwoTurns) {
         var result = Sched.insertMidRoundGerman(M1.state.track, entry, { arTrack: window.AMBUSH_AR_TRACK });
         M1.infoPopup({
           actor: g, title: 'Mid-Round Activation &mdash; AR Track',
-          bodyHtml: g.name + ' joins the current Round&rsquo;s Action Round Track in the <b>' + slotLabel(result.slot) + '</b> space (&sect;6/6, receives two turns). No effect on US awareness.',
-          logHtml: 'Mid-Round activation for ' + g.name + ': placed directly in ' + slotLabel(result.slot) + ' (two turns).',
+          bodyHtml: g.name + ' joins the current Round&rsquo;s Action Round Track in the <b>' + M1.slotLabel(result.slot) + '</b> space (&sect;6/6, receives two turns). No effect on US awareness.',
+          logHtml: 'Mid-Round activation for ' + g.name + ': placed directly in ' + M1.slotLabel(result.slot) + ' (two turns).',
         }, function () { step(idx + 1); });
         return;
       }
@@ -187,11 +187,11 @@
         contextHtml: g.name + ' (IN ' + g.IN + ') joins the current Round&rsquo;s Action Round Track (&sect;6/6). No effect on US awareness.',
         explain: function () {
           return 'Rolls <b>' + roll + '</b> &rarr; ' + (result2.inserted
-            ? 'placed in <b>' + slotLabel(result2.slot) + '</b> &mdash; will act later this Round.'
+            ? 'placed in <b>' + M1.slotLabel(result2.slot) + '</b> &mdash; will act later this Round.'
             : 'his slot has already passed this Round &mdash; placed in <b>Complete</b>, acts starting next Round.');
         },
         logText: function () {
-          return 'Mid-Round activation for ' + g.name + ': <span class="roll">' + roll + '</span> &rarr; ' + slotLabel(result2.slot) +
+          return 'Mid-Round activation for ' + g.name + ': <span class="roll">' + roll + '</span> &rarr; ' + M1.slotLabel(result2.slot) +
             (result2.inserted ? '' : ' (slot already passed)') + '.';
         },
       }, function () { step(idx + 1); });

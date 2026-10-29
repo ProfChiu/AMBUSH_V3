@@ -297,7 +297,7 @@
     M1.state.currentActorId = na.soldierId;
     renderTrack();
     M1.highlightActor(M1.state.currentActorId);
-    if (na.side === 'german') { document.getElementById('action-sec').style.display = 'none'; germanTurnTimer = setTimeout(germanAutoTurn, 500); }
+    if (na.side === 'german') { document.getElementById('action-sec').style.display = 'none'; germanTurnTimer = setTimeout(M1.germanAutoTurn, 500); }
     else {
       // §6/7: "an unwounded soldier can, at any point during his turn, make one free stance
       // change" — a fresh opportunity every turn, not a once-per-Round resource. Reset here

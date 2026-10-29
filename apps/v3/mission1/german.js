@@ -1,5 +1,24 @@
-'use strict';
 // mission1/german.js (10 of 13) — German turn, German actions, German movement by reference. Stage A cut of mission1.js lines 4135-4733 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1 (1): germanAutoTurn
+// Uses from M1:
+//   core: state
+//   present: Cues, FX, d10, fmtSigned, infoPopup, rollPopup
+//   info: Info
+//   roster: activeGermans, activeUS, counterEls, equipmentName, findSoldier, nameFor, placeEl, renderRoster,
+//   renderVP, scrollMapTo, updateCounterVisual
+// Still global (their files are not wrapped yet):
+//   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
+//   Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
+//   edgeFeatureBetween, isCrewWeapon, losClearBetween, unprepareWeaponOnMove, weaponById, weaponUsable
+//   operations: pendingConditionChange, runParagraphCheck
+//   rounds: driveNext, renderTrack, visibleEnemyTargets
+//   verbs: clearJamRoll, estimateHitChance, grenadeCandidates
+//   combat: applyCapture, assaultChain, checkEndingConditions, fireChain, grenadeChain
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
+  // Exported functions (hoisted, so they are on M1 before any line below runs).
+  M1.germanAutoTurn = germanAutoTurn;
   // §6/8 step 1: "Cross-reference the current Action Number with the current Condition to obtain
   // a German Action Paragraph number." The lookup was always real; what's new is that the
   // resulting paragraph is now actually READ AND CARRIED OUT (§6/8 step 3) instead of being
@@ -598,4 +617,4 @@
       }, { skipEventCheck: true });
     });
   }
-
+})();

@@ -1,5 +1,24 @@
-'use strict';
 // mission1/seams.js (13 of 13) — VERBS, verbsOffered, __mission1Debug, AmbushMission. Stage A cut of mission1.js lines 5604-5871 (docs/REFACTOR_MAP.md 5.4).
+// Exports to M1: nothing.
+// Uses from M1:
+//   core: state
+//   present: Resolve, lessonRng, stripTags
+//   info: Sight
+//   roster: allGermans, counterEls, currentImgFor, entryEls, equipmentName, findSoldier, renderVP, shownVP
+//   setup: placeNextSoldier, startSquadGeneration
+//   operations: deselect, destPicks, lastSelectedId, operationsRoute, roundLegalDestinations, selectSoldier,
+//   selectedSoldier, walkRoute
+//   contact: activateGermansSequentially
+//   rounds: pickActor, picking
+//   verbs: allInHex, disableActionButtons, pickupOffers, resolvePickup
+//   combat: applyDamage, tryExit
+//   save: applySavedState, isSafeToSave, loadSaveList, saveGame, startGameFlow
+// Still global (their files are not wrapped yet):
+//   core: CHART, D, Dialogs, EQ, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, M, MISSION_CARDS, Ops, REAL_TERRAIN,
+//   TERRAIN_LABELS, dialogLog, edgeFeatures, setDifficulty, terrainRowFor, upright
+(function () {
+  'use strict';
+  var M1 = window.AmbushM1;
   // ---------------------------------------------------------------------
   // Automation seam (v2 task 2, docs/02_HANDOFF.md). tools/bot/ plays ONLY through these five
   // calls plus select(); it never reads or clicks the page's markup. When the presentation
@@ -268,3 +287,4 @@
       unsight: function () { M1.Sight.clear(); },
     },
   };
+})();

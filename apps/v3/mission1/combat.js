@@ -129,16 +129,9 @@
       }, function (roll) { if (FC.resolveJamCheck(weapon, spec.fireType, roll).jammed) { onDone(); return; } hitStep(); });
     }
     function hitStep() {
-      rollPopup({ actor: target, title: 'Hit Chance & To-Hit', kind: 'single', variant: 'wide', contextHtml: hitBreakdownHtml(b), strip: hitStrip(b.clamped),
-        explain: function (roll) { return FC.resolveHitRoll(b.clamped, roll) === 'hit' ? '<b style="color:var(--clear)">HIT</b>.' : 'Miss.'; },
-        logText: function (roll) { return 'Hidden rifleman, to-hit: <span class="roll">' + roll + '</span> &rarr; ' + (FC.resolveHitRoll(b.clamped, roll) === 'hit' ? '<b>HIT</b>' : 'miss') + '.'; },
-        fxLanded: function (roll) {
-          var hit = FC.resolveHitRoll(b.clamped, roll) === 'hit';
-          FX.floatDie(target.hexId, roll, hit ? 'hit' : 'miss');
-          FX.sound(hit ? 'hit' : 'miss');
-          if (hit) FX.shake(); else FX.badge(target.hexId, 'MISS', 'neutral');
-        },
-      }, function (roll) { if (FC.resolveHitRoll(b.clamped, roll) === 'hit') damageStep(); else onDone(); });
+      toHitCard({ actor: target, title: 'Hit Chance & To-Hit', variant: 'wide', contextHtml: hitBreakdownHtml(b),
+        chance: b.clamped, log: 'Hidden rifleman, to-hit', fx: { hex: target.hexId, loud: true },
+      }, damageStep, onDone);
     }
     function damageStep() {
       rollPopup({ actor: target, title: 'Damage', kind: 'single', variant: 'wide', contextHtml: 'Damage roll on the ' + weapon.name + ' row.', strip: damageStrip(weapon),

@@ -2,7 +2,7 @@
 // Exports to M1 (2): Info, Sight
 // Uses from M1:
 //   core: CHART, Dialogs, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, REAL_TERRAIN, TERRAIN_LABELS, edgeFeatureBetween,
-//   edgeFeatures, losClear, state, terrainRowFor, weaponById, weaponUsable
+//       edgeFeatures, losClear, state, terrainRowFor, weaponById, weaponUsable
 //   present: FX, fmtSigned
 //   roster: activeGermans, canvas, findSoldier
 //   operations: destPicks, legalAdjacentHexIds, operationsRoute, roundLegalDestinations, selectedSoldier, walkRoute

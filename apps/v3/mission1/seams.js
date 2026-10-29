@@ -1,14 +1,15 @@
 // mission1/seams.js (13 of 13) — VERBS, verbsOffered, __mission1Debug, AmbushMission. Stage A cut of mission1.js lines 5604-5871 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1: nothing.
+// Puts on window: __mission1Debug, AmbushMission (the shell, lessons, bot and live drives read these).
 // Uses from M1:
 //   core: CHART, D, Dialogs, EQ, FC, G, LOS, LOS_ELEV, LOS_TERRAIN, M, MISSION_CARDS, Ops, REAL_TERRAIN,
-//   TERRAIN_LABELS, dialogLog, edgeFeatures, setDifficulty, state, terrainRowFor, upright
+//       TERRAIN_LABELS, dialogLog, edgeFeatures, setDifficulty, state, terrainRowFor, upright
 //   present: Resolve, lessonRng, stripTags
 //   info: Sight
 //   roster: allGermans, counterEls, currentImgFor, entryEls, equipmentName, findSoldier, renderVP, shownVP
 //   setup: placeNextSoldier, startSquadGeneration
 //   operations: deselect, destPicks, lastSelectedId, operationsRoute, roundLegalDestinations, selectSoldier,
-//   selectedSoldier, walkRoute
+//       selectedSoldier, walkRoute
 //   contact: activateGermansSequentially
 //   rounds: pickActor, picking
 //   verbs: allInHex, disableActionButtons, pickupOffers, resolvePickup

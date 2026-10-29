@@ -4,7 +4,7 @@
 //   core: D, Dialogs, ENTRY_HEXES, Sched, Toasts, V, VP_REQUIREMENT_RULEBOOK, setDifficulty, state, vpReachable
 //   present: logHeader
 //   roster: activeUS, canvas, counterEls, entryEls, eventMarkerEls, findSoldier, makeCounter, placeEl,
-//   placeEventMarkerEl, renderRoster, renderVP, updateCounterVisual
+//       placeEventMarkerEl, renderRoster, renderVP, updateCounterVisual
 //   setup: placeNextSoldier, promptPlaceSoldier, startSquadGeneration
 //   operations: clearDestMarks, resetOperationsFlow, selectSoldier
 //   contact: resetContactFlow

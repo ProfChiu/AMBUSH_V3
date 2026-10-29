@@ -1,9 +1,9 @@
 // mission1/contact.js (7 of 13) — contact terms, German activation, German card, tooltips, inspectors. Stage A cut of mission1.js lines 2489-2880 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (9): activateGermansSequentially, afterParagraphChain, estimateHitChanceBreakdown, hitBreakdownHtml,
-//   hitBreakdownText, noteContact, pendingContact, resetContactFlow, showSoldierInspector
+//       hitBreakdownText, noteContact, pendingContact, resetContactFlow, showSoldierInspector
 // Uses from M1:
 //   core: CHART, D, FC, GAct, GERMAN_ROSTER, Ops, Sched, V, germanInstanceId, img, paragraphHex, resolveGermanCardId,
-//   state, terrainRowFor, terrainRowForTarget, vpRequirement, weaponById
+//       state, terrainRowFor, terrainRowForTarget, vpRequirement, weaponById
 //   present: Cues, d10, fmtSigned, infoPopup, logHeader, rollPopup
 //   roster: findSoldier, kitHtml, makeCounter, renderVP, scrollMapTo
 //   operations: pendingConditionChange, runConditionChange, runRoundsConditionChange

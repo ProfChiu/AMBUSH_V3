@@ -130,7 +130,7 @@ def wrap_lines(prefix, items, width=118):
         piece = it + (',' if i < len(items) - 1 else '')
         if len(line) + 1 + len(piece) > width and line.strip() not in ('//',):
             out.append(line.rstrip())
-            line = '//   '
+            line = '//       '
         line = line + ('' if line.endswith(' ') else ' ') + piece
     out.append(line.rstrip())
     return out
@@ -164,6 +164,11 @@ def headers():
                 bare.setdefault(o, set()).add(r['name'])
         head = [lines[0]]
         head += wrap_lines('// Exports to M1 (%d):' % len(exports), exports) if exports else ['// Exports to M1: nothing.']
+        if re.search(r'^  var M1 = window\.AmbushM1 = \{', '\n'.join(lines), re.M):
+            head.append('// Creates window.AmbushM1 (M1, holding M1.state); every other file reads it as `var M1`.')
+        doors = re.findall(r'^  window\.(AmbushMission|__mission1Debug) = ', '\n'.join(lines), re.M)
+        if doors:
+            head.append('// Puts on window: %s (the shell, lessons, bot and live drives read these).' % ', '.join(doors))
         if uses:
             head.append('// Uses from M1:')
             for o in sc['order']:

@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""R3 Step 3 proof: the names apps/v3/mission1/*.js now put on window collide with nothing.
+"""R6 Step 9 (Stage C) proof: apps/v3/mission1/ puts exactly three names on window.
 
-Since Stage A (docs/REFACTOR_MAP.md 5.3) the 13 files are plain scripts, so every top-level
-`function` and `var` is a window property. This lists them (2-space indented declarations), then
-loads apps/v3/index.html in Chromium and checks:
-  1. none is a property of a blank page's window (a browser global: name, status, top, event, ...);
-  2. none is a global any other script of the page defines (engine, data, settings, audio, cues,
-     board, counters, ambushdialogs, shell, ring, stack, lessons, lesson, director): the page is
-     loaded a second time with the 13 files left out, and its globals are the other scripts';
-  3. the listing is complete: the page's own globals minus (2)'s equal exactly the listed names
-     plus AmbushMission, __mission1Debug and AmbushM1 (Stage B's state object, R5);
+Since Stage C (docs/REFACTOR_MAP.md 5.3) each of the 13 files is an IIFE that shares through
+window.AmbushM1 (tools/exports.py). This loads apps/v3/index.html in Chromium twice, with and
+without the 13 files, and checks:
+  1. every file is wrapped: no top-level `function` / `var` of a mission1 file is left on window
+     (the R3 listing, 2-space-indented declarations of an unwrapped file, must be empty);
+  2. the page's globals minus a blank page's and minus the other scripts' are exactly
+     AmbushM1 (core.js), AmbushMission and __mission1Debug (seams.js), plus __v3stack, which
+     stack.js sets only once AmbushMission exists (so it is absent from the page without mission1/);
+  3. none of those is a browser global or another script's global;
   4. no console error or page error on load.
 Prints one line, "check_globals PASS ..." or "check_globals FAIL: ..."; exit 0/1.
+(History: 345 top-level names on window after R3's Stage A cut; R6 took them to 0.)
 """
 import pathlib
 import re
@@ -115,16 +116,21 @@ def main():
     if hit_o:
         fails.append('other scripts\' globals: %s' % hit_o)
     mine = full - blank - others
-    if mine != set(names) | ASSIGNED:
-        fails.append('listing incomplete: on window, not listed %s; listed, not on window %s'
-                     % (sorted(mine - set(names) - ASSIGNED), sorted((set(names) | ASSIGNED) - mine)))
+    if names:
+        fails.append('unwrapped files still declare on window: %s' % sorted(names))
+    if mine != ASSIGNED:
+        fails.append('mission1/ globals are %s, expected exactly %s' % (sorted(mine), sorted(ASSIGNED)))
+    hit = sorted(ASSIGNED & (blank | others))
+    if hit:
+        fails.append('collides with a browser or other-script global: %s' % hit)
     if errs:
         fails.append('console errors: %s' % errs[:3])
     if fails:
         print('check_globals FAIL: ' + '; '.join(fails))
         sys.exit(1)
-    print('check_globals PASS: %d names from mission1/ on window, none a browser global (%d) or another '
-          'script\'s (%d); 0 console errors' % (len(names), len(blank), len(others)))
+    print('check_globals PASS: window holds exactly %s from mission1/ (+ __v3stack, stack.js); none a browser '
+          'global (%d) or another script\'s (%d); 0 console errors' % (', '.join(sorted(ASSIGNED - {'__v3stack'})),
+                                                                     len(blank), len(others)))
 
 
 if __name__ == '__main__':

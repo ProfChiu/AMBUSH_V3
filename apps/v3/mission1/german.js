@@ -2,12 +2,12 @@
 // Exports to M1 (1): germanAutoTurn
 // Uses from M1:
 //   core: AR, Asl, CW, EQ, FC, G, GAct, GERMAN_ACTION_PROGRAMS, M, MISSION_CARDS_MOVEMENT, PARAGRAPHS, REAL_TERRAIN,
-//   Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
-//   edgeFeatureBetween, isCrewWeapon, losClearBetween, state, unprepareWeaponOnMove, weaponById, weaponUsable
+//       Sched, TERRAIN_LABELS, TERRAIN_ROW, crewFireAvailability, crewFiredThisRound, crewWeaponStanceOk,
+//       edgeFeatureBetween, isCrewWeapon, losClearBetween, state, unprepareWeaponOnMove, weaponById, weaponUsable
 //   present: Cues, FX, d10, fmtSigned, infoPopup, rollPopup
 //   info: Info
 //   roster: activeGermans, activeUS, counterEls, equipmentName, findSoldier, nameFor, placeEl, renderRoster,
-//   renderVP, scrollMapTo, updateCounterVisual
+//       renderVP, scrollMapTo, updateCounterVisual
 //   operations: pendingConditionChange, runParagraphCheck
 //   rounds: driveNext, renderTrack, visibleEnemyTargets
 //   verbs: clearJamRoll, estimateHitChance, grenadeCandidates

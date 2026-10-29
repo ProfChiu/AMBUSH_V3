@@ -1,11 +1,11 @@
 // mission1/roster.js (4 of 13) — map rendering, counters, game state vars, finders, kit and tokens, roster/VP render. Stage A cut of mission1.js lines 1306-1581 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (25): activeGermans, activeUS, addGroundItem, allGermans, boxesFor, canvas, counterEls,
-//   currentImgFor, destEls, entryEls, equipmentName, eventMarkerEls, findSoldier, highlightActor, kitHtml,
-//   makeCounter, nameFor, pctPos, placeEl, placeEventMarkerEl, renderRoster, renderVP, scrollMapTo, shownVP,
-//   updateCounterVisual
+//       currentImgFor, destEls, entryEls, equipmentName, eventMarkerEls, findSoldier, highlightActor, kitHtml,
+//       makeCounter, nameFor, pctPos, placeEl, placeEventMarkerEl, renderRoster, renderVP, scrollMapTo, shownVP,
+//       updateCounterVisual
 // Uses from M1:
 //   core: D, EQ, FloatDialogs, G, SQCHART, V, WEAPONS_REQUIRING_PREPARATION, img, state, vpRequirement, vpTargetNote,
-//   weaponById
+//       weaponById
 //   present: FX, Resolve, fmtSigned
 //   operations: selectSoldier
 //   contact: showSoldierInspector

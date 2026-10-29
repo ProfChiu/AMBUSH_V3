@@ -1,19 +1,19 @@
 // mission1/verbs.js (9 of 13) — the player's verbs: grenade, drag, pick up, command, stance, prepare, fire, assault, jam. Stage A cut of mission1.js lines 3468-4134 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (27): activeSoldiersIn, allInHex, carryCandidates, chooseOffer, clearJamRoll, disableActionButtons,
-//   doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn, doPlayerGrenade,
-//   doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates, estimateHitChance,
-//   giveTurnCandidates, grenadeCandidates, grenadeMods, isInteriorHex, makeAwareCandidates, markExfiltrated,
-//   pickupOffers, resolvePickup, stanceChangeCandidates
+//       doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn, doPlayerGrenade,
+//       doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates,
+//       estimateHitChance, giveTurnCandidates, grenadeCandidates, grenadeMods, isInteriorHex, makeAwareCandidates,
+//       markExfiltrated, pickupOffers, resolvePickup, stanceChangeCandidates
 // Uses from M1:
 //   core: AR, Asl, CHART, Dialogs, EQ, FC, G, Gr, M, REAL_TERRAIN, Sched, TERRAIN_LABELS, Toasts, V, canClearJam,
-//   canPrepareWeapon, crewFiredThisRound, crewMates, isCrewWeapon, losClear, state, upright, weaponById
+//       canPrepareWeapon, crewFiredThisRound, crewMates, isCrewWeapon, losClear, state, upright, weaponById
 //   present: actorRowHtml, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
 //   roster: activeGermans, activeUS, allGermans, boxesFor, counterEls, equipmentName, findSoldier, placeEl,
-//   renderRoster, scrollMapTo, updateCounterVisual
+//       renderRoster, scrollMapTo, updateCounterVisual
 //   operations: addDestMark, clearDestMarks, completeTurn, finishFireStep, runParagraphCheck, standUpCost
 //   contact: estimateHitChanceBreakdown, hitBreakdownText
 //   rounds: assaultCandidates, assaultOpts, chooseTarget, driveNext, renderTrack, showActionPanel,
-//   visibleEnemyTargets
+//       visibleEnemyTargets
 //   combat: assaultChain, fireChain, grenadeChain, recordCasualty, toHitCard
 (function () {
   'use strict';

@@ -1,18 +1,18 @@
 // mission1/operations.js (6 of 13) — selection, destinations, combo moves, walking, HUD, Paragraph Check, step chain. Stage A cut of mission1.js lines 1796-2488 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (31): addDestMark, buildOpsCtx, capturedGermansAt, clearDestMarks, completeTurn, currentHex,
-//   currentParagraph, deselect, destCostClass, destPicks, finishFireStep, finishMoveStep, lastSelectedId,
-//   legalAdjacentHexIds, operationsRoute, pendingCancelAction, pendingConditionChange, pendingSteps,
-//   presentParagraphChain, renderStatusBanner, resetOperationsFlow, roundLegalDestinations, runConditionChange,
-//   runParagraphCheck, runRoundsConditionChange, selectSoldier, selectedSoldier, standUpCost, startOperations,
-//   walkRoute, walking
+//       currentParagraph, deselect, destCostClass, destPicks, finishFireStep, finishMoveStep, lastSelectedId,
+//       legalAdjacentHexIds, operationsRoute, pendingCancelAction, pendingConditionChange, pendingSteps,
+//       presentParagraphChain, renderStatusBanner, resetOperationsFlow, roundLegalDestinations, runConditionChange,
+//       runParagraphCheck, runRoundsConditionChange, selectSoldier, selectedSoldier, standUpCost, startOperations,
+//       walkRoute, walking
 // Uses from M1:
 //   core: G, LOS_DB, LOS_TERRAIN, M, MISSION, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
-//   TERRAIN_LABELS, canClearJam, edgeFeatureBetween, edgeFeatures, germanInstanceId, losClear, paragraphHex, state,
-//   weaponUsable
+//       TERRAIN_LABELS, canClearJam, edgeFeatureBetween, edgeFeatures, germanInstanceId, losClear, paragraphHex,
+//       state, weaponUsable
 //   present: Cues, FX, Resolve, d10, fmtSigned, infoPopup, logHeader, logLine, pad2, rollPopup, stripTags
 //   info: Info
 //   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, destEls, eventMarkerEls,
-//   findSoldier, kitHtml, nameFor, placeEl, placeEventMarkerEl, renderVP, updateCounterVisual
+//       findSoldier, kitHtml, nameFor, placeEl, placeEventMarkerEl, renderVP, updateCounterVisual
 //   contact: afterParagraphChain, estimateHitChanceBreakdown, hitBreakdownText, noteContact
 //   rounds: chooseTarget, doRoundMove, driveNext, renderTrack, startActionRound, visibleEnemyTargets
 //   verbs: chooseOffer, clearJamRoll, estimateHitChance

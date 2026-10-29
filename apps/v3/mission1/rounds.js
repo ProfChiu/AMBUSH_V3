@@ -1,23 +1,23 @@
 // mission1/rounds.js (8 of 13) — Action Round start, events, awareness, initiative, track, turns, action panel. Stage A cut of mission1.js lines 2881-3467 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (15): assaultCandidates, assaultOpts, canFireAt, chooseTarget, doRoundMove, driveNext, pickActor,
-//   picking, renderTrack, resetRoundFlow, showActionPanel, slotLabel, startActionRound, visibleEnemyTargets,
-//   wakeUpUnawareInHex
+//       picking, renderTrack, resetRoundFlow, showActionPanel, slotLabel, startActionRound, visibleEnemyTargets,
+//       wakeUpUnawareInHex
 // Uses from M1:
 //   core: AR, Asl, CHART, Checks, Dialogs, FC, M, MISSION_CARDS, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, Sched,
-//   TERRAIN_LABELS, WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability,
-//   crewWeaponStanceOk, guardsAPrisoner, isCrewWeapon, losClearBetween, state, terrainRowForTarget,
-//   unprepareWeaponOnMove, weaponById, weaponMaxRange, weaponUsable
+//       TERRAIN_LABELS, WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability,
+//       crewWeaponStanceOk, guardsAPrisoner, isCrewWeapon, losClearBetween, state, terrainRowForTarget,
+//       unprepareWeaponOnMove, weaponById, weaponMaxRange, weaponUsable
 //   present: Cues, FX, Resolve, d10, fmtSigned, infoPopup, logLine, rollPopup, stripTags
 //   info: Info
 //   roster: activeGermans, activeUS, allGermans, canvas, counterEls, currentImgFor, equipmentName, findSoldier,
-//   highlightActor, kitHtml, nameFor, placeEl, updateCounterVisual
+//       highlightActor, kitHtml, nameFor, placeEl, updateCounterVisual
 //   operations: addDestMark, buildOpsCtx, clearDestMarks, completeTurn, currentHex, currentParagraph, destCostClass,
-//   finishMoveStep, pendingCancelAction, pendingConditionChange, pendingSteps, presentParagraphChain,
-//   roundLegalDestinations, runParagraphCheck, runRoundsConditionChange, standUpCost, walking
+//       finishMoveStep, pendingCancelAction, pendingConditionChange, pendingSteps, presentParagraphChain,
+//       roundLegalDestinations, runParagraphCheck, runRoundsConditionChange, standUpCost, walking
 //   contact: pendingContact
 //   verbs: disableActionButtons, doPlayerAssault, doPlayerChangeStance, doPlayerDrag, doPlayerFire, doPlayerGiveTurn,
-//   doPlayerGrenade, doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates,
-//   giveTurnCandidates, grenadeCandidates, makeAwareCandidates, pickupOffers, stanceChangeCandidates
+//       doPlayerGrenade, doPlayerMakeAware, doPlayerPickup, doPlayerPrepareWeapon, dragCandidates, dragHexCandidates,
+//       giveTurnCandidates, grenadeCandidates, makeAwareCandidates, pickupOffers, stanceChangeCandidates
 //   german: germanAutoTurn
 //   combat: checkEndingConditions, endRound
 (function () {

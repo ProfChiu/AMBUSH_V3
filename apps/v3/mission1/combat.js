@@ -1,13 +1,13 @@
 // mission1/combat.js (11 of 13) — fire, hidden fire, grenade and assault chains, damage, capture, round end, exit, victory. Stage A cut of mission1.js lines 4734-5323 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (13): applyCapture, applyDamage, assaultChain, canExit, checkCapturedGermanEscapes,
-//   checkEndingConditions, endRound, fireChain, grenadeChain, hiddenFireChain, recordCasualty, toHitCard, tryExit
+//       checkEndingConditions, endRound, fireChain, grenadeChain, hiddenFireChain, recordCasualty, toHitCard, tryExit
 // Uses from M1:
 //   core: Asl, CHART, D, ENTRY_HEXES, EQ, FC, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_TERRAIN, Sched,
-//   TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, state, terrainRowFor, vpRequirement, vpTargetNote,
-//   weaponById
+//       TERRAIN_ROW_INTERIOR_FAR, Toasts, V, losClearBetween, state, terrainRowFor, vpRequirement, vpTargetNote,
+//       weaponById
 //   present: Cues, FX, damageStrip, fmtSigned, hitStrip, infoPopup, logHeader, logLine, pad2, rollPopup
 //   roster: activeGermans, activeUS, addGroundItem, allGermans, counterEls, equipmentName, renderRoster, renderVP,
-//   updateCounterVisual
+//       updateCounterVisual
 //   operations: clearDestMarks, deselect, renderStatusBanner, selectedSoldier
 //   contact: estimateHitChanceBreakdown, hitBreakdownHtml
 //   rounds: assaultOpts, chooseTarget, renderTrack, startActionRound, wakeUpUnawareInHex

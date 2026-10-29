@@ -783,3 +783,40 @@ commit carrying this entry (Step 8). The earlier, stopped R5 attempt stays in `g
   runs at script load. `M1.state` must stay one object whose fields are replaced, never the object itself (`seams.js`
   hands out `M1.state.groundItems` by reference). `tools/rename_state.py --check` stays a valid guard until the files
   are wrapped (it only knows the 13 names).
+
+**R6 results (2026-10-29): Step 9, Stage C namespace. T1 green after each of the 13 files; T2 green** on the final
+tree (1,098 s: T1 PASS 153 s; parity 30/30 Normal + 30/30 Easy identical; traces identical; live chapters 55, drills
+55, germans 36, lesson 39, map 47, save 30 ok, 0 fail; engine 19/19 match the manifest). `check_counters.py` seed 7000
+identical to a baseline recorded on `f88009d`: Normal 239 snapshots / 4,083 fx+speech events / 993 log lines, Easy
+377 / 2,758 / 909. Commits `93a4efd` (9.1 info) … `67236a1` (9.13 core), and the commit carrying this entry.
+- **Globals: 345 top-level names + `AmbushM1`, `AmbushMission`, `__mission1Debug` → exactly those three** (plus
+  `__v3stack`, which `stack.js` sets). Every file is `(function () { 'use strict'; var M1 = window.AmbushM1; … })();`;
+  `core.js` keeps creating M1 (`var M1 = window.AmbushM1 = {state: …}` part-way down, after the engine aliases), so it
+  must stay first in load order. Bodies keep their 2-space indent (diffs stay readable).
+- **Exports (215):** info 2, present 17, roster 25, setup 3, contact 9, save 5, german 1, combat 13, verbs 27,
+  operations 31, rounds 15, seams 0, core 67 (the engine/data aliases `G`, `FC`, `CHART`, … included: callers read
+  `M1.G.hexToPixel`). Functions are `M1.f = f;` in a block at the top of the IIFE (hoisted); core's exports are one
+  block at its end (M1 does not exist above its own `var M1`). A var shared by reference is `var x = M1.x = init`.
+- **17 reassigned vars are M1 properties** (`M1.x = init`, every reference `M1.x`, own file included): present
+  `voiceMuted` (core toggles it), `lessonRng` (seams sets it); roster `counterEls`, `entryEls`, `eventMarkerEls` (save
+  replaces them), `destEls` (operations), `shownVP`; operations `walking`, `pendingSteps`, `currentHex`,
+  `currentParagraph`, `pendingConditionChange`, `pendingCancelAction`, `destPicks`, `lastSelectedId`; contact
+  `pendingContact`; rounds `picking`. None belongs to the save, so `M1.state` is unchanged.
+- **Each file's header** lists `Exports to M1`, `Uses from M1` by owner file, and (seams/core) what goes on window;
+  `python3 tools/exports.py --headers` regenerates them, so keep them generated, not hand-edited.
+- **Tools.** `tools/exports.py` (+ `tools/exports_scope.js`, a real ES5 scope analysis on `tools/vendor/acorn.js` 8.11.3,
+  MIT; cross-checked against eslint-scope on the unwrapped tree: same references, same writes): no argument = the
+  export table; `--wrap <file>` did each step; `--check` = no bare reference to a wrapped file's name anywhere, every
+  `M1.x` read is written by some file, every load-time `M1.x` read is set by an earlier file. `check_globals.py` now
+  asserts exactly the three globals. The outside world: nothing outside `mission1/` read a mission1 name off window
+  except `check_counters.py` (`FX`, `window.speak`); it now wraps `M1.FX` and `M1.speak`, and present.js calls its
+  own `speak` as `M1.speak(…)` so that wrap sees it (`exports.py` EXTERNAL). shell, ring, stack, lesson, director, the
+  bot, lessons and the live drives use only `AmbushMission` / `__mission1Debug`: unchanged.
+- **Now stale:** `tools/check_split.py` (R3's cut proof; the files are no longer the old body byte for byte) and
+  `tools/rename_state.py --check` (its 13 names are all `M1.state.x`; it still passes, but it guards nothing new).
+- **For R7 (Step 10, one `verbs(s)`).** The pieces it must unify now live at: the action panel's enable/disable in
+  `rounds.js` `showActionPanel(id)` (~l.386) with `explainVerbs(s, …)` / `fireWhy` (~l.354-385) writing each button's
+  `data-why`; `verbs.js` `disableActionButtons()` (~l.647) and the `doPlayer*` / `*Candidates` functions; `seams.js`
+  `VERBS` (~l.44) and `verbsOffered()` (~l.56, on `__mission1Debug`), and `stack()`'s `takeWhy` (~l.209, in
+  `AmbushMission`); `ring.js` reads the buttons' `disabled` + `data-why` (l.79-81, 137). A new `verbs(s)` shared
+  across files must be exported on M1 (`M1.verbs`), and `python3 tools/exports.py --check` + `--headers` rerun.

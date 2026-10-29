@@ -1,6 +1,6 @@
 // mission1/present.js (2 of 13) — dice, voice, log, pop-up helpers, Resolve, FX. Stage A cut of mission1.js lines 366-979 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (17): Cues, FX, Resolve, actorRowHtml, d10, damageStrip, fmtSigned, hitStrip, infoPopup, lessonRng,
-//   logHeader, logLine, pad2, rollPopup, speak, stripTags, voiceMuted
+//       logHeader, logLine, pad2, rollPopup, speak, stripTags, voiceMuted
 // Uses from M1:
 //   core: CHART, Dialogs, FC, G, state
 //   roster: canvas, currentImgFor, nameFor, pctPos

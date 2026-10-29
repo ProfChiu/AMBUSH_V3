@@ -1,13 +1,14 @@
 // mission1/core.js (1 of 13) — engine and data aliases, constants, terrain/LOS tables, weapon rules, VP target, difficulty. Stage A cut of mission1.js lines 1-22, 25-365 (docs/REFACTOR_MAP.md 5.4).
 // Exports to M1 (67): AR, Asl, CHART, CW, Checks, D, Dialogs, ENTRY_HEXES, EQ, FC, FloatDialogs, G, GAct,
-//   GERMAN_ACTION_PROGRAMS, GERMAN_ROSTER, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_DB, LOS_ELEV, LOS_TERRAIN, M,
-//   MISSION, MISSION_CARDS, MISSION_CARDS_MOVEMENT, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, SG, SQCHART, Sched,
-//   TERRAIN_LABELS, TERRAIN_ROW, TERRAIN_ROW_INTERIOR_FAR, Toasts, V, VP_REQUIREMENT_RULEBOOK,
-//   WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability, crewFiredThisRound,
-//   crewMates, crewWeaponStanceOk, dialogLog, edgeFeatureBetween, edgeFeatures, germanInstanceId, guardsAPrisoner,
-//   img, isCrewWeapon, losClear, losClearBetween, paragraphHex, resolveGermanCardId, setDifficulty, terrainRowFor,
-//   terrainRowForTarget, unprepareWeaponOnMove, upright, vpReachable, vpRequirement, vpTargetNote, weaponById,
-//   weaponMaxRange, weaponUsable
+//       GERMAN_ACTION_PROGRAMS, GERMAN_ROSTER, Gr, HEIGHTS_CANDIDATE_HEXES, LOS, LOS_DB, LOS_ELEV, LOS_TERRAIN, M,
+//       MISSION, MISSION_CARDS, MISSION_CARDS_MOVEMENT, Ops, PARAGRAPHS, PROGRAMS, REAL_TERRAIN, SG, SQCHART, Sched,
+//       TERRAIN_LABELS, TERRAIN_ROW, TERRAIN_ROW_INTERIOR_FAR, Toasts, V, VP_REQUIREMENT_RULEBOOK,
+//       WEAPONS_REQUIRING_PREPARATION, canClearJam, canPrepareWeapon, crewFireAvailability, crewFiredThisRound,
+//       crewMates, crewWeaponStanceOk, dialogLog, edgeFeatureBetween, edgeFeatures, germanInstanceId,
+//       guardsAPrisoner, img, isCrewWeapon, losClear, losClearBetween, paragraphHex, resolveGermanCardId,
+//       setDifficulty, terrainRowFor, terrainRowForTarget, unprepareWeaponOnMove, upright, vpReachable,
+//       vpRequirement, vpTargetNote, weaponById, weaponMaxRange, weaponUsable
+// Creates window.AmbushM1 (M1, holding M1.state); every other file reads it as `var M1`.
 // Uses from M1:
 //   core: state
 //   present: logLine, voiceMuted

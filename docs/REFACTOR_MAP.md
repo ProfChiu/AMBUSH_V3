@@ -637,3 +637,22 @@ shows it. Not tested: whether the Load *button* is reachable while a pop-up is o
 **Files added in Step 0.** `tools/bot/compare.py`; `tools/t1.sh`, `tools/t2.sh`; `tools/repro_save.py` (becomes
 `live_save.py` in Step 7, its checks flipping from "present" to "fixed"); `tools/bot/baselines/refactor/`
 (`trace_{normal,easy}_7000.json` + their run records, `engine.sha256`).
+
+**R2 results (2026-10-29): Steps 1-2, T2 green after each** (Step 1 1,088 s, Step 2 1,078 s; parity 30/30 + 30/30
+identical, traces identical, 5 live drives pass, engine unchanged). `mission1.js` 6,176 → 5,868 (Step 1) → 5,872 lines.
+- **Step 1** (`af91b5b`, -378 / +59 lines over 3 files): 36 debug hooks; the presentation chooser (`PRESENTATIONS`,
+  `presentationById`, `choosePresentation`, `#presentationBtn`, `#build-label`, `UI_KEY`, `Resolve.setMode/active/
+  mode/forced/lastPlayed`, `startGameFlow`'s `skipChooser`); 15 `on()` guards in FX/Info and 4 `Resolve.active()`
+  tests (the else-branch banner text went with them); `diceTrayHtml`; `pathEls`/`clearPathMarks`/`.path-mark`;
+  `Hz`/`Interp`; `.result-line`, `.paragraph-body`, `.kit-boxes`, `.kit-box`; the `#log-sec` id. Header rewritten.
+- **Kept on purpose:** 7 hooks the 4.1 table called dead are used by `tools/repro_save.py` (added in R1):
+  `spawnGermanForTesting, saveGame, listSaves, loadSaveAtIndex, isSafeToSave, applyWoundForTesting,
+  groundItemsForTesting`. `setPresentation()` returns `'cards'`; `board().presentation` is the literal `'cards'`. The
+  set-up still shows `#speedCtl`, titles the log "Radio Log" and adds `body.cards-mode` (0 CSS users; harmless).
+  `startGameFlow` stays (`AmbushMission.ask` uses it). `localStorage` `ambush.v2.presentation` is no longer written.
+- **Step 2:** `upright(s)` (4 sites: canClearJam, canPrepareWeapon, pickupOffers, `stack().takeWhy`); `isOut(s)` (1
+  site, the counter's `dead` class); `allGermans()` in activeGermans, allInHex, the Round's crewFiredBy reset and
+  `board().germans`; `activeUS()` in groupAt. **Left as they are (not exactly equal):** `stance !== 'prone'` tests
+  (differ if `stance` were unset); `counters.js`'s `OUT` (another file, Step 4); the German counter loop on load
+  (Step 4); `usSoldiers.filter` in findSoldier, the inactive-mates finder and Ending 1 (different predicates).
+- **For R3:** §5.4's line ranges are stale; re-derive them from section markers on the current file.

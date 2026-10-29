@@ -264,13 +264,16 @@
     if (s.side === 'german') return !!s.weaponId;
     return !!s.weaponId && EQ.hasAmmo(s.inventory, s.weaponId);
   }
+  // §5/3, §6/7: "A soldier that is standing or crouching can..." (pick up, prepare a weapon,
+  // clear a jam): not prone.
+  function upright(s) { return s.stance === 'standing' || s.stance === 'crouching'; }
   function canClearJam(s) {
-    return !!s && s.weaponJammed && (s.stance === 'standing' || s.stance === 'crouching') && weaponById(s.weaponId).ammo !== 'A';
+    return !!s && s.weaponJammed && upright(s) && weaponById(s.weaponId).ammo !== 'A';
   }
   // §5/3/§6/7 (Task #69, docs/43_PREPARE_WEAPON.md): "A standing or crouching soldier can
   // prepare a weapon that requires preparation before it can be fired."
   function canPrepareWeapon(s) {
-    return !!s && !!WEAPONS_REQUIRING_PREPARATION[s.weaponId] && !s.weaponPrepared && (s.stance === 'standing' || s.stance === 'crouching');
+    return !!s && !!WEAPONS_REQUIRING_PREPARATION[s.weaponId] && !s.weaponPrepared && upright(s);
   }
 
   // Real card-number -> real Card ID map ("32" -> "GE 32/S"), built from the actual roster.
@@ -1358,7 +1361,7 @@
     var el = counterEls[s.id];
     if (!el) return;
     el.classList.toggle('wounded', s.status === 'wounded');
-    el.classList.toggle('dead', s.status === 'incapacitated' || s.status === 'killed' || s.status === 'captured');
+    el.classList.toggle('dead', isOut(s));
     var imgEl = el.querySelector('img');
     if (imgEl) imgEl.src = currentImgFor(s);
     // the commander wears a star, so the soldier who can Give Turn and Make aware is found on sight
@@ -1399,12 +1402,14 @@
   }
   function nameFor(id) { return findSoldier(id).name; }
   function activeUS() { return usSoldiers.filter(function (s) { return s.isActive && !s.exited; }); }
-  function activeGermans() { return Object.keys(germans).map(function (k) { return germans[k]; }).filter(function (g) { return g.isActive; }); }
+  function activeGermans() { return allGermans().filter(function (g) { return g.isActive; }); }
   // Task #72 (docs/46_CAPTURED_GERMAN.md): every German ever activated, active or not — a
   // captured German has isActive === false (removeFromRound/§11/2's own Inactive-space mechanic,
   // unchanged from Task #27) but must still be found for the §11/2 escape/freeing check below,
   // which activeGermans() would otherwise skip entirely.
   function allGermans() { return Object.keys(germans).map(function (k) { return germans[k]; }); }
+  // Out of the fight: incapacitated, killed or captured (wounded and panicked soldiers are not).
+  function isOut(s) { return s.status === 'incapacitated' || s.status === 'killed' || s.status === 'captured'; }
 
   // Task #61 (docs/33_PORT_BOX.md): equipment display, for live verification that squad
   // generation actually populated real per-soldier Port Boxes / Ammo Boxes rather than the old
@@ -1798,7 +1803,7 @@
   // selected soldier could optionally move together with, including himself.
   function groupAt(s) {
     if (!s) return [];
-    return usSoldiers.filter(function (t) { return t.hexId === s.hexId && t.stance === s.stance && t.isActive && !t.exited; });
+    return activeUS().filter(function (t) { return t.hexId === s.hexId && t.stance === s.stance; });
   }
   // §5/1: "If a group of soldiers enters the same hex, only one Paragraph Check is made. Any
   // Perception Checks required by the paragraph are made by the soldier with the highest PC
@@ -2883,7 +2888,7 @@
     // §9/7's "a maximum of two soldiers can fire a single crew weapon in one Round" is a per-Round
     // cap, so it is cleared here with the Round, not per turn.
     usSoldiers.forEach(function (s) { s.crewFiredBy = []; });
-    Object.keys(germans).forEach(function (k) { germans[k].crewFiredBy = []; });
+    allGermans().forEach(function (g) { g.crewFiredBy = []; });
     document.getElementById('tb-phase').textContent = 'Action Round ' + n;
     if (n === 1) Cues.banner('phase', 'Contact!', 'Action Round 1', 'alert'); else Cues.banner('phase', 'Action Round ' + n);
     document.getElementById('status-banner').textContent = 'Contact! Action Round in progress.';
@@ -3573,7 +3578,7 @@
   // ---------------------------------------------------------------------
   function allInHex(hexId) {
     return usSoldiers.filter(function (s) { return s.hexId === hexId; })
-      .concat(Object.keys(germans).map(function (id) { return germans[id]; }).filter(function (g) { return g.hexId === hexId; }));
+      .concat(allGermans().filter(function (g) { return g.hexId === hexId; }));
   }
   // §5/3: "A soldier that is standing or crouching can pick up or put down any portable items in
   // his hex... A soldier that is taking equipment from an inactive soldier must be crouching."
@@ -3581,7 +3586,7 @@
   // gear (own casualty, or a dead/incapacitated/captured German — §14: "you can pick up and use
   // most German equipment") needs the taker specifically crouching.
   function pickupOffers(actor) {
-    if (!actor || (actor.stance !== 'standing' && actor.stance !== 'crouching')) return [];
+    if (!actor || !upright(actor)) return [];
     var hexId = actor.hexId, offers = [];
     (groundItems[hexId] || []).forEach(function (item, idx) {
       offers.push({
@@ -5696,8 +5701,7 @@
             weaponId: s.weaponId, PC: s.PC, WS: s.WS, IN: s.IN,
             jammed: !!s.weaponJammed, broken: !!s.weaponBroken };
         }),
-        germans: Object.keys(germans).map(function (k) {
-          var g = germans[k];
+        germans: allGermans().map(function (g) {
           return { id: g.id, hexId: g.hexId, status: g.status, isActive: !!g.isActive, role: g.card.Role };
         }),
         vp: { gained: shownVP.gained, lost: shownVP.lost, total: shownVP.total, need: shownVP.need },
@@ -5786,7 +5790,7 @@
         hexId: hexId,
         actor: actor ? { id: actor.id, name: actor.name, here: actor.hexId === hexId } : null,
         takeWhy: !actor ? '' : actor.hexId !== hexId ? actor.name + ' is not in this hex.' :
-          canTake ? '' : (actor.stance !== 'standing' && actor.stance !== 'crouching') ? 'He must be standing or crouching (§6/7).' :
+          canTake ? '' : !upright(actor) ? 'He must be standing or crouching (§6/7).' :
           (actor.stance === 'standing' && allInHex(hexId).some(function (t) { return t.id !== actor.id && !t.isActive; }))
             ? 'Taking equipment from an inactive soldier needs him crouching (§6/7).' :
           allInHex(hexId).some(function (t) { return t.side !== actor.side && t.isActive && t.weaponId; })

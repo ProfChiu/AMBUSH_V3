@@ -193,18 +193,11 @@
       if (mods.indexOf(-3) !== -1) parts.push('&minus;3 not in sight');
       if (easyMod) parts.push(fmtSigned(easyMod) + ' easy mode');
       var breakdown = parts.join(' ') + ' &rarr; Hit Chance <b>' + hitChance.clamped + '</b>.';
-      rollPopup({ actor: thrower, title: 'Grenade Throw', kind: 'single', contextHtml: breakdown, strip: hitStrip(hitChance.clamped),
-        explain: function (roll) { return FC.resolveHitRoll(hitChance.clamped, roll) === 'hit' ? '<b style="color:var(--clear)">LANDS</b> in ' + targetHexId + '.' : 'Missed &mdash; scatters.'; },
-        logText: function (roll) { return 'Grenade throw: <span class="roll">' + roll + '</span> &rarr; ' + (FC.resolveHitRoll(hitChance.clamped, roll) === 'hit' ? 'lands in ' + targetHexId + '.' : 'scatters.'); },
-        fxLanded: function (roll) {
-          var hit = FC.resolveHitRoll(hitChance.clamped, roll) === 'hit';
-          arc.resolve(hit ? 'hit' : 'miss');
-          FX.floatDie(targetHexId, roll, hit ? 'hit' : 'miss');
-        },
-      }, function (roll) {
-        if (FC.resolveHitRoll(hitChance.clamped, roll) === 'hit') resolveLanding(targetHexId);
-        else scatterStep();
-      });
+      toHitCard({ actor: thrower, title: 'Grenade Throw', contextHtml: breakdown, chance: hitChance.clamped,
+        text: { hit: '<b style="color:var(--clear)">LANDS</b> in ' + targetHexId + '.', miss: 'Missed &mdash; scatters.' },
+        log: 'Grenade throw', logWords: { hit: 'lands in ' + targetHexId, miss: 'scatters' },
+        fx: { hex: targetHexId, mark: function () { return arc; } },
+      }, function () { resolveLanding(targetHexId); }, scatterStep);
     }
     function scatterStep() {
       rollPopup({ actor: thrower, title: 'Grenade Scatter', kind: 'single', contextHtml: 'Missed the target hex &mdash; rolling to see where it actually lands (&sect;10/3).',

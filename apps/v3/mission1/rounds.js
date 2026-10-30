@@ -340,7 +340,8 @@
     }
   }
   function canFireAt(firer, target) {
-    if (!target.isActive || !M1.losClearBetween(firer, target)) return false;
+    // No weapon in hand (his only one handed to a friend, §14; or a German card with none): no shot.
+    if (!firer.weaponId || !target.isActive || !M1.losClearBetween(firer, target)) return false;
     if (M1.FC.hexDistance(firer.hexId, target.hexId) > M1.weaponMaxRange(M1.weaponById(firer.weaponId))) return false;
     // §8/2 / the chart's one impossible cell: a prone soldier inside a building, shot at from a
     // hex that is not one of his apertures, cannot be hit at all.

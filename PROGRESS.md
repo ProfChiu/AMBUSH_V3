@@ -2,6 +2,14 @@
 
 > New here? Read `CLAUDE.md`, then `docs/00_V3_BRIEF.md`. v2 is frozen in `../AMBUSH_V2/`.
 
+## 2026-10-29 (unarmed soldier fix)
+- Accomplished: a US soldier whose only weapon a friend takes (§14 Pick Up from an active ally) no longer crashes the game:
+  canFireAt returns no shot without a weapon (rounds.js), canClearJam needs a weapon (core.js). Fire stays refused with
+  "He has no weapon.", Pick Up stays offered. New tools/live_unarmed.py (11 checks; fails 2 on the old code) runs in T2. T2 green.
+- Decisions: no automatic switch to a second carried weapon; he stays unarmed until he picks one up (Wan's open rules question).
+- Open: jam/broken/prepared flags belong to the soldier, not the weapon, so they don't travel with a handed-over weapon.
+- Next: unchanged: Phase 8d (Chapter 6) on the new files, or Wan plays to confirm the refactor feels unchanged.
+
 ## 2026-10-29 (refactor R5-R7: done)
 - Accomplished: R5 M1.state (13 vars) + save fixes: groundItems saved (version 2), in-flight state reset on load (bugs 12, 13),
   saves on ambush.v3.saves with one-time import (tools/live_save.py, 30 checks, in T2); R6 all 13 files IIFE-wrapped, window holds

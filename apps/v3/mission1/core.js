@@ -310,7 +310,7 @@
   // clear a jam): not prone.
   function upright(s) { return s.stance === 'standing' || s.stance === 'crouching'; }
   function canClearJam(s) {
-    return !!s && s.weaponJammed && upright(s) && weaponById(s.weaponId).ammo !== 'A';
+    return !!s && !!s.weaponId && s.weaponJammed && upright(s) && weaponById(s.weaponId).ammo !== 'A';
   }
   // §5/3/§6/7 (Task #69, docs/43_PREPARE_WEAPON.md): "A standing or crouching soldier can
   // prepare a weapon that requires preparation before it can be fired."

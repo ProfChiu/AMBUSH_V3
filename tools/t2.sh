@@ -1,7 +1,7 @@
 #!/bin/bash
 # T2 full proof for the refactor (docs/REFACTOR_MAP.md 6.1), ~20-25 min:
 #   T1 (tools/t1.sh); bot parity 30/30 Normal and 30/30 Easy against the v3_* baselines;
-#   the six tools/live_*.py (each asserts 0 console errors; live_save.py since R5); the engine check.
+#   the seven tools/live_*.py (each asserts 0 console errors; live_save.py since R5, live_unarmed.py since 2026-10-29); the engine check.
 # Engine check: the 19 rules modules in apps/game/ must match the Step 0 manifest
 # (tools/bot/baselines/refactor/engine.sha256). apps/game differs from v2 by design since Phase 8c
 # in three files (arscheduler, paragraphinterpreter, operationsloop); the other 16 are also

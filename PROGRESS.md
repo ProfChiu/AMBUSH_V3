@@ -2,6 +2,16 @@
 
 > New here? Read `CLAUDE.md`, then `docs/00_V3_BRIEF.md`. v2 is frozen in `../AMBUSH_V2/`.
 
+## 2026-10-29 (refactor R5-R7: done)
+- Accomplished: R5 M1.state (13 vars) + save fixes: groundItems saved (version 2), in-flight state reset on load (bugs 12, 13),
+  saves on ambush.v3.saves with one-time import (tools/live_save.py, 30 checks, in T2); R6 all 13 files IIFE-wrapped, window holds
+  only AmbushM1/AmbushMission/__mission1Debug (tools/exports.py on vendored acorn); R7 one M1.verbs() source for buttons, data-why,
+  stack and verbsOffered, wording unchanged (tools/verb_probe.py identical; 44,190 driven cases, 0 diffs), mission.css + hud.css,
+  docs/HANDOFF_V3.md. T2 green after every step. Head 1957b9a. Write-up republished (same link).
+- Open: unarmed US soldier makes visibleEnemyTargets throw (never happens in play); a load mid-card may still let a pending
+  Resolve/FX callback fire (never reproduced); git stash@{0} (old R5 attempt) can be dropped.
+- Next: Phase 8d (Chapter 6) on the new files, or Wan plays the game to confirm the refactor feels unchanged.
+
 ## 2026-10-29 (refactor R1-R4 run back to back)
 - Accomplished: R1 baseline (compare.py, tools/t1.sh ~3 min, t2.sh ~18 min, seed-7000 traces, bugs 12 and 13 reproduced live
   with tools/repro_save.py); R2 dead code out (36 hooks, presentation chooser) + upright/isOut/finders; R3 mission1.js cut into

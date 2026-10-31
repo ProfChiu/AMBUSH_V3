@@ -2,6 +2,13 @@
 
 > New here? Read `CLAUDE.md`, then `docs/00_V3_BRIEF.md`. v2 is frozen in `../AMBUSH_V2/`.
 
+## 2026-10-31 (playthrough: can Mission 1 be won?)
+- Accomplished: the bot played full Mission 1 games on the current code (head 11d28eb). Seed 7001 Normal: won, 8 VP in 13 rounds,
+  2 casualties. Fresh seeds 8000-8011: Normal 1/12 won (median -4 VP), Easy 9/12 won (median 8 VP, target 5). 25/25 finished,
+  0 crashes, stalls or console errors.
+- Decisions: none; the bot plays to its scripted policy, so its Normal rate is a floor on what a person can do.
+- Next: unchanged: Phase 8d (Chapter 6), or Wan plays to confirm the refactor feels unchanged.
+
 ## 2026-10-29 (unarmed soldier fix)
 - Accomplished: a US soldier whose only weapon a friend takes (§14 Pick Up from an active ally) no longer crashes the game:
   canFireAt returns no shot without a weapon (rounds.js), canClearJam needs a weapon (core.js). Fire stays refused with

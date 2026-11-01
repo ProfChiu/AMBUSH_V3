@@ -23,6 +23,9 @@
   }
 
   // ---------------------------------------------------------------- title
+  // the title is authored on a 1920x1080 stage, scaled to the window as one unit
+  function fitTitle() { document.documentElement.style.setProperty('--ts-k', Math.min(innerWidth / 1920, innerHeight / 1080)); }
+  fitTitle(); addEventListener('resize', fitTitle);
   $('t-play').addEventListener('click', function () { A.play('confirm'); show('missions'); });
   $('t-settings').addEventListener('click', function () { openPop('settings'); });
   $('t-learn').addEventListener('click', function () { A.play('confirm'); buildChapters(); show('learn'); });

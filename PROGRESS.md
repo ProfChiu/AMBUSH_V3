@@ -2,6 +2,15 @@
 
 > New here? Read `CLAUDE.md`, then `docs/00_V3_BRIEF.md`. v2 is frozen in `../AMBUSH_V2/`.
 
+## 2026-10-31 (title screen in PhantomFury's style)
+- Accomplished: the start page now follows PhantomFury's title: box art (assets/library/title/boxart.webp) drifting behind
+  Sgt. Whitaker saluting, then kicker / AMBUSH! / sub, three cards (original game credits from the rulebook's Design Credits,
+  private use only, made with vibe coding), three wide buttons with sub-lines and a version line. Olive and amber, not
+  PhantomFury's blue; the amber highlight follows the mouse and pulses. Authored at 1920x1080, scaled to the window (--ts-k).
+- Decisions: third button stays Settings (PhantomFury's is Load; v3's load lives in the game); Kranz left off the title.
+- Verified: live Chromium at 1920x1080 and 1366x768, all three buttons work, 0 console errors; T1 PASS; live_lesson.py passes.
+- Next: unchanged: Phase 8d (Chapter 6), or Wan plays to confirm the refactor feels unchanged.
+
 ## 2026-10-31 (playthrough: can Mission 1 be won?)
 - Accomplished: the bot played full Mission 1 games on the current code (head 11d28eb). Seed 7001 Normal: won, 8 VP in 13 rounds,
   2 casualties. Fresh seeds 8000-8011: Normal 1/12 won (median -4 VP), Easy 9/12 won (median 8 VP, target 5). 25/25 finished,

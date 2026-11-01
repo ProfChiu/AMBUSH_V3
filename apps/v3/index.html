@@ -18,18 +18,34 @@
 <!-- Title -->
 <section id="title" class="screen" aria-label="Title">
   <div class="backdrop"></div>
-  <img class="cast left" src="../../assets/characters/whitaker/sprites/whitaker-work-salute.png" alt="">
-  <img class="cast right" src="../../assets/characters/kranz/sprite/kranz-salute.png" alt="">
-  <div class="stack">
-    <h1 class="logo">Ambush!</h1>
-    <p class="tagline">Solitaire squad combat · Normandy 1944</p>
-    <div class="menu">
-      <button class="btn primary" id="t-play">Play</button>
-      <button class="btn" id="t-learn">Learn to play</button>
-      <button class="btn" id="t-settings">Settings</button>
+  <!-- PhantomFury's title screen in Ambush's colours: the box with Sgt. Whitaker in front of it on
+       the left; the edition, the credits and the three ways in on the right. The 1920x1080 stage
+       scales to the window as one unit (shell.js sets --ts-k). -->
+  <div class="ts-stage"><div class="ts-inner">
+    <img class="ts-cover" src="../../assets/library/title/boxart.webp" alt="Ambush! box art">
+    <img class="ts-whitaker" src="../../assets/characters/whitaker/sprites/whitaker-work-salute.png" alt="Sgt. June Whitaker">
+    <div class="ts-text">
+      <div class="ts-kicker">A digital study edition · Version 3</div>
+      <h1 class="ts-name">Ambush!</h1>
+      <div class="ts-sub">Solitaire squad combat · Normandy, 1944</div>
+      <div class="ts-card olive"><h4>The original board game</h4>
+        <p>Solitaire board wargame. Designed and developed by Eric Lee Smith and John H. Butterfield, design assistance by
+          Bob Ryer, Mark Herman and Gerry Klug, graphics by Ted Koller, cover art by John H. Butterfield. Published by
+          Victory Games, 1983.</p>
+        <p class="dim">Game design, maps, counters, soldier cards, paragraph book, rules text and cover art: all Victory Games.
+          Follows their printed rulebook with errata; every rule cites the book's section.</p></div>
+      <div class="ts-card amber"><h4>For private use only</h4>
+        <p>Unofficial, non-commercial translation for study and teaching. Not affiliated with, licensed or endorsed by
+          Victory Games or its successors. Not for sale, publication or distribution.</p></div>
+      <div class="ts-card green"><h4>Made with vibe coding</h4><p>Tools: Photoshop / Visual Studio / Claude AI.</p></div>
+      <div class="ts-buttons">
+        <button class="ts-btn primary" id="t-play"><b>▶ Play</b><small>Mission 1: Bloody St. Mick</small></button>
+        <button class="ts-btn" id="t-learn"><b>Learn to play</b><small>Six chapters with Sgt. Whitaker</small></button>
+        <button class="ts-btn" id="t-settings"><b>Settings</b><small>Volume, game speed, motion and grid</small></button>
+      </div>
+      <div class="ts-version">Version 3 · Mission 1 · October 31, 2026</div>
     </div>
-  </div>
-  <div class="foot">Ambush! © 1983 Victory Games · digital edition, v3 in development</div>
+  </div></div>
 </section>
 
 <!-- Mission select -->
